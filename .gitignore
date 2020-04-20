@@ -1,0 +1,6 @@
+.vs
+.vscode
+*.sln
+*.vcxproj.*
+build.bat
+bin
