@@ -11,6 +11,7 @@ Board::Board(int width, int height):
   grid(height, vector<char>(width, '\0')) {}
 
 bool Board::addWord(Word word) {
+    // TODO check if word already exists (dont duplicate it)
     string w = word.getWord();
     Cursor cursor = word.getCursorAtStart();
     cursor.stepBackwards();

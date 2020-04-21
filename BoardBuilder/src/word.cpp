@@ -1,4 +1,5 @@
 #include <fstream>
+#include <algorithm>
 #include "word.h"
 #include "board.h"
 
@@ -32,9 +33,13 @@ int Word::size() const {
 }
 
 bool Word::inDict() const {
-    // ifstream dict(DICTIONARY, std::ifstream::ate);
-    // while(dict)
-    //     cout << dict;
-    // TODO
-    return true;
+    ifstream dict(DICTIONARY);
+    string dict_word;
+
+    while(dict >> dict_word) {
+        transform(dict_word.begin(), dict_word.end(), dict_word.begin(), toupper);
+        if(word == dict_word) return true;
+    } 
+    
+    return false;
 }
