@@ -2,5 +2,14 @@
 .vscode
 *.sln
 *.vcxproj.*
+*.tlog
+*.obj
+*.log
+*.idb
+*.pdb
 build.bat
 bin
+Debug
+BoardBuilder/Debug
+ScrabbleJunior/Debug
+x64
