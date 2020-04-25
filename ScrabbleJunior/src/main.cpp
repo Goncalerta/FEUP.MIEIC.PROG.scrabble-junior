@@ -85,6 +85,17 @@ int main() {
     }    
     cout << endl;
 
+    string p_input;
+    while(getline(cin, p_input)) {
+        if(p_input.size() != 2) {
+            cout << "Too many chars in input";
+            continue;
+        }
+
+        Position pos(p_input[1], p_input[0]);
+        
+    }
+
     return 0;
 }
 

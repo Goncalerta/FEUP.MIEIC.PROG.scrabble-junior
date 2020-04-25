@@ -19,6 +19,8 @@ class Board {
     bool setHeight(int height);
     bool addWord(Position start, Orientation orientation, std::string word);
     void printGrid(std::ostream &out) const;
+    
+    int cover(Position position); // returns score (0, 1 or 2), INVALID_POSITION, ILEGAL_MOVE
 };
 
 #endif
