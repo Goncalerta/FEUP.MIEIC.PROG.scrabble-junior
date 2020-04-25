@@ -8,7 +8,8 @@ Board::Board(int width, int height):
   width(width), 
   height(height), 
   words({}), 
-  grid(height, vector<char>(width, '\0')) {}
+  grid(height, vector<char>(width, '\0'))
+{}
 
 bool Board::addWord(Word word) {
     // TODO check if word already exists (dont duplicate it)

@@ -51,6 +51,7 @@ void promptHeight(Board &board) {
 }
 
 int main() {
+    // TODO check whether dictionary is present.
     string boardname;
     Board board;
 
