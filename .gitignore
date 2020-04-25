@@ -2,5 +2,7 @@
 .vscode
 *.sln
 *.vcxproj.*
+*.vcxproj
 build.bat
 bin
+Debug
