@@ -25,6 +25,7 @@ void promptWidth(Board &board) {
         } 
         
         if(board.setWidth(width)) break;
+
         else cout << "The given input is invalid." << endl;
     }
 }
@@ -46,6 +47,7 @@ void promptHeight(Board &board) {
         } 
         
         if(board.setHeight(height)) break;
+
         else cout << "The given input is invalid." << endl;
     }
 }
@@ -58,7 +60,8 @@ int main() {
     int width;
     cout << "Name of new board: ";
     cin >> boardname;
-    if(cin.fail()) return 0;
+
+    if (cin.fail()) return 0;
     // TODO check if it is a valid name (is it really necessary?)
 
     promptWidth(board);
@@ -74,33 +77,34 @@ int main() {
         string cword;
         // TODO should the line be read all at once? (in other words, unallow inputs such as "Aa\nH\nword") 
         cin >> cy >> cx >> corientation >> cword;
-        
+
         // Validate and parse input
-        if(cin.fail()) {       
-            if(cin.eof()) break;     
+        if (cin.fail()) {
+            if (cin.eof()) break;
+
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             cout << "The given input is invalid." << endl;
             continue;
-        } 
+        }
 
         Command command(cx, cy, corientation, cword);
-        if(!command.isValid()) {
+        if (!command.isValid()) {
             cout << "The given input is invalid." << endl;
             continue;
         }
 
         Word word(command);
-        if(!word.inDict()) {
+        if (!word.inDict()) {
             cout << "The given word wasn't found in the dictionary." << endl;
             continue;
         }
 
-        if(!board.addWord(word)) {
+        if (!board.addWord(word)) {
             cout << "The given word doesn't fit the board or collides with incompatible words at given position." << endl;
             continue;
         }
-    } while(!cin.eof());
+    } while (!cin.eof());
 
     ofstream outfile(boardname + ".txt");
     board.printData(outfile);
