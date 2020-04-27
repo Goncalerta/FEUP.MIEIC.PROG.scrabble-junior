@@ -23,7 +23,7 @@ pair<bool, bool> Cell::cover() {
     // if(!coverable) TODO
     covered = true;
     coverable = false;
-    return pair(propagates_horizontally, propagates_vertically);
+    return pair<bool, bool>(propagates_horizontally, propagates_vertically);
 }
 
 char Cell::getLetter() const {

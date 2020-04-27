@@ -50,8 +50,8 @@ void Position::stepBackwards(Orientation orientation) {
 
 pair<Position, Position> Position::laterals(Orientation orientation) {
     if(orientation == Horizontal) {
-        return pair(Position(x, y+1), Position(x, y-1));
+        return pair<Position, Position>(Position(x, y+1), Position(x, y-1));
     } else {
-        return pair(Position(x+1, y), Position(x-1, y));
+        return pair<Position, Position>(Position(x+1, y), Position(x-1, y));
     }
 }
