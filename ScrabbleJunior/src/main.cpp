@@ -69,18 +69,19 @@ int main() {
 
     Player p1;
     Player p2;
+    int turn = 0;
 
     p1.refillHand(pool);
     p2.refillHand(pool);
 
     board.printGrid(cout);
     cout << "P1 hand:" << endl;
-    for(auto i = p1.hand_begin(); i <= p1.hand_end(); i++) {
+    for(auto i = p1.handBegin(); i <= p1.handEnd(); i++) {
         cout << *i << " ";
     }    
     cout << endl;
     cout << "P2 hand:" << endl;
-    for(auto i = p2.hand_begin(); i <= p2.hand_end(); i++) {
+    for(auto i = p2.handBegin(); i <= p2.handEnd(); i++) {
         cout << *i << " ";
     }    
     cout << endl;
@@ -93,7 +94,23 @@ int main() {
         }
 
         Position pos(p_input[1], p_input[0]);
-        
+        if(turn % 2 == 0) {
+            char l = board.getLetter(pos);
+            if(!p1.hasLetter(l)) {
+                cout << "Doesn't have letter.";
+                continue;
+            }
+            int score_gain = board.cover(pos);
+            if(score_gain == Board::ILLEGAL_MOVE) {
+                cout << "Illegal move.";
+                continue;
+            }
+            p1.useLetter(l);
+            p1.addScore(score_gain);
+        } else {
+
+        }
+        turn++;
     }
 
     return 0;

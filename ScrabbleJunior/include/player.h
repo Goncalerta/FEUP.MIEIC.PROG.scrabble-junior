@@ -8,7 +8,7 @@
 
 class Player {
     static const int TILES_PER_PLAYER = 7;
-    static const int EMPTY_HAND = '\0';
+    static const char EMPTY_HAND = '\0';
     
     int score;
     char hand[TILES_PER_PLAYER];
@@ -16,9 +16,12 @@ class Player {
     public:
     Player();
     void refillHand(Pool &pool);
-    char takeHand(int n);
-    const char* hand_begin() const;
-    const char* hand_end() const;
+    bool hasLetter(char letter);
+    void useLetter(char letter);
+    void addScore(int score);
+
+    const char* handBegin() const;
+    const char* handEnd() const;
 };
 
 #endif
