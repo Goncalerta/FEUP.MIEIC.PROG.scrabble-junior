@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+#pragma once
+#ifndef BOARD_H
+#define BOARD_H
+
+class Board {
+
+}
+=======
 #ifndef BOARD_H
 #define BOARD_H
 
@@ -22,5 +31,6 @@ class Board {
     
     int cover(Position position); // returns score (0, 1 or 2), INVALID_POSITION, ILEGAL_MOVE
 };
+>>>>>>> af2634ed998871d93345b34770acad66809fd03f
 
 #endif

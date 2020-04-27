@@ -4,6 +4,7 @@ using namespace std;
 
 Command::Command(char cx, char cy, char corientation, string cword) {
     valid = false;
+
     if(cx < 'a' || cx > 'z') return;
     if(cy < 'A' || cy > 'Z') return;
 
