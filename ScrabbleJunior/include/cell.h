@@ -21,7 +21,7 @@ class Cell {
     std::pair<bool, bool> cover();
     
     char getLetter() const;
-    char setLetter(char l);
+    void setLetter(char l);
 
     bool isCovered() const;
     bool isCoverable() const;

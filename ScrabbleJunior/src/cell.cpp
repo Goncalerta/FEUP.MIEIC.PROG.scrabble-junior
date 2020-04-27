@@ -30,7 +30,7 @@ char Cell::getLetter() const {
     return letter;
 }
 
-char Cell::setLetter(char l) {
+void Cell::setLetter(char l) {
     letter = l;
 }
 
