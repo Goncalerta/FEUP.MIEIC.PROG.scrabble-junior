@@ -27,3 +27,4 @@ void Cursor::stepLateral(int n) {
         x += n;
     }
 }
+

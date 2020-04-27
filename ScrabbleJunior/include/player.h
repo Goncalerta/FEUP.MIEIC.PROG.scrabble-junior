@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-#pragma once
-#ifndef PLAYER_H
-#define PLAYER_H
-
-class Player {
-
-}
-=======
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -32,6 +23,5 @@ class Player {
     const char* handBegin() const;
     const char* handEnd() const;
 };
->>>>>>> af2634ed998871d93345b34770acad66809fd03f
 
 #endif
