@@ -13,17 +13,31 @@ void Player::refillHand(Pool &pool) {
     }
 }
 
-char Player::takeHand(int n) {
-    // if(n >= 7 || n < 0) TODO ERROR
-    char letter = hand[n];
-    hand[n] = EMPTY_HAND;
-    return letter;
-} 
+bool Player::hasLetter(char letter) {
+    for(auto l = handBegin(); l <= handEnd(); l++) {
+        if(*l == letter) return true;
+    }
 
-const char* Player::hand_begin() const {
+    return false;
+}
+
+void Player::useLetter(char letter) {
+    for(auto l = begin(hand); l <= end(hand); l++) {
+        if(*l == letter) {
+            *l = EMPTY_HAND;
+            return;
+        }
+    }
+}
+
+void Player::addScore(int score) {
+    this->score += score;
+}
+
+const char* Player::handBegin() const {
     return cbegin(hand);
 }
 
-const char* Player::hand_end() const {
+const char* Player::handEnd() const {
     return cend(hand);
 }

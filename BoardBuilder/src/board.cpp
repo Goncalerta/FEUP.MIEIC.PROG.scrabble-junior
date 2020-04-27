@@ -16,15 +16,13 @@ bool Board::addWord(Word word) {
     string w = word.getWord();
     Cursor cursor = word.getCursorAtStart();
     cursor.stepBackwards();
-
     if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
         return false;
     }
 
-    for (int i = 0; i < w.size(); i++) {
+    for(int i = 0; i < w.size(); i++) {
         cursor.stepForward();
         if(!cursor.inRect(Position(0, 0), width, height)) {
-
             return false;
         }
         char current_char = grid[cursor.getY()][cursor.getX()];
@@ -44,7 +42,6 @@ bool Board::addWord(Word word) {
         }
     }
     cursor.stepForward();
-
     if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
         return false;
     }

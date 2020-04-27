@@ -20,9 +20,8 @@ class Board {
     bool addWord(Word word);
     bool setWidth(int width);
     bool setHeight(int height);
-
-    void printData(std::ostream& out) const;
-    void printGrid(std::ostream& out) const;
+    void printData(std::ostream &out) const;
+    void printGrid(std::ostream &out) const;
 };
 
 #endif
