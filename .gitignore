@@ -2,6 +2,7 @@
 .vscode
 *.sln
 *.vcxproj.*
+<<<<<<< HEAD
 *.tlog
 *.obj
 *.log
@@ -13,3 +14,9 @@ Debug
 BoardBuilder/Debug
 ScrabbleJunior/Debug
 x64
+=======
+*.vcxproj
+build.bat
+bin
+Debug
+>>>>>>> af2634ed998871d93345b34770acad66809fd03f

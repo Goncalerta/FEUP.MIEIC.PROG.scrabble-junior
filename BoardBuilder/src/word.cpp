@@ -7,6 +7,7 @@ using namespace std;
 
 const char* Word::DICTIONARY = "WORDS.txt";
 
+<<<<<<< HEAD
 Word::Word(Position start, Orientation orientation, string word) :
     start(start),
     orientation(orientation),
@@ -15,6 +16,16 @@ Word::Word(Position start, Orientation orientation, string word) :
 Word::Word(Command cmd) : Word(cmd.getPos(), cmd.getOrientation(), cmd.getWord()) {}
 
 void Word::printToStream(ostream& out) const {
+=======
+Word::Word(Position start, Orientation orientation, string word): 
+  start(start),
+  orientation(orientation),
+  word(word) {}
+
+Word::Word(Command cmd): Word(cmd.getPos(), cmd.getOrientation(), cmd.getWord()) {}
+
+void Word::printToStream(ostream &out) const {
+>>>>>>> af2634ed998871d93345b34770acad66809fd03f
     out << start.getYChar() << start.getXChar() << ' ';
     out << orientationToChar(orientation);
     out << ' ' << word << endl;
@@ -36,6 +47,7 @@ bool Word::inDict() const {
     ifstream dict(DICTIONARY);
     string dict_word;
 
+<<<<<<< HEAD
     while (dict >> dict_word) {
         transform(dict_word.begin(), dict_word.end(), dict_word.begin(), toupper);
         if (word == dict_word) return true;
@@ -43,3 +55,12 @@ bool Word::inDict() const {
 
     return false;
 }
+=======
+    while(dict >> dict_word) {
+        transform(dict_word.begin(), dict_word.end(), dict_word.begin(), toupper);
+        if(word == dict_word) return true;
+    } 
+    
+    return false;
+}
+>>>>>>> af2634ed998871d93345b34770acad66809fd03f
