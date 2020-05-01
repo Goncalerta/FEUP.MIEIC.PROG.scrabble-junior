@@ -11,8 +11,9 @@ Board::Board(int width, int height):
 
 bool Board::addWord(Position pos, Orientation orientation, std::string word) {
     // TODO check if everything is valid
+    getCell(pos).allowMove(orientation);
     for(int i = 0; i < word.size(); i++) {
-        cellAtPosition(pos).setLetter(word[i]);
+        getCell(pos).setLetter(word[i]);
         pos.stepForward(orientation);
     }
 
@@ -41,28 +42,12 @@ bool Board::setHeight(int height) {
     }
 }
 
-void Board::printGrid(ostream &out) const {
-    out << "  ";
-    for(int i = 0; i < width; i++) {
-        out << (char)('a' + i) << ' ';
-    }
-    out << endl;
-    for(int j = 0; j < height; j++) {
-        out << (char)('A' + j) << ' ';
-        for(int i = 0; i < width; i++) {
-            if(grid[j][i].isEmpty()) out << "  ";
-            else out << grid[j][i].getLetter() << ' ';
-        }
-        out << endl;
-    }
-}
-
 char Board::getLetter(Position position) const {
-    return cellAtPosition(position).getLetter();
+    return getCell(position).getLetter();
 }
 
 int Board::cover(Position position) {
-    Cell cell = cellAtPosition(position);
+    Cell cell = getCell(position);
     if(!cell.isCoverable()) return ILLEGAL_MOVE;
     
     pair<bool, bool> propagation = cell.cover();
@@ -82,7 +67,11 @@ int Board::cover(Position position) {
     return score;
 }
 
-Cell Board::cellAtPosition(Position position) const {
+Cell& Board::getCell(Position position) {
+    return grid[position.getY()][position.getX()];
+}
+
+const Cell& Board::getCell(Position position) const {
     return grid[position.getY()][position.getX()];
 }
 
@@ -91,7 +80,7 @@ bool Board::propagate(Position pos, Orientation orientation) {
     do {
         pos.stepForward(orientation);
         if(pos.getX() >= width || pos.getY() >= height) return true; 
-        cell = cellAtPosition(pos);
+        cell = getCell(pos);
     } while(cell.isCovered());
 
     if(!cell.isEmpty()) {
@@ -99,4 +88,12 @@ bool Board::propagate(Position pos, Orientation orientation) {
     }
 
     return cell.isEmpty();
+}
+
+int Board::getHeight() const {
+    return height;
+}
+
+int Board::getWidth() const {
+    return width;
 }

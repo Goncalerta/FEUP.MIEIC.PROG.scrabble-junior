@@ -9,6 +9,8 @@ class Position {
     int y;
 
     public:
+    static bool isValid(char x, char y);
+
     Position();
     Position(int x, int y);
     Position(char x, char y);
