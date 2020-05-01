@@ -13,6 +13,10 @@ Position::Position(char x, char y) {
     this->y = y - 'A';
 }
 
+bool Position::isValid(char x, char y) {
+    return x >= 'a' && x <='z' && y >= 'A' && y <= 'z';
+}
+
 int Position::getX() const {
     return x;
 }
