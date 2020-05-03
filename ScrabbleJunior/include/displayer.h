@@ -1,6 +1,8 @@
 #ifndef DISPLAYER_H
 #define DISPLAYER_H
 
+class GameDisplayer;
+
 #include <string>
 #include <vector>
 #include "game.h"

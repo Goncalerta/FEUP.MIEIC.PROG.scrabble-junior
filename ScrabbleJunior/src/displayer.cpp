@@ -27,7 +27,7 @@ void GameDisplayer::draw() {
 }
 
 void GameDisplayer::drawBoard(const Board &board) {
-    cout << "  ";
+    cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
         cout << (char)('a' + i) << ' ';
@@ -36,7 +36,7 @@ void GameDisplayer::drawBoard(const Board &board) {
     cout << endl;
     for(int j = 0; j < board.getHeight(); j++) {
         setcolor(LIGHTGRAY);
-        cout << (char)('A' + j) << ' ';
+        cout << (char)('A' + j);
         
         for(int i = 0; i < board.getWidth(); i++) {
             Cell cell = board.getCell(Position(i, j));

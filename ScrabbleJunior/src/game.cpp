@@ -67,18 +67,18 @@ const Board& Game::getBoard() const {
     return board;
 }
 
-bool Game::move(Position position, std::ostream &out) {
+bool Game::move(Position position, GameDisplayer &displayer) {
     Player &player = getCurrentPlayer();
     char l = board.getLetter(position);
 
     if(!player.hasLetter(l)) {
-        out << "Doesn't have letter.";
+        displayer.pushError("Doesn't have letter.");
         return false;
     }
 
     int score_gain = board.cover(position);
     if(score_gain == Board::ILLEGAL_MOVE) {
-        out << "Illegal move.";
+        displayer.pushError("Illegal move.");
         return false;
     }
     player.useLetter(l);
