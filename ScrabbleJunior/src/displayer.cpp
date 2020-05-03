@@ -18,7 +18,7 @@ void GameDisplayer::clearErrors() {
 
 void GameDisplayer::draw() {
     clrscr();
-    drawBoard(game.getBoard());
+    drawBoard(game.getBoard(), game.getCurrentPlayer());
     drawPlayers(game.getPlayers());
     drawCurrentPlayer();
     drawErrorMessages();
@@ -26,7 +26,7 @@ void GameDisplayer::draw() {
     cout << "Input a valid position in the board to play: ";
 }
 
-void GameDisplayer::drawBoard(const Board &board) {
+void GameDisplayer::drawBoard(const Board &board, const Player &current_player) {
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -39,14 +39,14 @@ void GameDisplayer::drawBoard(const Board &board) {
         cout << (char)('A' + j);
         
         for(int i = 0; i < board.getWidth(); i++) {
-            Cell cell = board.getCell(Position(i, j));
+            const Cell cell = board.getCell(Position(i, j));
             
             if(cell.isEmpty()) {
                 setcolor(BLACK, LIGHTGRAY);
                 cout << ' ';
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
-                else if(cell.isCoverable()) setcolor(BLACK, WHITE);
+                else if(cell.isCoverable()) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
                 cout << cell.getLetter();

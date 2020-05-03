@@ -47,7 +47,7 @@ char Board::getLetter(Position position) const {
 }
 
 int Board::cover(Position position) {
-    Cell cell = getCell(position);
+    Cell &cell = getCell(position);
     if(!cell.isCoverable()) return ILLEGAL_MOVE;
     
     pair<bool, bool> propagation = cell.cover();
@@ -76,18 +76,18 @@ const Cell& Board::getCell(Position position) const {
 }
 
 bool Board::propagate(Position pos, Orientation orientation) {
-    Cell cell;
+    Cell *cell;
     do {
         pos.stepForward(orientation);
         if(pos.getX() >= width || pos.getY() >= height) return true; 
-        cell = getCell(pos);
-    } while(cell.isCovered());
+        cell = &getCell(pos);
+    } while(cell->isCovered());
 
-    if(!cell.isEmpty()) {
-        cell.allowMove(orientation);
+    if(!cell->isEmpty()) {
+        cell->allowMove(orientation);
     }
 
-    return cell.isEmpty();
+    return cell->isEmpty();
 }
 
 int Board::getHeight() const {
