@@ -34,24 +34,32 @@ int main() {
 
     string p_input;
     int plays = 2;
-    displayer.draw();
-    while(getline(cin, p_input)) {
+
+    bool has_input;
+
+    do {
         displayer.draw();
+        has_input = getline(cin, p_input).good();
+
+        displayer.clearErrors();
 
         if(p_input.size() != 2) {
-            cout << "Too many chars in input";
+            displayer.pushError("Too many characters in input.");
             continue;
         }
 
         if(!Position::isValid(p_input[1], p_input[0])) {
-            cout << "Too many chars in input";
+            displayer.pushError("Couldn't parse input as a position.");
             continue;
         }
 
         Position pos(p_input[1], p_input[0]);
-        if(!game.move(pos, cout)) plays -= 1;
-        if(plays == 0) game.nextTurn();
-    }
+        if(game.move(pos, displayer)) plays -= 1;
+        if(plays == 0) {
+            plays = 2; 
+            game.nextTurn();
+        }
+    } while(has_input);
 
     return 0;
 }

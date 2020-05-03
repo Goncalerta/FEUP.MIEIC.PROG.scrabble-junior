@@ -18,7 +18,7 @@ void GameDisplayer::clearErrors() {
 
 void GameDisplayer::draw() {
     clrscr();
-    drawBoard(game.getBoard());
+    drawBoard(game.getBoard(), game.getCurrentPlayer());
     drawPlayers(game.getPlayers());
     drawCurrentPlayer();
     drawErrorMessages();
@@ -26,8 +26,8 @@ void GameDisplayer::draw() {
     cout << "Input a valid position in the board to play: ";
 }
 
-void GameDisplayer::drawBoard(const Board &board) {
-    cout << "  ";
+void GameDisplayer::drawBoard(const Board &board, const Player &current_player) {
+    cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
         cout << (char)('a' + i) << ' ';
@@ -36,17 +36,17 @@ void GameDisplayer::drawBoard(const Board &board) {
     cout << endl;
     for(int j = 0; j < board.getHeight(); j++) {
         setcolor(LIGHTGRAY);
-        cout << (char)('A' + j) << ' ';
+        cout << (char)('A' + j);
         
         for(int i = 0; i < board.getWidth(); i++) {
-            Cell cell = board.getCell(Position(i, j));
+            const Cell cell = board.getCell(Position(i, j));
             
             if(cell.isEmpty()) {
                 setcolor(BLACK, LIGHTGRAY);
                 cout << ' ';
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
-                else if(cell.isCoverable()) setcolor(BLACK, WHITE);
+                else if(cell.isCoverable()) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
                 cout << cell.getLetter();
@@ -67,7 +67,8 @@ void GameDisplayer::drawPlayers(const vector<Player> &players) {
     for(auto &player: players) {
         cout << "P" << i << " hand:" << endl;
         for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-            cout << *i << " ";
+            if(*i == Player::EMPTY_HAND) cout << '_' << " ";
+            else cout << *i << " ";
         }
         cout << endl; 
 
@@ -81,7 +82,8 @@ void GameDisplayer::drawCurrentPlayer() {
     cout << "Player ? is playing this turn" << endl;
     cout << "Your hand: ";
     for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-        cout << *i << " ";
+        if(*i == Player::EMPTY_HAND) cout << '_' << " ";
+        else cout << *i << " ";
     }
     cout << endl << endl;
 }

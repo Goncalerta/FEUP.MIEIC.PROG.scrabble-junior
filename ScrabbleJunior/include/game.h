@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+class Game;
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -9,6 +11,7 @@
 #include "board.h"
 #include "pool.h"
 #include "position.h"
+#include "displayer.h"
 
 // TODO a state machine would probably be better than an enum
 enum State {
@@ -33,7 +36,7 @@ class Game {
     const Board& getBoard() const;
 
     Player& getCurrentPlayer();
-    bool move(Position position, std::ostream &out);
+    bool move(Position position, GameDisplayer &displayer);
     void nextTurn();
 
     void printGame(std::ostream &out);
