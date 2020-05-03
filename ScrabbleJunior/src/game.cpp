@@ -69,6 +69,10 @@ const Board& Game::getBoard() const {
 
 bool Game::move(Position position, GameDisplayer &displayer) {
     Player &player = getCurrentPlayer();
+    if(!position.inRect(Position(0, 0), board.getWidth(), board.getHeight())) {
+        displayer.pushError("Position is outside board limits.");
+        return false;
+    }
     char l = board.getLetter(position);
 
     if(!player.hasLetter(l)) {
@@ -88,5 +92,6 @@ bool Game::move(Position position, GameDisplayer &displayer) {
 }
 
 void Game::nextTurn() {
+    getCurrentPlayer().refillHand(pool);
     turn++;
 }

@@ -55,7 +55,10 @@ int main() {
 
         Position pos(p_input[1], p_input[0]);
         if(game.move(pos, displayer)) plays -= 1;
-        if(plays == 0) game.nextTurn();
+        if(plays == 0) {
+            plays = 2; 
+            game.nextTurn();
+        }
     } while(has_input);
 
     return 0;
