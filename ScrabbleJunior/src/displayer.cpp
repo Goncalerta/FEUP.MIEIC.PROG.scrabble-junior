@@ -67,7 +67,8 @@ void GameDisplayer::drawPlayers(const vector<Player> &players) {
     for(auto &player: players) {
         cout << "P" << i << " hand:" << endl;
         for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-            cout << *i << " ";
+            if(*i == Player::EMPTY_HAND) cout << '_' << " ";
+            else cout << *i << " ";
         }
         cout << endl; 
 
@@ -81,7 +82,8 @@ void GameDisplayer::drawCurrentPlayer() {
     cout << "Player ? is playing this turn" << endl;
     cout << "Your hand: ";
     for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-        cout << *i << " ";
+        if(*i == Player::EMPTY_HAND) cout << '_' << " ";
+        else cout << *i << " ";
     }
     cout << endl << endl;
 }

@@ -12,7 +12,7 @@ class Player {
     char hand[TILES_PER_PLAYER];
 
     public:
-    static const char EMPTY_HAND = '\0';
+    static const char EMPTY_HAND = '_';
     
     Player();
     void refillHand(Pool &pool);
