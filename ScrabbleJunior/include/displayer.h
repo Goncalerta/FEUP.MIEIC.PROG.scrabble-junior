@@ -12,7 +12,7 @@ class GameDisplayer {
     Game &game;
 
     void drawBoard(const Board &board, const Player &current_player);
-    void drawPlayers(const std::vector<Player> &players);
+    void drawPlayers(const std::vector<Player> &players, int x_offset);
     void drawCurrentPlayer();
     void drawErrorMessages();
 

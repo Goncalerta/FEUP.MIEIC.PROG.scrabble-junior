@@ -84,7 +84,7 @@ int main() {
             input_stream >> letter1 >> letter2;
 
             if(input_stream.fail() || input_stream.str().empty()) {
-                // TOD maybe something more efficient that .str() ?
+                // TODO maybe something more efficient that .str() ?
                 displayer.pushError("Invalid input.");
                 continue;
             }

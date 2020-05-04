@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 #include "displayer.h"
 #include "cmd.h"
 
@@ -19,13 +21,16 @@ void GameDisplayer::clearErrors() {
 void GameDisplayer::draw() {
     clrscr();
     drawBoard(game.getBoard(), game.getCurrentPlayer());
-    drawPlayers(game.getPlayers());
+    int player_x_offset = game.getBoard().getWidth() * 2 + 2;
+    drawPlayers(game.getPlayers(), player_x_offset);
+    gotoxy(0, max(8, game.getBoard().getHeight()+2));
     drawCurrentPlayer();
     drawErrorMessages();
     setcolor(LIGHTGRAY);
 }
 
 void GameDisplayer::drawBoard(const Board &board, const Player &current_player) {
+    // TODO only highlight when playable
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -61,26 +66,30 @@ void GameDisplayer::drawBoard(const Board &board, const Player &current_player) 
     setcolor(LIGHTGRAY);
 }
 
-void GameDisplayer::drawPlayers(const vector<Player> &players) {
-    // TODO
-    int i = 1;
-    for(auto &player: players) {
-        cout << "P" << i << " hand:" << endl;
-        for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-            if(*i == Player::EMPTY_HAND) cout << '_' << " ";
-            else cout << *i << " ";
-        }
-        cout << endl; 
+void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
+    gotoxy(x_offset, 1);
+    cout << "   score:       LETTERS   ";
 
-        i++;
+    for(int i = 0; i < players.size(); i++) {
+        gotoxy(x_offset, i+2);
+        cout << "P" << i << " " << setw(4) << players[i].getScore() << "      ";
+        for(auto letter = players[i].handBegin(); letter <= players[i].handEnd(); letter++) {
+            if(*letter == Player::EMPTY_HAND) cout << '_' << " ";
+            else cout << *letter << " ";
+        }
     }
 }
 
 void GameDisplayer::drawCurrentPlayer() {
-    // TODO
     Player player = game.getCurrentPlayer();
-    cout << "Player ? is playing this turn" << endl;
-    cout << "Your hand: ";
+    cout << "Player " << game.getCurrentPlayerNumber() << " is playing this turn." << endl;
+    if(game.getMovesLeftThisTurn() == 1) {
+        cout << "You have 1 move left this turn." << endl;
+    } else {
+        cout << "You have " << game.getMovesLeftThisTurn() << " moves left this turn." << endl;
+    }
+    
+    cout << "Your hand:  ";
     for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
         if(*i == Player::EMPTY_HAND) cout << '_' << " ";
         else cout << *i << " ";

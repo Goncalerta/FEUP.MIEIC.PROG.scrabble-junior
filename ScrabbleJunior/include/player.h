@@ -23,6 +23,8 @@ class Player {
     bool hasLetter(char letter);
     bool hasPair(char letter1, char letter2);
     void useLetter(char letter);
+
+    int getScore() const;
     void addScore(int score);
 
     const char* handBegin() const;

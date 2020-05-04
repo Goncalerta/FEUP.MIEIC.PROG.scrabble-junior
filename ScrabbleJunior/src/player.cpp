@@ -66,6 +66,10 @@ void Player::useLetter(char letter) {
     }
 }
 
+int Player::getScore() const {
+    return score;
+}
+
 void Player::addScore(int score) {
     this->score += score;
 }
