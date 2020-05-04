@@ -21,6 +21,18 @@ bool Player::hasLetter(char letter) {
     return false;
 }
 
+bool Player::hasPair(char letter1, char letter2) {
+    bool has_letter1 = false;
+    bool has_letter2 = false;
+
+    for(auto l = handBegin(); l <= handEnd(); l++) {
+        if(*l == letter1) has_letter1 = true;
+        else if(*l == letter2) has_letter2 = true;
+    }
+
+    return has_letter1 && has_letter2;
+}
+
 void Player::useLetter(char letter) {
     for(auto l = begin(hand); l <= end(hand); l++) {
         if(*l == letter) {

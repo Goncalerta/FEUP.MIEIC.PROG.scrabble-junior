@@ -16,7 +16,10 @@ class Player {
     
     Player();
     void refillHand(Pool &pool);
+    void exchangeTwoLetters(Pool &pool, );
+
     bool hasLetter(char letter);
+    bool hasPair(char letter1, char letter2);
     void useLetter(char letter);
     void addScore(int score);
 

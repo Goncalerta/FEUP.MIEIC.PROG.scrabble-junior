@@ -15,7 +15,7 @@ class Pool {
     char popLetter();
     void shuffle(std::default_random_engine &rng);
     bool isEmpty() const;
-    // std::pair<char, char> exchange(std::pair<char, char> p);
+    std::pair<char, char> exchange(std::pair<char, char> p);
 };
 
 #endif

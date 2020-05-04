@@ -30,6 +30,7 @@ class Board {
     
     char getLetter(Position position) const;
     int cover(Position position); // returns score (0, 1 or 2), ILLEGAL_MOVE
+    bool hasMove(const char *hand_begin, const char *hand_end);
 
     const Cell& getCell(Position position) const;
 };

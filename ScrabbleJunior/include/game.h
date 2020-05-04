@@ -25,6 +25,7 @@ class Game {
     std::vector<Player> players;
     Pool pool;
     int turn;
+    int moves_left;
     State state;
 
     public:
@@ -34,9 +35,16 @@ class Game {
 
     const std::vector<Player>& getPlayers() const;
     const Board& getBoard() const;
+    const Pool& getPool() const;
 
     Player& getCurrentPlayer();
+    int getCurrentPlayerNumber();
+    int getMovesLeftThisTurn();
+    int getMovesThisTurn();
+    bool canCurrentPlayerMove();
+
     bool move(Position position, GameDisplayer &displayer);
+    void exchangePair(char letter1, char letter2, GameDisplayer &displayer, default_random_engine &rng);
     void nextTurn();
 
     void printGame(std::ostream &out);

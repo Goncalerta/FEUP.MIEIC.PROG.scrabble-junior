@@ -26,6 +26,8 @@ class Cell {
     bool isCovered() const;
     bool isCoverable() const;
     bool isEmpty() const;
+
+    bool canCover(const char *hand_begin, const char *hand_end) const;
 };
 
 #endif

@@ -18,7 +18,7 @@ class GameDisplayer {
 
     public:
     GameDisplayer(Game &game);
-    void pushError(char *error);
+    void pushError(const char *error);
     void clearErrors();
 
     void draw();

@@ -5,12 +5,25 @@ using namespace std;
 
 Game::Game(int num_players):
     turn(0),
+    moves_left(0),
     players(num_players),
     state(Unstarted)
 {}
 
 Player& Game::getCurrentPlayer() {
-    return players[turn%players.size()];
+    return players[turn % players.size()];
+}
+
+int Game::getCurrentPlayerNumber() {
+    return turn % players.size();
+}
+
+int Game::getMovesLeftThisTurn() {
+    return moves_left;
+}
+
+int Game::getMovesThisTurn() {
+    return 2 - moves_left;
 }
 
 bool Game::loadBoardFile(std::istream &board_file) {
@@ -57,6 +70,9 @@ void Game::startGame(default_random_engine &rng) {
     for(auto &player: players) {
         player.refillHand(pool);
     }
+
+    turn = 0;
+    moves_left = 2;
 }
 
 const std::vector<Player>& Game::getPlayers() const {
@@ -87,11 +103,30 @@ bool Game::move(Position position, GameDisplayer &displayer) {
     }
     player.useLetter(l);
     player.addScore(score_gain);
+    moves_left -= 1;
 
     return true;
 }
 
+void Game::exchangePair(char letter1, char letter2, GameDisplayer &displayer, default_random_engine &rng) {
+    Player &player = getCurrentPlayer();
+    if(!player.hasPair(letter1, letter2)) {
+        displayer.pushError("Player doesn't have given letters.");
+        return;
+    }
+
+    player.
+
+    pool.shuffle(rng);
+}
+
 void Game::nextTurn() {
     getCurrentPlayer().refillHand(pool);
+    moves_left = 2;
     turn++;
+}
+
+bool Game::canCurrentPlayerMove() {
+    Player &current = getCurrentPlayer();
+    return board.hasMove(current.handBegin(), current.handEnd());
 }

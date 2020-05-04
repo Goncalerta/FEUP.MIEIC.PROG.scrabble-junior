@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <random>
 #include <chrono>
@@ -33,11 +34,43 @@ int main() {
     game.startGame(rng);
 
     string p_input;
-    int plays = 2;
 
     bool has_input;
 
     do {
+        if(!game.canCurrentPlayerMove()) {
+            // TODO ENFORCE TWO MOVES WHEN POSSIBLE
+            int player_number = game.getCurrentPlayerNumber();
+            
+            if(game.getMovesThisTurn() == 0) {
+                stringstream error;
+                error << "Player " << player_number << " couldn't make any move.";
+                displayer.pushError(error.str().c_str());
+
+                if(game.getPool().isEmpty()) {
+                    stringstream error;
+                    error << "Pool is empty. Turn has been skipped.";
+                    displayer.pushError(error.str().c_str());
+
+                    game.nextTurn();
+                    continue;
+                } else {
+                    stringstream error;
+                    error << "Player exchanged two cells with the Pool and skipped their turn.";
+                    displayer.pushError(error.str().c_str());
+
+                    
+                }
+                // game.getCurrentPlayer().
+            } else {
+                stringstream error;
+                error << "Player " << player_number << " couldn't make any more moves.";
+                displayer.pushError(error.str().c_str());
+
+                game.nextTurn();
+                continue;
+            }
+        }
         displayer.draw();
         has_input = getline(cin, p_input).good();
 
@@ -54,9 +87,8 @@ int main() {
         }
 
         Position pos(p_input[1], p_input[0]);
-        if(game.move(pos, displayer)) plays -= 1;
-        if(plays == 0) {
-            plays = 2; 
+        if(game.move(pos, displayer)); // TODO remove?
+        if(game.getMovesLeftThisTurn() == 0) {
             game.nextTurn();
         }
     } while(has_input);

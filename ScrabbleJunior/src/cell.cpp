@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "cell.h"
 
 using namespace std;
@@ -44,4 +45,9 @@ bool Cell::isCoverable() const {
 
 bool Cell::isEmpty() const {
     return letter == EMPTY;
+}
+
+bool Cell::canCover(const char *hand_begin, const char *hand_end) const {
+    if(!coverable) return false;
+    return any_of(hand_begin, hand_end, [this](auto i){return i == this->letter;});
 }

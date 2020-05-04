@@ -8,7 +8,7 @@ GameDisplayer::GameDisplayer(Game &game):
     error_messages(0)
 {}
 
-void GameDisplayer::pushError(char *error) {
+void GameDisplayer::pushError(const char *error) {
     error_messages.push_back(string(error));
 }
 
@@ -63,6 +63,7 @@ void GameDisplayer::drawBoard(const Board &board, const Player &current_player) 
 }
 
 void GameDisplayer::drawPlayers(const vector<Player> &players) {
+    // TODO
     int i = 1;
     for(auto &player: players) {
         cout << "P" << i << " hand:" << endl;

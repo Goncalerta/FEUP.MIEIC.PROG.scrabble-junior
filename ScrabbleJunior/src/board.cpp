@@ -97,3 +97,12 @@ int Board::getHeight() const {
 int Board::getWidth() const {
     return width;
 }
+
+bool Board::hasMove(const char *hand_begin, const char *hand_end) {
+    for(auto &row: grid) {
+        for(auto &cell: row) {
+            if(cell.canCover(hand_begin, hand_end)) return true;
+        }
+    }
+    return false;
+}
