@@ -29,22 +29,15 @@ bool Pool::isEmpty() const {
     return letters.empty();
 }
 
-pair<char, char> Pool::exchange(std::pair<char, char> p) {
-    char c1, c2;
-    if(letters.empty()) return p;
-    
-    c1 = letters.back();
-    letters.pop_back();
+int Pool::size() const {
+    return letters.size();
+}
 
-    if(letters.empty()) {
-        letters.push_back(p.first);
-        return pair<char, char>(c1, p.second);
-    }
+void Pool::exchange(char *letter) {
+    swap(letters[0], *letter);
+}
 
-    c2 = letters.back();
-    letters.pop_back();
-
-    letters.push_back(p.first);
-    letters.push_back(p.second);
-    return pair<char, char>(c1, c2);
+void Pool::exchange(char *letter1, char *letter2) {
+    swap(letters[0], *letter1);
+    swap(letters[1], *letter2);
 }

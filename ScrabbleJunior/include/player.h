@@ -13,10 +13,12 @@ class Player {
 
     public:
     static const char EMPTY_HAND = '_';
+    static bool isValidLetter(char letter);
     
     Player();
     void refillHand(Pool &pool);
-    void exchangeTwoLetters(Pool &pool, );
+    void exchange(Pool &pool, char letter);
+    void exchange(Pool &pool, char letter1, char letter2);
 
     bool hasLetter(char letter);
     bool hasPair(char letter1, char letter2);

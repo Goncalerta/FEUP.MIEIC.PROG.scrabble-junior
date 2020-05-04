@@ -48,7 +48,6 @@ char Board::getLetter(Position position) const {
 
 int Board::cover(Position position) {
     Cell &cell = getCell(position);
-    if(!cell.isCoverable()) return ILLEGAL_MOVE;
     
     pair<bool, bool> propagation = cell.cover();
     bool propagates_horizontally = propagation.first;

@@ -17,8 +17,6 @@ class Board {
     bool propagate(Position pos, Orientation orientation);
 
     public:
-    static const int ILLEGAL_MOVE = -1;
-
     // TODO default maybe should be uninitialized
     Board(int width = 15, int height = 15);
     bool setWidth(int width);

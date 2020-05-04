@@ -23,7 +23,6 @@ void GameDisplayer::draw() {
     drawCurrentPlayer();
     drawErrorMessages();
     setcolor(LIGHTGRAY);
-    cout << "Input a valid position in the board to play: ";
 }
 
 void GameDisplayer::drawBoard(const Board &board, const Player &current_player) {

@@ -38,58 +38,89 @@ int main() {
     bool has_input;
 
     do {
-        if(!game.canCurrentPlayerMove()) {
-            // TODO ENFORCE TWO MOVES WHEN POSSIBLE
-            int player_number = game.getCurrentPlayerNumber();
-            
-            if(game.getMovesThisTurn() == 0) {
-                stringstream error;
-                error << "Player " << player_number << " couldn't make any move.";
-                displayer.pushError(error.str().c_str());
+        int player_number = game.getCurrentPlayerNumber();
 
-                if(game.getPool().isEmpty()) {
-                    stringstream error;
-                    error << "Pool is empty. Turn has been skipped.";
-                    displayer.pushError(error.str().c_str());
+        // TODO ENFORCE TWO MOVES WHEN POSSIBLE
+        if(game.canCurrentPlayerMove()) {
+            displayer.draw();
+            cout << "Input a valid position in the board to play: ";
+            has_input = getline(cin, p_input).good();
+            displayer.clearErrors();
 
-                    game.nextTurn();
-                    continue;
-                } else {
-                    stringstream error;
-                    error << "Player exchanged two cells with the Pool and skipped their turn.";
-                    displayer.pushError(error.str().c_str());
-
-                    
-                }
-                // game.getCurrentPlayer().
-            } else {
-                stringstream error;
-                error << "Player " << player_number << " couldn't make any more moves.";
-                displayer.pushError(error.str().c_str());
-
-                game.nextTurn();
+            if(p_input.size() != 2) {
+                displayer.pushError("Too many characters in input.");
                 continue;
             }
-        }
-        displayer.draw();
-        has_input = getline(cin, p_input).good();
 
-        displayer.clearErrors();
+            if(!Position::isValid(p_input[1], p_input[0])) {
+                displayer.pushError("Couldn't parse input as a position.");
+                continue;
+            }
 
-        if(p_input.size() != 2) {
-            displayer.pushError("Too many characters in input.");
-            continue;
-        }
+            Position pos(p_input[1], p_input[0]);
+            game.move(pos, displayer); // TODO remove bool?
+            if(game.getMovesLeftThisTurn() == 0) {
+                game.nextTurn();
+            }
+        } else if(game.getMovesThisTurn() >= 1) {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any more moves this turn.";
+            displayer.pushError(error.str().c_str());
 
-        if(!Position::isValid(p_input[1], p_input[0])) {
-            displayer.pushError("Couldn't parse input as a position.");
-            continue;
-        }
-
-        Position pos(p_input[1], p_input[0]);
-        if(game.move(pos, displayer)); // TODO remove?
-        if(game.getMovesLeftThisTurn() == 0) {
             game.nextTurn();
+        } else if(game.getPool().size() >= 2) {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any move." << endl
+                << "Must exchange two letters with the Pool this turn.";
+            displayer.pushError(error.str().c_str());
+
+            displayer.draw();
+            cout << "Input two letters to exchange: ";
+            has_input = getline(cin, p_input).good();
+            displayer.clearErrors();
+
+            char letter1, letter2;
+            stringstream input_stream(p_input);
+            input_stream >> letter1 >> letter2;
+
+            if(input_stream.fail() || input_stream.str().empty()) {
+                // TOD maybe something more efficient that .str() ?
+                displayer.pushError("Invalid input.");
+                continue;
+            }
+
+            if(game.exchange(letter1, letter2, displayer, rng)) {
+                game.nextTurn();
+            }
+        } else if(game.getPool().size() == 1) {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any move." << endl
+                << "Must exchange a letter with the remaining one in Pool this turn.";
+            displayer.pushError(error.str().c_str());
+
+            displayer.draw();
+            cout << "Input a letter to exchange: ";
+            has_input = getline(cin, p_input).good();
+            displayer.clearErrors();
+
+            char letter;
+            stringstream input_stream(p_input);
+            input_stream >> letter;
+
+            if(input_stream.fail() || input_stream.str().empty()) {
+                // TOD maybe something more efficient that .str() ?
+                displayer.pushError("Invalid input.");
+                continue;
+            }
+
+            if(game.exchange(letter, displayer, rng)) {
+                game.nextTurn();
+            }
+        } else {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any move." << endl
+                << "The pool is empty. Turn has been skipped.";
+            displayer.pushError(error.str().c_str());
         }
     } while(has_input);
 
