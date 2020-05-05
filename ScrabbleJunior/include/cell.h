@@ -18,7 +18,8 @@ class Cell {
     public:
     Cell(char letter = EMPTY);
     void allowMove(Orientation word_orientation);
-    std::pair<bool, bool> cover();
+    void cover();
+    std::pair<bool, bool> getPropagation() const;
     
     char getLetter() const;
     void setLetter(char l);

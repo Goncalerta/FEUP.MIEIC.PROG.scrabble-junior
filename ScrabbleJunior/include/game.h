@@ -37,11 +37,14 @@ class Game {
     const Board& getBoard() const;
     const Pool& getPool() const;
 
-    Player& getCurrentPlayer();
-    int getCurrentPlayerNumber();
-    int getMovesLeftThisTurn();
-    int getMovesThisTurn();
-    bool canCurrentPlayerMove();
+    Player& getCurrentPlayer(); // TODO make const
+    int getCurrentPlayerNumber() const;
+    int getMovesLeftThisTurn() const;
+    int getMovesThisTurn() const;
+    bool canCurrentPlayerMove(); // TODO make const
+    
+    bool isOver() const;
+    int getLeadingScorePlayerNumber() const;
 
     bool move(Position position, GameDisplayer &displayer);
     bool exchange(char letter1, GameDisplayer &displayer, std::default_random_engine &rng);

@@ -10,11 +10,15 @@
 class Board {
     int width;
     int height;
+
+    int total_letters;
+    int total_covered;
     std::vector<std::vector<Cell>> grid;
 
     Cell& getCell(Position position);
     
     bool propagate(Position pos, Orientation orientation);
+    const Cell* getNextCell(Position pos, Orientation orientation) const;
 
     public:
     // TODO default maybe should be uninitialized
@@ -22,15 +26,19 @@ class Board {
     bool setWidth(int width);
     bool setHeight(int height);
     bool addWord(Position start, Orientation orientation, std::string word);
+    bool isFullyCovered() const;
 
     int getHeight() const;
     int getWidth() const;
     
     char getLetter(Position position) const;
     int cover(Position position); // returns score (0, 1 or 2), ILLEGAL_MOVE
+    bool canCoverTwice(Position position, const char *hand_begin, const char *hand_end) const;
     bool hasMove(const char *hand_begin, const char *hand_end);
+    bool hasTwoMoves(const char *hand_begin, const char *hand_end);
 
     const Cell& getCell(Position position) const;
+    void getLettersInBoard(std::vector<char> &letters) const;
 };
 
 #endif

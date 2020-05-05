@@ -14,7 +14,7 @@ Position::Position(char x, char y) {
 }
 
 bool Position::isValid(char x, char y) {
-    return x >= 'a' && x <='z' && y >= 'A' && y <= 'z';
+    return x >= 'a' && x <='z' && y >= 'A' && y <= 'Z';
 }
 
 int Position::getX() const {

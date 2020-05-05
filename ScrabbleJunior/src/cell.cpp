@@ -20,10 +20,12 @@ void Cell::allowMove(Orientation orientation) {
     }
 }
 
-pair<bool, bool> Cell::cover() {
-    // if(!coverable) TODO
+void Cell::cover() {
     covered = true;
     coverable = false;
+}
+
+std::pair<bool, bool> Cell::getPropagation() const {
     return pair<bool, bool>(propagates_horizontally, propagates_vertically);
 }
 

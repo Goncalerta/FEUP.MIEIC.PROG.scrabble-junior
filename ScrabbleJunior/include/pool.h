@@ -11,8 +11,8 @@ class Pool {
     public:
     Pool();
     
+    void fill(std::vector<char> &letters);
     void pushLetter(char c);
-    void pushWord(std::string s);
     char popLetter();
     
     void shuffle(std::default_random_engine &rng);

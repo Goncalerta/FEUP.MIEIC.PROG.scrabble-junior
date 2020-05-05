@@ -11,7 +11,7 @@ class GameDisplayer {
     std::vector<std::string> error_messages;
     Game &game;
 
-    void drawBoard(const Board &board, const Player &current_player);
+    void drawBoard(const Board &board, const char *hand_begin, const char *hand_end);
     void drawPlayers(const std::vector<Player> &players, int x_offset);
     void drawCurrentPlayer();
     void drawErrorMessages();

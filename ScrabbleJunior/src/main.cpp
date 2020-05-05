@@ -20,7 +20,7 @@ int main() {
     default_random_engine rng(seed);
     // TODO ask number of players
     // TODO ask name of the board file 
-    string board_file_name = "TEST.txt";
+    string board_file_name = "SMALL.txt";
     ifstream board_file(board_file_name);
 
     Game game(2);
@@ -34,7 +34,6 @@ int main() {
     game.startGame(rng);
 
     string p_input;
-
     bool has_input;
 
     do {
@@ -47,8 +46,13 @@ int main() {
             has_input = getline(cin, p_input).good();
             displayer.clearErrors();
 
-            if(p_input.size() != 2) {
+            if(p_input.size() > 2) {
                 displayer.pushError("Too many characters in input.");
+                continue;
+            }
+
+            if(p_input.size() < 2) {
+                displayer.pushError("Too few characters in input.");
                 continue;
             }
 
@@ -121,8 +125,15 @@ int main() {
             error << "Player " << player_number << " couldn't make any move." << endl
                 << "The pool is empty. Turn has been skipped.";
             displayer.pushError(error.str().c_str());
+
+            game.nextTurn();
         }
-    } while(has_input);
+    } while(has_input && !game.isOver());
+
+    // TODO gameover screen
+    cout << "GAME OVER." << endl << "WINNER: PLAYER " << game.getLeadingScorePlayerNumber() << endl;
+    cout << "Press ENTER to exit . . .";
+    cin.get();
 
     return 0;
 }

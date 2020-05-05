@@ -1,5 +1,6 @@
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include "game.h"
 
 using namespace std;
@@ -15,15 +16,15 @@ Player& Game::getCurrentPlayer() {
     return players[turn % players.size()];
 }
 
-int Game::getCurrentPlayerNumber() {
+int Game::getCurrentPlayerNumber() const {
     return (turn % players.size()) + 1;
 }
 
-int Game::getMovesLeftThisTurn() {
+int Game::getMovesLeftThisTurn() const {
     return moves_left;
 }
 
-int Game::getMovesThisTurn() {
+int Game::getMovesThisTurn() const {
     return 2 - moves_left;
 }
 
@@ -58,9 +59,11 @@ bool Game::loadBoardFile(std::istream &board_file) {
         else return false;
 
         if(!board.addWord(position, orientation, word)) return false;
-
-        pool.pushWord(word);
     }
+
+    vector<char> letters;
+    board.getLettersInBoard(letters);
+    pool.fill(letters);
 
     return board_file.eof();
 }
@@ -86,6 +89,15 @@ const Board& Game::getBoard() const {
 
 const Pool& Game::getPool() const {
     return pool;
+}
+
+bool Game::isOver() const {
+    return board.isFullyCovered();
+}
+
+int Game::getLeadingScorePlayerNumber() const {
+    // TODO doesn't take into account draws
+    return max_element(players.begin(), players.end(), [](auto p1, auto p2){return p1.getScore() < p2.getScore();}) - players.begin() + 1;
 }
 
 bool Game::move(Position position, GameDisplayer &displayer) {

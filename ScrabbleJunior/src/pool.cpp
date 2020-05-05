@@ -5,14 +5,12 @@ using namespace std;
 
 Pool::Pool() {}
 
-void Pool::pushLetter(char c) {
-    letters.push_back(c);
+void Pool::fill(std::vector<char> &letters) {
+    this->letters.swap(letters);
 }
 
-void Pool::pushWord(string s) {
-    for(auto c: s) {
-        pushLetter(c);
-    }
+void Pool::pushLetter(char c) {
+    letters.push_back(c);
 }
 
 char Pool::popLetter() {

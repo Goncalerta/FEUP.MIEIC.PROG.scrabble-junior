@@ -20,16 +20,21 @@ void GameDisplayer::clearErrors() {
 
 void GameDisplayer::draw() {
     clrscr();
-    drawBoard(game.getBoard(), game.getCurrentPlayer());
+    
+    Player &current_player = game.getCurrentPlayer();
+    drawBoard(game.getBoard(), current_player.handBegin(), current_player.handEnd());
+    
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
     drawPlayers(game.getPlayers(), player_x_offset);
+    
     gotoxy(0, max(8, game.getBoard().getHeight()+2));
     drawCurrentPlayer();
+    
     drawErrorMessages();
     setcolor(LIGHTGRAY);
 }
 
-void GameDisplayer::drawBoard(const Board &board, const Player &current_player) {
+void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end) {
     // TODO only highlight when playable
     cout << ' ';
     setcolor(LIGHTGRAY);
@@ -50,7 +55,7 @@ void GameDisplayer::drawBoard(const Board &board, const Player &current_player) 
                 cout << ' ';
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
-                else if(cell.isCoverable()) setcolor(BLACK, YELLOW);
+                else if(cell.canCover(hand_begin, hand_end)) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
                 cout << cell.getLetter();
@@ -72,7 +77,7 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
 
     for(int i = 0; i < players.size(); i++) {
         gotoxy(x_offset, i+2);
-        cout << "P" << i << " " << setw(4) << players[i].getScore() << "      ";
+        cout << "P" << i+1 << " " << setw(4) << players[i].getScore() << "      ";
         for(auto letter = players[i].handBegin(); letter <= players[i].handEnd(); letter++) {
             if(*letter == Player::EMPTY_HAND) cout << '_' << " ";
             else cout << *letter << " ";
