@@ -20,7 +20,7 @@ int main() {
     default_random_engine rng(seed);
     // TODO ask number of players
     // TODO ask name of the board file 
-    string board_file_name = "SMALL.txt";
+    string board_file_name = "TEST.txt";
     ifstream board_file(board_file_name);
 
     Game game(2);
@@ -41,30 +41,59 @@ int main() {
 
         // TODO ENFORCE TWO MOVES WHEN POSSIBLE
         if(game.canCurrentPlayerMove()) {
-            displayer.draw();
-            cout << "Input a valid position in the board to play: ";
-            has_input = getline(cin, p_input).good();
-            displayer.clearErrors();
+            vector<Position> edge_case_legal_positions;
+            if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
+                displayer.draw(edge_case_legal_positions);
+                cout << "Input a valid position in the board to play: ";
+                has_input = getline(cin, p_input).good();
+                displayer.clearErrors();
 
-            if(p_input.size() > 2) {
-                displayer.pushError("Too many characters in input.");
-                continue;
-            }
+                if(p_input.size() > 2) {
+                    displayer.pushError("Too many characters in input.");
+                    continue;
+                }
 
-            if(p_input.size() < 2) {
-                displayer.pushError("Too few characters in input.");
-                continue;
-            }
+                if(p_input.size() < 2) {
+                    displayer.pushError("Too few characters in input.");
+                    continue;
+                }
 
-            if(!Position::isValid(p_input[1], p_input[0])) {
-                displayer.pushError("Couldn't parse input as a position.");
-                continue;
-            }
+                if(!Position::isValid(p_input[1], p_input[0])) {
+                    displayer.pushError("Couldn't parse input as a position.");
+                    continue;
+                }
 
-            Position pos(p_input[1], p_input[0]);
-            game.move(pos, displayer); // TODO remove bool?
-            if(game.getMovesLeftThisTurn() == 0) {
-                game.nextTurn();
+                Position pos(p_input[1], p_input[0]);
+                game.move(pos, displayer, edge_case_legal_positions); // TODO remove bool?
+                if(game.getMovesLeftThisTurn() == 0) {
+                    game.nextTurn();
+                }
+            } else {
+                displayer.draw();
+                cout << "Input a valid position in the board to play: ";
+                has_input = getline(cin, p_input).good();
+                displayer.clearErrors();
+
+                if(p_input.size() > 2) {
+                    displayer.pushError("Too many characters in input.");
+                    continue;
+                }
+
+                if(p_input.size() < 2) {
+                    displayer.pushError("Too few characters in input.");
+                    continue;
+                }
+
+                if(!Position::isValid(p_input[1], p_input[0])) {
+                    displayer.pushError("Couldn't parse input as a position.");
+                    continue;
+                }
+
+                Position pos(p_input[1], p_input[0]);
+                game.move(pos, displayer); // TODO remove bool?
+                if(game.getMovesLeftThisTurn() == 0) {
+                    game.nextTurn();
+                }
             }
         } else if(game.getMovesThisTurn() >= 1) {
             stringstream error;

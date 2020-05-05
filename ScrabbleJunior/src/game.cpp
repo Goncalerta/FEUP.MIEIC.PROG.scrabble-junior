@@ -132,6 +132,45 @@ bool Game::move(Position position, GameDisplayer &displayer) {
     return true;
 }
 
+// TODO reduce duplication
+bool Game::move(Position position, GameDisplayer &displayer, std::vector<Position> &legal_moves) {
+    Player &player = getCurrentPlayer();
+    if(!position.inRect(Position(0, 0), board.getWidth(), board.getHeight())) {
+        displayer.pushError("Position is outside board limits.");
+        return false;
+    }
+    char l = board.getLetter(position);
+    const Board &cboard = board;
+
+    if(cboard.getCell(position).isEmpty()) {
+        displayer.pushError("The given position has no letter.");
+        return false;
+    }
+
+    if(!cboard.getCell(position).isCoverable()) {
+        displayer.pushError("Can't move to that position.");
+        return false;
+    }
+
+    if(!player.hasLetter(l)) {
+        displayer.pushError("Doesn't have letter.");
+        return false;
+    }
+
+    bool is_legal = any_of(legal_moves.begin(), legal_moves.end(), [position](Position pos){ return pos == position;});
+    if(!is_legal) {
+        displayer.pushError("There is at least one move that allows you to play twice this turn. This move would only allow you to play once.");
+        return false;
+    }
+
+    int score_gain = board.cover(position);
+    player.useLetter(l);
+    player.addScore(score_gain);
+    moves_left -= 1;
+
+    return true;
+}
+
 bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine &rng) {
     Player &player = getCurrentPlayer();
     letter = toupper(letter);
@@ -191,4 +230,10 @@ void Game::nextTurn() {
 bool Game::canCurrentPlayerMove() {
     Player &current = getCurrentPlayer();
     return board.hasMove(current.handBegin(), current.handEnd());
+}
+
+bool Game::mustPlayTwiceEdgeCase(std::vector<Position> &positions) {
+    if(getMovesThisTurn() > 0) return false;
+    Player &current_player = getCurrentPlayer();
+    return board.mustPlayTwiceEdgeCase(positions, current_player.handBegin(), current_player.handEnd());
 }

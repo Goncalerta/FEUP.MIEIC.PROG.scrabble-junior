@@ -25,6 +25,8 @@ class Position {
     std::pair<Position, Position> laterals(Orientation orientation);
 
     bool inRect(Position start, int width, int height) const;
+
+    bool operator==(const Position &other) const;
 };
 
 #endif

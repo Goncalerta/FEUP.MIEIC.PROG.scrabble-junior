@@ -18,7 +18,7 @@ class Board {
     Cell& getCell(Position position);
     
     bool propagate(Position pos, Orientation orientation);
-    const Cell* getNextCell(Position pos, Orientation orientation) const;
+    const Cell* getNextUncoveredCell(Position pos, Orientation orientation) const;
 
     public:
     // TODO default maybe should be uninitialized
@@ -32,13 +32,13 @@ class Board {
     int getWidth() const;
     
     char getLetter(Position position) const;
-    int cover(Position position); // returns score (0, 1 or 2), ILLEGAL_MOVE
-    bool canCoverTwice(Position position, const char *hand_begin, const char *hand_end) const;
+    int cover(Position position);
     bool hasMove(const char *hand_begin, const char *hand_end);
-    bool hasTwoMoves(const char *hand_begin, const char *hand_end);
 
     const Cell& getCell(Position position) const;
     void getLettersInBoard(std::vector<char> &letters) const;
+
+    bool mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *hand_begin, const char *hand_end);
 };
 
 #endif

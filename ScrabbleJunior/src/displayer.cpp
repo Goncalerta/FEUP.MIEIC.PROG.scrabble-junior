@@ -34,8 +34,24 @@ void GameDisplayer::draw() {
     setcolor(LIGHTGRAY);
 }
 
+// TODO reduce code duplication
+void GameDisplayer::draw(std::vector<Position> &legal_moves) {
+    clrscr();
+    
+    Player &current_player = game.getCurrentPlayer();
+    drawBoard(game.getBoard(), current_player.handBegin(), current_player.handEnd(), legal_moves);
+    
+    int player_x_offset = game.getBoard().getWidth() * 2 + 2;
+    drawPlayers(game.getPlayers(), player_x_offset);
+    
+    gotoxy(0, max(8, game.getBoard().getHeight()+2));
+    drawCurrentPlayer();
+    
+    drawErrorMessages();
+    setcolor(LIGHTGRAY);
+}
+
 void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end) {
-    // TODO only highlight when playable
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -56,6 +72,45 @@ void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const 
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
                 else if(cell.canCover(hand_begin, hand_end)) setcolor(BLACK, YELLOW);
+                else setcolor(BLACK, LIGHTGRAY);
+                
+                cout << cell.getLetter();
+            }
+
+            if(i+1 != board.getWidth()) {
+                setcolor(BLACK, LIGHTGRAY);
+                cout << ' ';
+            }
+        }
+        cout << endl;
+    }
+    setcolor(LIGHTGRAY);
+}
+
+// TODO reduce code duplication
+void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end, std::vector<Position> &legal_moves) {
+    cout << ' ';
+    setcolor(LIGHTGRAY);
+    for(int i = 0; i < board.getWidth(); i++) {
+        cout << (char)('a' + i) << ' ';
+    }
+
+    cout << endl;
+    for(int j = 0; j < board.getHeight(); j++) {
+        setcolor(LIGHTGRAY);
+        cout << (char)('A' + j);
+        
+        for(int i = 0; i < board.getWidth(); i++) {
+            Position position(i ,j);
+            const Cell cell = board.getCell(position);
+            
+            if(cell.isEmpty()) {
+                setcolor(BLACK, LIGHTGRAY);
+                cout << ' ';
+            } else {
+                bool is_legal = any_of(legal_moves.begin(), legal_moves.end(), [position](Position pos){ return pos == position;});
+                if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
+                else if(is_legal) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
                 cout << cell.getLetter();

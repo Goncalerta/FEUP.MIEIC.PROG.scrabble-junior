@@ -9,6 +9,7 @@ class Player {
     static const int TILES_PER_PLAYER = 7;
     
     int score;
+    // TODO Hand class
     char hand[TILES_PER_PLAYER];
 
     public:

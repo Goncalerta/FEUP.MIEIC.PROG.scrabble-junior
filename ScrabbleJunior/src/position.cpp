@@ -59,3 +59,7 @@ pair<Position, Position> Position::laterals(Orientation orientation) {
         return pair<Position, Position>(Position(x+1, y), Position(x-1, y));
     }
 }
+
+bool Position::operator==(const Position &other) const {
+    return x == other.x && y == other.y;
+}

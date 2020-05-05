@@ -47,11 +47,12 @@ class Game {
     int getLeadingScorePlayerNumber() const;
 
     bool move(Position position, GameDisplayer &displayer);
+    bool move(Position position, GameDisplayer &displayer, std::vector<Position> &legal_moves);
     bool exchange(char letter1, GameDisplayer &displayer, std::default_random_engine &rng);
     bool exchange(char letter1, char letter2, GameDisplayer &displayer, std::default_random_engine &rng);
     void nextTurn();
 
-    void printGame(std::ostream &out);
+    bool mustPlayTwiceEdgeCase(std::vector<Position> &positions);
 };
 
 #endif
