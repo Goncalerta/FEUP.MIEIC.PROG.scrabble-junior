@@ -106,9 +106,8 @@ bool loadBoardFile(Board &board, std::istream &board_file) {
     return true;
 }
 
-void playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
+bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
     string p_input;
-    bool has_input;
 
     do {
         int player_number = game.getCurrentPlayerNumber();
@@ -118,7 +117,7 @@ void playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
                 displayer.draw(edge_case_legal_positions);
                 cout << "Input a valid position in the board to play: ";
-                has_input = getline(cin, p_input).good();
+                if(getline(cin, p_input).fail()) return false;
                 displayer.clearErrors();
 
                 if(p_input.size() > 2) {
@@ -144,7 +143,7 @@ void playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             } else {
                 displayer.draw();
                 cout << "Input a valid position in the board to play: ";
-                has_input = getline(cin, p_input).good();
+                if(getline(cin, p_input).fail()) return false;
                 displayer.clearErrors();
 
                 if(p_input.size() > 2) {
@@ -182,7 +181,7 @@ void playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
 
             displayer.draw();
             cout << "Input two letters to exchange: ";
-            has_input = getline(cin, p_input).good();
+            if(getline(cin, p_input).fail()) return false;
             displayer.clearErrors();
 
             char letter1, letter2;
@@ -206,7 +205,7 @@ void playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
 
             displayer.draw();
             cout << "Input a letter to exchange: ";
-            has_input = getline(cin, p_input).good();
+            if(getline(cin, p_input).fail()) return false;
             displayer.clearErrors();
 
             char letter;
@@ -230,7 +229,9 @@ void playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
 
             game.nextTurn();
         }
-    } while(has_input && !game.isOver());
+    } while(!game.isOver());
+
+    return true;
 }
 
 bool promptPlayAgain() {
@@ -289,9 +290,13 @@ int playOnce(default_random_engine rng) {
     bool valid_num_players = false;
     unsigned int max_players = min(4u, board.countLetters()/7);
 
+    cout << endl;
+    GameDisplayer::drawBoard(board);
+    cout << endl;
+
     while(!valid_num_players) {
+        
         setcolor(LIGHTGRAY);
-        // TODO print board
         cout << "This board allows you to play a game with up to " << max_players << " players." << endl;
         cout << "Input the number of players (2-" << max_players << "): ";
         getline(cin, input_line);
@@ -329,7 +334,7 @@ int playOnce(default_random_engine rng) {
 
     Game game(board, num_players, rng);
     GameDisplayer displayer(game);
-    playGame(game, displayer, rng);
+    if(!playGame(game, displayer, rng)) return 1;
     
     displayer.drawGameOver();
 

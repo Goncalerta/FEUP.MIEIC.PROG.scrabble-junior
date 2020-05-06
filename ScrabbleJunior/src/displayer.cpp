@@ -206,7 +206,7 @@ void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const 
 
 void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
     gotoxy(x_offset, 1);
-    cout << "   score:       LETTERS   ";
+    cout << "    SCORE       LETTERS   ";
 
     for(int i = 0; i < players.size(); i++) {
         gotoxy(x_offset, i+2);
@@ -222,8 +222,8 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
 void GameDisplayer::drawLeaderboard(std::vector<const Player*> players, int x_offset) {
     static const char* LABELS[] = {"1st", "2nd", "3rd", "4th"};
 
-    gotoxy(x_offset + 8, 1);
-    cout << "score:";
+    gotoxy(x_offset + 9, 1);
+    cout << "SCORE";
     int previous_score = -1;
 
     for(int i = 0; i < players.size(); i++) {

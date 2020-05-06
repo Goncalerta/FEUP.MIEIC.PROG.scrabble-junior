@@ -12,7 +12,6 @@ class GameDisplayer {
     std::vector<std::string> error_messages;
     Game &game;
 
-    void drawBoard(const Board &board);
     void drawBoard(const Board &board, const char *hand_begin, const char *hand_end);
     void drawBoard(const Board &board, const char *hand_begin, const char *hand_end, std::vector<Position> &legal_moves);
     void drawPlayers(const std::vector<Player> &players, int x_offset);
@@ -30,6 +29,8 @@ class GameDisplayer {
     void draw();
     void draw(std::vector<Position> &legal_moves);
     void drawGameOver();
+
+    static void drawBoard(const Board &board);
 };
 
 #endif
