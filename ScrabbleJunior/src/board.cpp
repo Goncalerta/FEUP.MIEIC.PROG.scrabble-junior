@@ -3,7 +3,12 @@
 
 using namespace std;
 
-Board::Board(int width, int height): 
+Board::Board(): 
+  total_letters(0),
+  total_covered(0)
+{}
+
+Board::Board(unsigned int width, unsigned int height): 
   width(width), 
   height(height), 
   total_letters(0),
@@ -20,30 +25,32 @@ bool Board::addWord(Position pos, Orientation orientation, std::string word) {
         getCell(pos).setLetter(word[i]);
         pos.stepForward(orientation);
     }
-
+    
     return true;
 }
 
-bool Board::setWidth(int width) {
-    if(width > 0 && width <= 20) {
-        this->width = width;
-        for(auto &row: grid) {
-            row.resize(width);
-        }
-        return true;
-    } else {
-        return false;
-    }
+Board& Board::setSize(unsigned int width, unsigned int height) {
+    return setWidth(width).setHeight(height);
 }
 
-bool Board::setHeight(int height) {
-    if(height > 0 && height <= 20) {
-        this->height = height;
-        grid.resize(height, vector<Cell>(width));
-        return true;
-    } else {
-        return false;
+Board& Board::setWidth(unsigned int width) {
+    this->width = width;
+    for(auto &row: grid) {
+        row.resize(width);
     }
+    
+    return *this;
+}
+
+Board& Board::setHeight(unsigned int height) {
+    this->height = height;
+    grid.resize(height, vector<Cell>(width));
+        
+    return *this;
+}
+
+unsigned int Board::countLetters() {
+    return total_letters;
 }
 
 bool Board::isFullyCovered() const {
@@ -131,12 +138,14 @@ bool Board::hasMove(const char *hand_begin, const char *hand_end) {
     return false;
 }
 
-void Board::getLettersInBoard(vector<char> &letters) const {
+vector<char> Board::getLettersInBoard() const {
+    vector<char> letters;
     for(auto &row: grid) {
         for(auto &cell: row) {
             if(!cell.isEmpty()) letters.push_back(cell.getLetter());
         }
     }
+    return letters;
 }
 
 bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *hand_begin, const char *hand_end) {

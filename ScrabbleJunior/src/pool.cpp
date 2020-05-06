@@ -4,10 +4,7 @@
 using namespace std;
 
 Pool::Pool() {}
-
-void Pool::fill(std::vector<char> &letters) {
-    this->letters.swap(letters);
-}
+Pool::Pool(vector<char> &letters): letters(move(letters)) {}
 
 void Pool::pushLetter(char c) {
     letters.push_back(c);

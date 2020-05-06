@@ -8,7 +8,6 @@ Position::Position(): Position(0, 0) {}
 Position::Position(int x, int y): x(x), y(y) {}
 
 Position::Position(char x, char y) {
-    // TODO check if characters are in limits 'A-Z', 'a-z'
     this->x = x - 'a';
     this->y = y - 'A';
 }

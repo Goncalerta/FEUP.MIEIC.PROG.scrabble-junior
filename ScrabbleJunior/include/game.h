@@ -13,25 +13,15 @@ class Game;
 #include "position.h"
 #include "displayer.h"
 
-// TODO a state machine would probably be better than an enum
-enum State {
-    Unstarted,
-    Ongoing,
-    Finished
-};
-
 class Game {
-    Board board;
+    Board &board;
     std::vector<Player> players;
     Pool pool;
-    int turn;
-    int moves_left;
-    State state;
+    unsigned int turn;
+    unsigned int moves_left;
 
     public:
-    Game(int num_players);
-    bool loadBoardFile(std::istream &board_file);
-    void startGame(std::default_random_engine &rng);
+    Game(Board &board, unsigned int num_players, std::default_random_engine &rng);
 
     const std::vector<Player>& getPlayers() const;
     const Board& getBoard() const;

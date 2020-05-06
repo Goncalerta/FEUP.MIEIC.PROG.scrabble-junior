@@ -8,11 +8,11 @@
 #include "orientation.h"
 
 class Board {
-    int width;
-    int height;
+    unsigned int width;
+    unsigned int height;
 
-    int total_letters;
-    int total_covered;
+    unsigned int total_letters;
+    unsigned int total_covered;
     std::vector<std::vector<Cell>> grid;
 
     Cell& getCell(Position position);
@@ -21,10 +21,14 @@ class Board {
     const Cell* getNextUncoveredCell(Position pos, Orientation orientation) const;
 
     public:
-    // TODO default maybe should be uninitialized
-    Board(int width = 15, int height = 15);
-    bool setWidth(int width);
-    bool setHeight(int height);
+    Board();
+    Board(unsigned int width, unsigned int height);
+    Board& setSize(unsigned int width, unsigned int height);
+    Board& setWidth(unsigned int width);
+    Board& setHeight(unsigned int height);
+
+    unsigned int countLetters();
+
     bool addWord(Position start, Orientation orientation, std::string word);
     bool isFullyCovered() const;
 
@@ -36,7 +40,7 @@ class Board {
     bool hasMove(const char *hand_begin, const char *hand_end);
 
     const Cell& getCell(Position position) const;
-    void getLettersInBoard(std::vector<char> &letters) const;
+    std::vector<char> getLettersInBoard() const;
 
     bool mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *hand_begin, const char *hand_end);
 };

@@ -5,12 +5,19 @@
 
 using namespace std;
 
-Game::Game(int num_players):
-    turn(0),
-    moves_left(0),
+Game::Game(Board &board, unsigned int num_players, std::default_random_engine &rng):
+    board(board),
     players(num_players),
-    state(Unstarted)
-{}
+    pool(board.getLettersInBoard()),
+    turn(0),
+    moves_left(2)
+{
+    pool.shuffle(rng);
+    
+    for(auto &player: players) {
+        player.refillHand(pool);
+    }
+}
 
 Player& Game::getCurrentPlayer() {
     return players[turn % players.size()];
@@ -26,57 +33,6 @@ int Game::getMovesLeftThisTurn() const {
 
 int Game::getMovesThisTurn() const {
     return 2 - moves_left;
-}
-
-bool Game::loadBoardFile(std::istream &board_file) {
-    if(state != Unstarted) return false;
-    // string line;
-    // getline(board_file, line);
-    
-    // if(board_file.fail()) return false;
-    
-    // while(getline(board_file, line)) {
-
-    // }
-    int width, height;
-    char x;
-    board_file >> height >> x >> width;
-
-    if(!board_file || x != 'x') return false; 
-
-    if(!board.setWidth(width)) return false;
-    if(!board.setHeight(height)) return false;
-
-    char c_position[2];
-    char c_orientation;
-    string word;
-    while(board_file >> c_position >> c_orientation >> word) {
-        Position position(c_position[1], c_position[0]);
-        Orientation orientation;
-        
-        if(c_orientation == 'H') orientation = Horizontal;
-        else if(c_orientation == 'V') orientation = Vertical;
-        else return false;
-
-        if(!board.addWord(position, orientation, word)) return false;
-    }
-
-    vector<char> letters;
-    board.getLettersInBoard(letters);
-    pool.fill(letters);
-
-    return board_file.eof();
-}
-
-void Game::startGame(default_random_engine &rng) {
-    pool.shuffle(rng);
-    
-    for(auto &player: players) {
-        player.refillHand(pool);
-    }
-
-    turn = 0;
-    moves_left = 2;
 }
 
 const std::vector<Player>& Game::getPlayers() const {

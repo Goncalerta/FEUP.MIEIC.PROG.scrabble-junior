@@ -12,53 +12,185 @@
 #include "game.h"
 #include "displayer.h"
 #include "cmd.h"
+#include <algorithm>
 
 using namespace std;
 
-bool getBoardFile(ifstream &board_file) {
+bool openBoardFile(ifstream &board_file) {
     string file_name;
-    while(!board_file.is_open()) {
-        cout << "Input the name of your board file: ";
-        getline(cin, file_name);
-        if(cin.fail()) {
-            setcolor(RED);
-            cout << endl << "stdin failed while trying to read file. Exiting . . .";
-            return false;
-        }
 
+    cout << "Input the name of your board: ";
+    getline(cin, file_name);
+    if(cin.fail()) return false;
+
+    if(file_name.size() == 0) {
+        setcolor(RED);
+        cout << endl << "Must input a file name." << endl;
+        return false;
+    }
+
+    board_file.open(file_name, ios_base::in);
+    if(!board_file.is_open()) {
+        file_name += ".txt";
         board_file.open(file_name, ios_base::in);
-        if(board_file.fail()) {
-            file_name += ".txt";
-            board_file.open(file_name, ios_base::in);
-        }
-
-        if(board_file.fail()) {
+        
+        if(!board_file.is_open()) {
             setcolor(RED);
             cout << endl << "File does not exist or is unavailable." << endl;
-            setcolor(LIGHTGRAY);
+            return false;
         }
     }
+    
+    return true;
+}
+
+bool loadBoardFile(Board &board, std::istream &board_file) {
+    unsigned int width, height;
+
+    board_file >> height;
+    if(board_file.fail()) {
+        setcolor(RED);
+        cout << endl << "Failed to parse height in given file." << endl;
+        return false;
+    }
+    if(height == 0) {
+        setcolor(RED);
+        cout << endl << "Height must not be zero." << endl;
+        return false;
+    }
+    if(height >= 20) {
+        setcolor(RED);
+        cout << endl << "Max height is 20." << endl;
+        return false;
+    }
+
+    char _x; // Ignored
+    board_file >> _x;
+
+    board_file >> width;
+    if(board_file.fail()) {
+        setcolor(RED);
+        cout << endl << "Failed to parse width in given file." << endl;
+        return false;
+    }
+    if(width == 0) {
+        setcolor(RED);
+        cout << endl << "Width must not be zero." << endl;
+        return false;
+    }
+    if(width >= 20) {
+        setcolor(RED);
+        cout << endl << "Max width is 20." << endl;
+        return false;
+    }
+
+    board.setSize(width, height);
+
+    char c_position[2];
+    char c_orientation;
+    string word;
+
+    while(board_file >> c_position >> c_orientation >> word) {
+        if(!Position::isValid(c_position[1], c_position[0])) break;
+        Position position(c_position[1], c_position[0]);
+        
+        Orientation orientation;
+        if(c_orientation == 'H') orientation = Horizontal;
+        else if(c_orientation == 'V') orientation = Vertical;
+        else break;
+
+        if(!board.addWord(position, orientation, word)) return false; // TODO ERROR MESSAGE
+    }
+
+    // vector<char> letters;
+    // board.getLettersInBoard(letters);
+    // pool.fill(letters);
+
     return true;
 }
 
 int main() {
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
     default_random_engine rng(seed);
-    // TODO ask number of players
     
     ifstream board_file;
-    if(!getBoardFile(board_file)) return 1;
+    Board board;
+    bool load_successful = false;
 
-    Game game(2);
-    GameDisplayer displayer(game);
+    while(!load_successful) {
+        setcolor(LIGHTGRAY);
+        if(!openBoardFile(board_file)) {
+            if(cin.fail()) {
+                setcolor(RED);
+                cout << endl << "stdin failed while trying to read file. Exiting . . ." << endl;
+                setcolor(LIGHTGRAY);
+                return 1;
+            } else {
+                continue;
+            }
+        }
+        
+        if(loadBoardFile(board, board_file)) {
+            if(board.countLetters() >= 14) {
+                load_successful = true;
+            } else {
+                setcolor(RED);
+                cout << "Board must have at least 14 letters in order to be playable." << endl;    
+            }
+        } else {
+            setcolor(RED);
+            cout << "Unable to load board." << endl;
+        }
 
-    if(!game.loadBoardFile(board_file)) {
-        cout << "Invalid board file";
-        return 1; // TODO 
+        board_file.close();
     }
-    board_file.close();
 
-    game.startGame(rng);
+    string input_line;
+    int num_players;
+    bool valid_num_players = false;
+    unsigned int max_players = min(4u, board.countLetters()/7);
+
+    while(!valid_num_players) {
+        setcolor(LIGHTGRAY);
+        // TODO print board
+        cout << "This board allows you to play a game with up to " << max_players << " players." << endl;
+        cout << "Input the number of players (2-" << max_players << "): ";
+        getline(cin, input_line);
+        if(cin.fail()) {
+            setcolor(RED);
+            cout << endl << "stdin failed while trying to read number of players. Exiting . . ." << endl;
+            // TODO LIGHTGRAY color not being set when used Ctrl+C
+            setcolor(LIGHTGRAY);
+            return 1;
+        }
+
+        stringstream input_line_stream(input_line);
+        input_line_stream >> num_players;
+        char _ignore;
+
+        if(input_line_stream.fail() || !(input_line_stream >> _ignore).eof()) {
+            setcolor(RED);
+            cout << endl << "Expected an integer." << endl;
+            continue;
+        }
+    	
+        if(num_players < 2) {
+            setcolor(RED);
+            cout << endl << "Must have at least 2 players." << endl;
+            continue;
+        }
+
+        if(num_players > max_players) {
+            setcolor(RED);
+            cout << endl << "Must have at most " << max_players << " players." << endl;
+            continue;
+        }
+
+        valid_num_players = true;
+    }
+
+    Game game(board, num_players, rng);
+    GameDisplayer displayer(game);
 
     string p_input;
     bool has_input;
@@ -187,7 +319,7 @@ int main() {
     } while(has_input && !game.isOver());
 
     // TODO gameover screen
-    cout << "GAME OVER." << endl << "WINNER: PLAYER " << game.getLeadingScorePlayerNumber() << endl;
+    cout << "GAME OVER." << endl << "WINNER: PLAYER " << game.getLeadingScorePlayerNumber() << endl; // TODO P1 won when it should have been P2
     cout << "Press ENTER to exit . . .";
     cin.get();
 

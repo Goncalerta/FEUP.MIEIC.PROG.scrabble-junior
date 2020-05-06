@@ -10,8 +10,8 @@ class Pool {
 
     public:
     Pool();
-    
-    void fill(std::vector<char> &letters);
+    Pool(std::vector<char> &letters);
+
     void pushLetter(char c);
     char popLetter();
     
