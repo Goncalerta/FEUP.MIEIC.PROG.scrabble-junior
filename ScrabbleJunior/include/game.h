@@ -34,6 +34,7 @@ class Game {
     bool canCurrentPlayerMove(); // TODO make const
     
     bool isOver() const;
+    std::vector<const Player*> getLeaderboard() const;
     int getLeadingScorePlayerNumber() const;
 
     bool move(Position position, GameDisplayer &displayer);

@@ -3,7 +3,11 @@
 
 using namespace std;
 
-Player::Player(): score(0), hand{EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND} {}
+Player::Player(int id): 
+    id(id), 
+    score(0), 
+    hand{EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND} 
+{}
 
 void Player::refillHand(Pool &pool) {
     for(auto &letter: hand) {
@@ -64,6 +68,10 @@ void Player::useLetter(char letter) {
             return;
         }
     }
+}
+
+int Player::getId() const {
+    return id;
 }
 
 int Player::getScore() const {

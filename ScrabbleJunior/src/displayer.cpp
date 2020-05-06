@@ -51,6 +51,48 @@ void GameDisplayer::draw(std::vector<Position> &legal_moves) {
     setcolor(LIGHTGRAY);
 }
 
+void GameDisplayer::drawGameOver() {
+    clrscr();
+    drawBoard(game.getBoard());
+    
+    int player_x_offset = game.getBoard().getWidth() * 2 + 2;
+    vector<const Player*>leaderboard = game.getLeaderboard();
+    drawLeaderboard(leaderboard, player_x_offset);
+
+    gotoxy(0, max(8, game.getBoard().getHeight()+2));
+    declareWinners(leaderboard);
+}
+
+void GameDisplayer::declareWinners(vector<const Player*> leaderboard) {
+    int winner_score = leaderboard[0]->getScore();
+    vector<int> winners_id;
+
+    for(auto &player: leaderboard) {
+        int score = player->getScore();
+        int id = player->getId();
+        
+        if(score == winner_score) winners_id.push_back(id);
+        else break;
+    }
+
+    cout << "GAME OVER" << endl;
+    if(winners_id.size() == 1) {
+        cout << "Player " << winners_id[0] << " wins.";
+    } else if(winners_id.size() == leaderboard.size()) {
+        if(winners_id.size() == 2) cout << "Both ";
+        else cout << "All ";
+        cout << "players tied for first place.";
+    } else {
+        cout << "Players ";
+        for(int &i: winners_id) cout << i << " ";
+        
+        if(winners_id.size() > 2) cout << "all ";
+        cout << "tied for first place.";
+    }
+
+    cout << endl;
+}
+
 void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end) {
     cout << ' ';
     setcolor(LIGHTGRAY);
@@ -72,6 +114,42 @@ void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const 
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
                 else if(cell.canCover(hand_begin, hand_end)) setcolor(BLACK, YELLOW);
+                else setcolor(BLACK, LIGHTGRAY);
+                
+                cout << cell.getLetter();
+            }
+
+            if(i+1 != board.getWidth()) {
+                setcolor(BLACK, LIGHTGRAY);
+                cout << ' ';
+            }
+        }
+        cout << endl;
+    }
+    setcolor(LIGHTGRAY);
+}
+
+// TODO reduce code duplication
+void GameDisplayer::drawBoard(const Board &board) {
+    cout << ' ';
+    setcolor(LIGHTGRAY);
+    for(int i = 0; i < board.getWidth(); i++) {
+        cout << (char)('a' + i) << ' ';
+    }
+
+    cout << endl;
+    for(int j = 0; j < board.getHeight(); j++) {
+        setcolor(LIGHTGRAY);
+        cout << (char)('A' + j);
+        
+        for(int i = 0; i < board.getWidth(); i++) {
+            const Cell cell = board.getCell(Position(i, j));
+            
+            if(cell.isEmpty()) {
+                setcolor(BLACK, LIGHTGRAY);
+                cout << ' ';
+            } else {
+                if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
                 else setcolor(BLACK, LIGHTGRAY);
                 
                 cout << cell.getLetter();
@@ -137,6 +215,26 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
             if(*letter == Player::EMPTY_HAND) cout << '_' << " ";
             else cout << *letter << " ";
         }
+    }
+}
+
+// TODO reduce code duplication
+void GameDisplayer::drawLeaderboard(std::vector<const Player*> players, int x_offset) {
+    static const char* LABELS[] = {"1st", "2nd", "3rd", "4th"};
+
+    gotoxy(x_offset + 8, 1);
+    cout << "score:";
+    int previous_score = -1;
+
+    for(int i = 0; i < players.size(); i++) {
+        gotoxy(x_offset, i+2);
+        int id = players[i]->getId();
+        int score = players[i]->getScore();
+
+        if(score != previous_score) cout << LABELS[i] << "  ";
+        else cout << "     ";
+        
+        cout << "P" << id << " " << setw(4) << score;
     }
 }
 

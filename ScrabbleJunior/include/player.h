@@ -9,6 +9,7 @@ class Player {
     static const int TILES_PER_PLAYER = 7;
     
     int score;
+    int id;
     // TODO Hand class
     char hand[TILES_PER_PLAYER];
 
@@ -16,7 +17,7 @@ class Player {
     static const char EMPTY_HAND = '_';
     static bool isValidLetter(char letter);
     
-    Player();
+    Player(int id);
     void refillHand(Pool &pool);
     void exchange(Pool &pool, char letter);
     void exchange(Pool &pool, char letter1, char letter2);
@@ -24,6 +25,8 @@ class Player {
     bool hasLetter(char letter);
     bool hasPair(char letter1, char letter2);
     void useLetter(char letter);
+
+    int getId() const;
 
     int getScore() const;
     void addScore(int score);

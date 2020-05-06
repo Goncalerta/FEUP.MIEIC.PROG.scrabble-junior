@@ -7,15 +7,16 @@ using namespace std;
 
 Game::Game(Board &board, unsigned int num_players, std::default_random_engine &rng):
     board(board),
-    players(num_players),
     pool(board.getLettersInBoard()),
     turn(0),
     moves_left(2)
 {
     pool.shuffle(rng);
     
-    for(auto &player: players) {
+    for(int i = 1; i <= num_players; i++) {
+        Player player(i);
         player.refillHand(pool);
+        players.push_back(player);
     }
 }
 
@@ -49,6 +50,18 @@ const Pool& Game::getPool() const {
 
 bool Game::isOver() const {
     return board.isFullyCovered();
+}
+
+vector<const Player*> Game::getLeaderboard() const {
+    vector<const Player*> leaderboard;
+    for(auto &player: players) {
+        leaderboard.push_back(&player);
+    }
+
+    stable_sort(leaderboard.begin(), leaderboard.end(), 
+            [](auto p1, auto p2){ return p1->getScore() > p2->getScore(); });
+            
+    return leaderboard;
 }
 
 int Game::getLeadingScorePlayerNumber() const {
