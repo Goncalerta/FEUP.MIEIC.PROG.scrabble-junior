@@ -11,17 +11,43 @@
 #include "player.h"
 #include "game.h"
 #include "displayer.h"
+#include "cmd.h"
 
 using namespace std;
 
+bool getBoardFile(ifstream &board_file) {
+    string file_name;
+    while(!board_file.is_open()) {
+        cout << "Input the name of your board file: ";
+        getline(cin, file_name);
+        if(cin.fail()) {
+            setcolor(RED);
+            cout << endl << "stdin failed while trying to read file. Exiting . . .";
+            return false;
+        }
+
+        board_file.open(file_name, ios_base::in);
+        if(board_file.fail()) {
+            file_name += ".txt";
+            board_file.open(file_name, ios_base::in);
+        }
+
+        if(board_file.fail()) {
+            setcolor(RED);
+            cout << endl << "File does not exist or is unavailable." << endl;
+            setcolor(LIGHTGRAY);
+        }
+    }
+    return true;
+}
+
 int main() {
-    srand(time(0));
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
     default_random_engine rng(seed);
     // TODO ask number of players
-    // TODO ask name of the board file 
-    string board_file_name = "TEST.txt";
-    ifstream board_file(board_file_name);
+    
+    ifstream board_file;
+    if(!getBoardFile(board_file)) return 1;
 
     Game game(2);
     GameDisplayer displayer(game);
@@ -30,6 +56,7 @@ int main() {
         cout << "Invalid board file";
         return 1; // TODO 
     }
+    board_file.close();
 
     game.startGame(rng);
 
