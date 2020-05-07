@@ -4,6 +4,7 @@
 #include <string>
 #include <random>
 #include <chrono>
+#include <thread>
 #include "board.h"
 #include "pool.h"
 #include "orientation.h"
@@ -13,6 +14,7 @@
 #include "displayer.h"
 #include "cmd.h"
 #include <algorithm>
+#include <limits>
 
 using namespace std;
 
@@ -181,6 +183,9 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             displayer.pushError(error.str().c_str());
 
             displayer.drawUnplayable();
+            displayer.clearErrors();
+            cout << "Press ENTER to continue . . . " << endl;
+            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 
             game.nextTurn();
         } else if(game.getPool().size() >= 2) {
@@ -236,6 +241,11 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             error << "Player " << player_number << " couldn't make any move." << endl
                 << "The pool is empty. Turn has been skipped.";
             displayer.pushError(error.str().c_str());
+
+            displayer.drawUnplayable();
+            displayer.clearErrors();
+            cout << "Press ENTER to continue . . . " << endl;
+            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 
             game.nextTurn();
         }

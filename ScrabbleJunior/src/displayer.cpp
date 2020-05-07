@@ -60,6 +60,7 @@ void GameDisplayer::drawUnplayable() {
     drawPlayers(game.getPlayers(), player_x_offset);
     
     gotoxy(0, max(8, game.getBoard().getHeight()+2));
+    drawCurrentPlayer();
 
     drawErrorMessages();
 }
