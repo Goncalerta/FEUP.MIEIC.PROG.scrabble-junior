@@ -9,6 +9,10 @@ class GameDisplayer;
 #include "position.h"
 #include "cmd.h"
 #include "player.h"
+#include "word.h"
+
+// TODO optimize for really big boards (20x20)
+// by not redrawing the board every time
 
 class GameDisplayer {
     static const Color PLAYERS_COLOR[];
@@ -41,6 +45,9 @@ class GameDisplayer {
     SwapHandAnimator animateExchange(char letter1, char letter2);
     void drawEmptyPoolWhenRefilling();
     void noticeDepletedPool();
+
+    void animateWordComplete(const Word &word);
+    void drawWordComplete(std::vector<Word> &words_completed);
 
     static void drawBoard(const Board &board);
     void delay(int milliseconds);

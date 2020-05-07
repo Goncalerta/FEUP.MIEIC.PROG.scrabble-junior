@@ -6,6 +6,7 @@
 #include "cell.h"
 #include "position.h"
 #include "orientation.h"
+#include "word.h"
 
 class Board {
     unsigned int width;
@@ -29,14 +30,15 @@ class Board {
 
     unsigned int countLetters();
 
-    bool addWord(Position start, Orientation orientation, std::string word);
+    bool addWord(Position start, Orientation orientation, std::string word); // TODO change to Word
+    Word findWord(Position position, Orientation orientation);
     bool isFullyCovered() const;
 
     int getHeight() const;
     int getWidth() const;
     
     char getLetter(Position position) const;
-    int cover(Position position);
+    void cover(Position position, std::vector<Word> &completed_words);
     bool hasMove(const char *hand_begin, const char *hand_end);
 
     const Cell& getCell(Position position) const;

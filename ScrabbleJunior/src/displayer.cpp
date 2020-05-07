@@ -217,7 +217,7 @@ void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const 
         cout << (char)('A' + j);
         
         for(int i = 0; i < board.getWidth(); i++) {
-            Position position(i ,j);
+            Position position(i, j);
             const Cell cell = board.getCell(position);
             
             if(cell.isEmpty()) {
@@ -397,4 +397,57 @@ SwapHandAnimator GameDisplayer::animateExchange(char letter1, char letter2) {
 
 void GameDisplayer::delay(int milliseconds) {
     this_thread::sleep_for(chrono::milliseconds(milliseconds));
+}
+
+void GameDisplayer::animateWordComplete(const Word &word) {
+    const Board &board = game.getBoard();
+
+    Position position = word.getStart();
+    int x = position.getX()*2 + 1;
+    int y = position.getY() + 1;
+    setcolor(GREEN, LIGHTGRAY);
+    for(const char &c: word.getWord()) {
+        gotoxy(x, y);
+        cout << c;
+        this_thread::sleep_for(chrono::milliseconds(200));
+        if(word.getOrientation() == Horizontal) x += 2;
+        else y += 1;
+    }
+
+    x = position.getX()*2 + 1;
+    y = position.getY() + 1;
+    setcolor(RED, LIGHTGRAY);
+    for(const char &c: word.getWord()) {
+        gotoxy(x, y);
+        cout << c;
+        if(word.getOrientation() == Horizontal) x += 2;
+        else y += 1;
+    }
+    setcolor(LIGHTGRAY);
+}
+
+void GameDisplayer::drawWordComplete(vector<Word> &words_completed) {
+    drawUnplayable();
+    setcolor(GREEN);
+    cout << "Score!";
+    setcolor(LIGHTGRAY);
+    const Player &current = game.getCurrentPlayer();
+    int score = current.getScore();
+    int id = current.getId();
+
+    for(auto &word: words_completed) {
+        animateWordComplete(word);
+    }
+
+    int player_x_offset = game.getBoard().getWidth() * 2 + 2;
+
+    for(auto &_ignored: words_completed) {  
+        score+=1; 
+        gotoxy(player_x_offset+3, 1+id);
+        setcolor(GREEN);
+        cout << setw(4) << score;
+        setcolor(LIGHTGRAY);
+
+        this_thread::sleep_for(chrono::milliseconds(500));
+    }
 }

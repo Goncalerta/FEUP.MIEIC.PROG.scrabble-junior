@@ -100,10 +100,17 @@ bool Game::move(Position position, GameDisplayer &displayer) {
         return false;
     }
 
-    int score_gain = board.cover(position);
-    player.useLetter(l);
-    player.addScore(score_gain);
     moves_left -= 1;
+    player.useLetter(l);
+
+    vector<Word> completed_words;
+    board.cover(position, completed_words);
+
+    if(completed_words.size() != 0) {
+        displayer.drawWordComplete(completed_words);
+    }
+    
+    player.addScore(completed_words.size());
 
     return true;
 }
@@ -146,10 +153,17 @@ bool Game::move(Position position, GameDisplayer &displayer, std::vector<Positio
         return false;
     }
 
-    int score_gain = board.cover(position);
-    player.useLetter(l);
-    player.addScore(score_gain);
     moves_left -= 1;
+    player.useLetter(l);
+
+    vector<Word> completed_words;
+    board.cover(position, completed_words);
+
+    if(completed_words.size() != 0) {
+        displayer.drawWordComplete(completed_words);
+    }
+    
+    player.addScore(completed_words.size());
 
     return true;
 }

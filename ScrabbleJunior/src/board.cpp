@@ -29,6 +29,24 @@ bool Board::addWord(Position pos, Orientation orientation, std::string word) {
     return true;
 }
 
+Word Board::findWord(Position position, Orientation orientation) {
+    std::string word;
+    
+    while(position.inRect(Position(0, 0), width, height) && !getCell(position).isEmpty()) {
+        position.stepBackwards(orientation);
+    }
+
+    position.stepForward(orientation);
+    Position start = position;
+
+    while(position.inRect(Position(0, 0), width, height) && !getCell(position).isEmpty()) {
+        word.push_back(getCell(position).getLetter());
+        position.stepForward(orientation);
+    }
+
+    return Word(start, orientation, word);
+}
+
 Board& Board::setSize(unsigned int width, unsigned int height) {
     return setWidth(width).setHeight(height);
 }
@@ -61,7 +79,7 @@ char Board::getLetter(Position position) const {
     return getCell(position).getLetter();
 }
 
-int Board::cover(Position position) {
+void Board::cover(Position position, vector<Word> &completed_words) {
     Cell &cell = getCell(position);
 
     cell.cover();
@@ -72,15 +90,18 @@ int Board::cover(Position position) {
     int score = 0;
 
     if(propagates_horizontally) {
-        if(propagate(position, Horizontal)) score++;
+        if(propagate(position, Horizontal)) {
+            completed_words.push_back(findWord(position, Horizontal));
+        }
     }
 
     if(propagates_vertically) {
-        if(propagate(position, Vertical)) score++;
+        if(propagate(position, Vertical)) {
+            completed_words.push_back(findWord(position, Vertical));
+        }
     }
 
     total_covered += 1;
-    return score;
 }
 
 Cell& Board::getCell(Position position) {
