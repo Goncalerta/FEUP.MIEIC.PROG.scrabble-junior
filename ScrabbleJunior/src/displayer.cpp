@@ -435,13 +435,11 @@ void GameDisplayer::drawWordComplete(vector<Word> &words_completed) {
     int score = current.getScore();
     int id = current.getId();
 
-    for(auto &word: words_completed) {
-        animateWordComplete(word);
-    }
-
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
 
-    for(auto &_ignored: words_completed) {  
+    for(auto &word: words_completed) {
+        animateWordComplete(word);
+
         score+=1; 
         gotoxy(player_x_offset+3, 1+id);
         setcolor(GREEN);
