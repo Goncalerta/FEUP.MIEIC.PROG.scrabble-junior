@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include "displayer.h"
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -289,7 +291,10 @@ void GameDisplayer::drawCurrentPlayer() {
     cout << "Player " << player.getId();
     setcolor(LIGHTGRAY);
     cout << " is playing this turn." << endl;
-    if(game.getMovesLeftThisTurn() == 1) {
+
+    if(game.getMovesLeftThisTurn() == 0) {
+        cout << "No moves left this turn." << endl;
+    } else if(game.getMovesLeftThisTurn() == 1) {
         cout << "You have 1 move left this turn." << endl;
     } else {
         cout << "You have " << game.getMovesLeftThisTurn() << " moves left this turn." << endl;
@@ -309,4 +314,87 @@ void GameDisplayer::drawErrorMessages() {
         cout << error << endl;
     }
     setcolor(LIGHTGRAY);
+}
+
+void GameDisplayer::noticeDepletedPool() {
+    gotoxy(0, max(8, game.getBoard().getHeight()+2+6));
+    setcolor(RED);
+    cout << "The pool has been depleted.";
+    setcolor(LIGHTGRAY);
+    this_thread::sleep_for(chrono::milliseconds(1250));
+}
+
+SwapHandAnimator GameDisplayer::animateRefillHand() {
+    drawUnplayable();
+    setcolor(YELLOW);
+    cout << "Refilling hand . . .";
+    setcolor(LIGHTGRAY);
+
+    this_thread::sleep_for(chrono::milliseconds(800));
+
+    int x = 12;
+    int y = game.getBoard().getHeight()+2;
+
+    return [x, y](int i, char c) { 
+        setcolor(YELLOW);
+        gotoxy(x + 2*i, max(8, y)+2);
+        cout << c;
+        setcolor(LIGHTGRAY);
+
+        this_thread::sleep_for(chrono::milliseconds(400));
+    };
+}
+
+void GameDisplayer::drawEmptyPoolWhenRefilling() {
+    drawUnplayable();
+    setcolor(YELLOW);
+    cout << "The Pool is empty . . .";
+    setcolor(LIGHTGRAY);
+
+    this_thread::sleep_for(chrono::milliseconds(1000));
+}
+
+SwapHandAnimator GameDisplayer::animateExchange(char letter) {
+    drawUnplayable();
+    setcolor(YELLOW);
+    cout << "Exchanging letter '" << letter << "' . . .";
+    setcolor(LIGHTGRAY);
+
+    this_thread::sleep_for(chrono::milliseconds(800));
+
+    int x = 12;
+    int y = game.getBoard().getHeight()+2;
+
+    return [x, y](int i, char c) { 
+        setcolor(YELLOW);
+        gotoxy(x + 2*i, max(8, y)+2);
+        cout << c;
+        setcolor(LIGHTGRAY);
+        this_thread::sleep_for(chrono::milliseconds(400));
+    };
+}
+
+SwapHandAnimator GameDisplayer::animateExchange(char letter1, char letter2) {
+    drawUnplayable();
+    setcolor(YELLOW);
+    cout << "Exchanging letters '" << letter1 << "' and '" << letter2 << "' . . .";
+    setcolor(LIGHTGRAY);
+
+    this_thread::sleep_for(chrono::milliseconds(800));
+
+    int x = 12;
+    int y = game.getBoard().getHeight()+2;
+
+    return [x, y](int i, char c) { 
+        setcolor(YELLOW);
+        gotoxy(x + 2*i, max(8, y)+2);
+        cout << c;
+        setcolor(LIGHTGRAY);
+
+        this_thread::sleep_for(chrono::milliseconds(400));
+    };
+}
+
+void GameDisplayer::delay(int milliseconds) {
+    this_thread::sleep_for(chrono::milliseconds(milliseconds));
 }

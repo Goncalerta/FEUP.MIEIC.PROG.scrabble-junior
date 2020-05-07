@@ -41,7 +41,7 @@ class Game {
     bool move(Position position, GameDisplayer &displayer, std::vector<Position> &legal_moves);
     bool exchange(char letter1, GameDisplayer &displayer, std::default_random_engine &rng);
     bool exchange(char letter1, char letter2, GameDisplayer &displayer, std::default_random_engine &rng);
-    void nextTurn();
+    void nextTurn(GameDisplayer &displayer);
 
     bool mustPlayTwiceEdgeCase(std::vector<Position> &positions);
 };

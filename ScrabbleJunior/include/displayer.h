@@ -8,6 +8,7 @@ class GameDisplayer;
 #include "game.h"
 #include "position.h"
 #include "cmd.h"
+#include "player.h"
 
 class GameDisplayer {
     static const Color PLAYERS_COLOR[];
@@ -35,7 +36,14 @@ class GameDisplayer {
     void drawUnplayable();
     void drawGameOver();
 
+    SwapHandAnimator animateRefillHand();
+    SwapHandAnimator animateExchange(char letter);
+    SwapHandAnimator animateExchange(char letter1, char letter2);
+    void drawEmptyPoolWhenRefilling();
+    void noticeDepletedPool();
+
     static void drawBoard(const Board &board);
+    void delay(int milliseconds);
 };
 
 #endif

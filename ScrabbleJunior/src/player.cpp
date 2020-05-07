@@ -9,32 +9,43 @@ Player::Player(int id):
     hand{EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND, EMPTY_HAND} 
 {}
 
-void Player::refillHand(Pool &pool) {
+bool Player::needsRefill() {
+    return find(begin(hand), end(hand), EMPTY_HAND) != end(hand);
+}
+
+void Player::refillHand(Pool &pool, SwapHandAnimator swap_hand) {
     for(auto &letter: hand) {
         if(pool.isEmpty()) break;
-        if(letter == EMPTY_HAND)  {
+        
+        if(letter == EMPTY_HAND) {
             letter = pool.popLetter();
+            if(swap_hand) swap_hand(&letter - begin(hand), letter);
         }
     }
 }
 
-void Player::exchange(Pool &pool, char letter) {
+void Player::exchange(Pool &pool, char letter, SwapHandAnimator swap_hand) {
     char *hand_index = find(begin(hand), end(hand), letter);
     pool.exchange(hand_index);
+    if(swap_hand) swap_hand(hand_index - begin(hand), *hand_index);
 }
 
-void Player::exchange(Pool &pool, char letter1, char letter2) {
+void Player::exchange(Pool &pool, char letter1, char letter2, SwapHandAnimator swap_hand) {
     char *hand_index1, *hand_index2;
     hand_index1 = find(begin(hand), end(hand), letter1);
 
     if(letter1 == letter2) {
         // Avoid choosing the same letter twice.
-        hand_index2 = find(hand_index1++, end(hand), letter2);
+        hand_index2 = find(hand_index1+1, end(hand), letter2);
     } else {
         hand_index2 = find(begin(hand), end(hand), letter2);
     }
 
     pool.exchange(hand_index1, hand_index2);
+    if(swap_hand) {
+        swap_hand(hand_index1 - begin(hand), *hand_index1);
+        swap_hand(hand_index2 - begin(hand), *hand_index2);
+    }
 }
 
 bool Player::isValidLetter(char letter) {

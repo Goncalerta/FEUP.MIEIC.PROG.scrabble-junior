@@ -83,13 +83,20 @@ bool Game::move(Position position, GameDisplayer &displayer) {
         return false;
     }
 
+    if(cboard.getCell(position).isCovered()) {
+        displayer.pushError("That position has already been covered.");
+        return false;
+    }
+
     if(!cboard.getCell(position).isCoverable()) {
         displayer.pushError("Can't move to that position.");
         return false;
     }
 
     if(!player.hasLetter(l)) {
-        displayer.pushError("Doesn't have letter.");
+        stringstream error;
+        error << "You don't have letter '" << l << "' in your hand.";
+        displayer.pushError(error.str().c_str());
         return false;
     }
 
@@ -116,13 +123,20 @@ bool Game::move(Position position, GameDisplayer &displayer, std::vector<Positio
         return false;
     }
 
+    if(cboard.getCell(position).isCovered()) {
+        displayer.pushError("That position has already been covered.");
+        return false;
+    }
+
     if(!cboard.getCell(position).isCoverable()) {
         displayer.pushError("Can't move to that position.");
         return false;
     }
 
     if(!player.hasLetter(l)) {
-        displayer.pushError("Doesn't have letter.");
+        stringstream error;
+        error << "You don't have letter '" << l << "' in your hand.";
+        displayer.pushError(error.str().c_str());
         return false;
     }
 
@@ -151,11 +165,14 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
     }
 
     if(!player.hasLetter(letter)) {
-        displayer.pushError("Player doesn't have given letter.");
+        stringstream error;
+        error << "You don't have letter '" << letter << "' in your hand.";
+        displayer.pushError(error.str().c_str());
         return false;
     }
 
-    player.exchange(pool, letter);
+    auto animator = displayer.animateExchange(letter);
+    player.exchange(pool, letter, animator);
 
     pool.shuffle(rng);
     return true;
@@ -179,19 +196,44 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
         return false;
     }
 
-    if(!player.hasPair(letter1, letter2)) {
-        displayer.pushError("Player doesn't have given letters.");
-        return false;
+    bool has_letters = true;
+
+    if(!player.hasLetter(letter1)) {
+        stringstream error;
+        error << "You don't have letter '" << letter1 << "' in your hand.";
+        displayer.pushError(error.str().c_str());
+        has_letters = false;
     }
 
-    player.exchange(pool, letter1, letter2);
+    if(!player.hasLetter(letter2)) {
+        stringstream error;
+        error << "You don't have letter '" << letter2 << "' in your hand.";
+        displayer.pushError(error.str().c_str());
+        has_letters = false;
+    }
+
+    if(!has_letters) return false;
+
+    auto animator = displayer.animateExchange(letter1, letter2);
+    player.exchange(pool, letter1, letter2, animator);
 
     pool.shuffle(rng);
     return true;
 }
 
-void Game::nextTurn() {
-    getCurrentPlayer().refillHand(pool);
+void Game::nextTurn(GameDisplayer &displayer) {
+    Player &current = getCurrentPlayer();
+    if(current.needsRefill()) {
+        if(pool.isEmpty()) displayer.drawEmptyPoolWhenRefilling();
+        else {
+            auto animator = displayer.animateRefillHand();
+            current.refillHand(pool, animator);
+
+            if(pool.isEmpty()) displayer.noticeDepletedPool();
+            else displayer.delay(750);
+        }
+    } 
+    
     moves_left = 2;
     turn++;
 }

@@ -5,6 +5,9 @@
 #include <iterator>
 #include "pool.h"
 
+#include <functional>
+typedef std::function<void (int, char)> SwapHandAnimator;
+
 class Player {
     static const int TILES_PER_PLAYER = 7;
     
@@ -18,9 +21,10 @@ class Player {
     static bool isValidLetter(char letter);
     
     Player(int id);
-    void refillHand(Pool &pool);
-    void exchange(Pool &pool, char letter);
-    void exchange(Pool &pool, char letter1, char letter2);
+    bool needsRefill();
+    void refillHand(Pool &pool, SwapHandAnimator swap_hand = nullptr);
+    void exchange(Pool &pool, char letter, SwapHandAnimator swap_hand = nullptr);
+    void exchange(Pool &pool, char letter1, char letter2, SwapHandAnimator swap_hand = nullptr);
 
     bool hasLetter(char letter);
     bool hasPair(char letter1, char letter2);

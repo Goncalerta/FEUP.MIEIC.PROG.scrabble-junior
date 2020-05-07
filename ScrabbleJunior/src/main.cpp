@@ -148,7 +148,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 Position pos(p_input[1], p_input[0]);
                 game.move(pos, displayer, edge_case_legal_positions); // TODO remove bool?
                 if(game.getMovesLeftThisTurn() == 0) {
-                    game.nextTurn();
+                    game.nextTurn(displayer);
                 }
             } else {
                 displayer.draw();
@@ -174,7 +174,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 Position pos(p_input[1], p_input[0]);
                 game.move(pos, displayer); // TODO remove bool?
                 if(game.getMovesLeftThisTurn() == 0) {
-                    game.nextTurn();
+                    game.nextTurn(displayer);
                 }
             }
         } else if(game.getMovesThisTurn() >= 1) {
@@ -187,7 +187,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             cout << "Press ENTER to continue . . . " << endl;
             cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 
-            game.nextTurn();
+            game.nextTurn(displayer);
         } else if(game.getPool().size() >= 2) {
             stringstream error;
             error << "Player " << player_number << " couldn't make any move." << endl
@@ -202,15 +202,16 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             char letter1, letter2;
             stringstream input_stream(p_input);
             input_stream >> letter1 >> letter2;
+            char _ignore;
 
-            if(input_stream.fail() || input_stream.str().empty()) {
+            if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
                 // TODO maybe something more efficient that .str() ?
                 displayer.pushError("Invalid input.");
                 continue;
             }
 
             if(game.exchange(letter1, letter2, displayer, rng)) {
-                game.nextTurn();
+                game.nextTurn(displayer);
             }
         } else if(game.getPool().size() == 1) {
             stringstream error;
@@ -226,15 +227,16 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             char letter;
             stringstream input_stream(p_input);
             input_stream >> letter;
+            char _ignore;
 
-            if(input_stream.fail() || input_stream.str().empty()) {
+            if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
                 // TOD maybe something more efficient that .str() ?
                 displayer.pushError("Invalid input.");
                 continue;
             }
 
             if(game.exchange(letter, displayer, rng)) {
-                game.nextTurn();
+                game.nextTurn(displayer);
             }
         } else {
             stringstream error;
@@ -247,7 +249,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             cout << "Press ENTER to continue . . . " << endl;
             cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 
-            game.nextTurn();
+            game.nextTurn(displayer);
         }
     } while(!game.isOver());
 
@@ -314,6 +316,15 @@ int playOnce(default_random_engine rng) {
     cout << endl;
     GameDisplayer::drawBoard(board);
     cout << endl;
+
+    if(max_players == 2) {
+        cout << "This board only allows you to play a game with " << max_players << " players." << endl;
+        cout << "Press ENTER to start a game with 2 players . . . " << endl;
+        cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+
+        num_players = 2;
+        valid_num_players = true;
+    }
 
     while(!valid_num_players) {
         
