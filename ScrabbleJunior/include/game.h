@@ -13,33 +13,37 @@ class Game;
 #include "position.h"
 #include "displayer.h"
 
-// TODO a state machine would probably be better than an enum
-enum State {
-    Unstarted,
-    Ongoing,
-    Finished
-};
-
 class Game {
-    Board board;
+    Board &board;
     std::vector<Player> players;
     Pool pool;
-    int turn;
-    State state;
+    unsigned int turn;
+    unsigned int moves_left;
 
     public:
-    Game(int num_players);
-    bool loadBoardFile(std::istream &board_file);
-    void startGame(std::default_random_engine &rng);
+    Game(Board &board, unsigned int num_players, std::default_random_engine &rng);
 
     const std::vector<Player>& getPlayers() const;
     const Board& getBoard() const;
+    const Pool& getPool() const;
 
-    Player& getCurrentPlayer();
+    Player& getCurrentPlayer(); // TODO make const
+    int getCurrentPlayerNumber() const;
+    int getMovesLeftThisTurn() const;
+    int getMovesThisTurn() const;
+    bool canCurrentPlayerMove(); // TODO make const
+    
+    bool isOver() const;
+    std::vector<const Player*> getLeaderboard() const;
+    int getLeadingScorePlayerNumber() const;
+
     bool move(Position position, GameDisplayer &displayer);
-    void nextTurn();
+    bool move(Position position, GameDisplayer &displayer, std::vector<Position> &legal_moves);
+    bool exchange(char letter1, GameDisplayer &displayer, std::default_random_engine &rng);
+    bool exchange(char letter1, char letter2, GameDisplayer &displayer, std::default_random_engine &rng);
+    void nextTurn(GameDisplayer &displayer);
 
-    void printGame(std::ostream &out);
+    bool mustPlayTwiceEdgeCase(std::vector<Position> &positions);
 };
 
 #endif
