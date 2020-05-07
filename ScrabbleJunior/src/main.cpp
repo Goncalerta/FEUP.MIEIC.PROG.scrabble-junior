@@ -30,11 +30,19 @@ bool openBoardFile(ifstream &board_file) {
     }
 
     board_file.open(file_name, ios_base::in);
-    if(!board_file.is_open()) {
-        file_name += ".txt";
-        board_file.open(file_name, ios_base::in);
-        
-        if(!board_file.is_open()) {
+    if(!board_file.is_open() ) {
+        if(file_name.find_first_of("/\\") == string::npos) {
+
+            file_name += ".txt";
+            board_file.open(file_name, ios_base::in);
+            
+            if(!board_file.is_open()) {
+                setcolor(RED);
+                cout << "File does not exist or is unavailable." << endl;
+                return false;
+            }
+
+        } else {
             setcolor(RED);
             cout << "File does not exist or is unavailable." << endl;
             return false;
@@ -116,7 +124,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             vector<Position> edge_case_legal_positions;
             if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
                 displayer.draw(edge_case_legal_positions);
-                cout << "Input a valid position in the board to play: ";
+                cout << "Input a valid position on the board to play (in the form 'Ab'): ";
                 if(getline(cin, p_input).fail()) return false;
                 displayer.clearErrors();
 
@@ -142,7 +150,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 }
             } else {
                 displayer.draw();
-                cout << "Input a valid position in the board to play: ";
+                cout << "Input a valid position on the board to play (in the form 'Ab'): ";
                 if(getline(cin, p_input).fail()) return false;
                 displayer.clearErrors();
 
@@ -172,15 +180,17 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             error << "Player " << player_number << " couldn't make any more moves this turn.";
             displayer.pushError(error.str().c_str());
 
+            displayer.drawUnplayable();
+
             game.nextTurn();
         } else if(game.getPool().size() >= 2) {
             stringstream error;
             error << "Player " << player_number << " couldn't make any move." << endl
-                << "Must exchange two letters with the Pool this turn.";
+                << "Must choose two letters to exchange with the Pool this turn.";
             displayer.pushError(error.str().c_str());
 
             displayer.draw();
-            cout << "Input two letters to exchange: ";
+            cout << "Input two letters to exchange with the Pool: ";
             if(getline(cin, p_input).fail()) return false;
             displayer.clearErrors();
 
@@ -200,11 +210,11 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
         } else if(game.getPool().size() == 1) {
             stringstream error;
             error << "Player " << player_number << " couldn't make any move." << endl
-                << "Must exchange a letter with the remaining one in Pool this turn.";
+                << "Must choose a letter this turn to exchange for the remaining one in the Pool.";
             displayer.pushError(error.str().c_str());
 
             displayer.draw();
-            cout << "Input a letter to exchange: ";
+            cout << "Input a letter to exchange with the Pool: ";
             if(getline(cin, p_input).fail()) return false;
             displayer.clearErrors();
 
@@ -245,10 +255,17 @@ bool promptPlayAgain() {
         stringstream input_stream(input);
         input_stream >> answer;
 
-        if(input_stream.fail()) std::cout << "Invalid input.";
-        else if(answer == 'Y' || answer == 'y') return true;
+        if(input_stream.fail()) {
+            setcolor(RED);
+            std::cout << "Invalid input." << endl;
+            setcolor(LIGHTGRAY);
+        } else if(answer == 'Y' || answer == 'y') return true;
         else if(answer == 'N' || answer == 'n') return false;
-        else std::cout << "Invalid input.";
+        else {
+            setcolor(RED);
+            std::cout << "Invalid input." << endl;
+            setcolor(LIGHTGRAY);
+        }
     }
 }
 
@@ -260,14 +277,8 @@ int playOnce(default_random_engine rng) {
     while(!load_successful) {
         setcolor(LIGHTGRAY);
         if(!openBoardFile(board_file)) {
-            if(cin.fail()) {
-                setcolor(RED);
-                cout << "stdin failed while trying to read file. Exiting . . ." << endl;
-                setcolor(LIGHTGRAY);
-                return 1;
-            } else {
-                continue;
-            }
+            if(cin.fail()) return 1;
+            else continue;
         }
         
         if(loadBoardFile(board, board_file)) {
@@ -300,12 +311,7 @@ int playOnce(default_random_engine rng) {
         cout << "This board allows you to play a game with up to " << max_players << " players." << endl;
         cout << "Input the number of players (2-" << max_players << "): ";
         getline(cin, input_line);
-        if(cin.fail()) {
-            setcolor(RED);
-            cout << "stdin failed while trying to read number of players. Exiting . . ." << endl;
-            setcolor(LIGHTGRAY);
-            return 1;
-        }
+        if(cin.fail()) return 1;
 
         stringstream input_line_stream(input_line);
         input_line_stream >> num_players;

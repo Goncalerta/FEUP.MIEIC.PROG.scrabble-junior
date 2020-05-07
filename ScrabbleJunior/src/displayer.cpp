@@ -1,9 +1,11 @@
 #include <iostream>
 #include <iomanip>
 #include "displayer.h"
-#include "cmd.h"
 
 using namespace std;
+
+const Color GameDisplayer::PLAYERS_COLOR[] = {CYAN, LIGHTRED, GREEN, YELLOW};
+const char* GameDisplayer::WINNER_LABELS[] = {"1st", "2nd", "3rd", "4th"};
 
 GameDisplayer::GameDisplayer(Game &game): 
     game(game), 
@@ -31,7 +33,6 @@ void GameDisplayer::draw() {
     drawCurrentPlayer();
     
     drawErrorMessages();
-    setcolor(LIGHTGRAY);
 }
 
 // TODO reduce code duplication
@@ -48,7 +49,19 @@ void GameDisplayer::draw(std::vector<Position> &legal_moves) {
     drawCurrentPlayer();
     
     drawErrorMessages();
-    setcolor(LIGHTGRAY);
+}
+
+void GameDisplayer::drawUnplayable() {
+    clrscr();
+    
+    drawBoard(game.getBoard());
+    
+    int player_x_offset = game.getBoard().getWidth() * 2 + 2;
+    drawPlayers(game.getPlayers(), player_x_offset);
+    
+    gotoxy(0, max(8, game.getBoard().getHeight()+2));
+
+    drawErrorMessages();
 }
 
 void GameDisplayer::drawGameOver() {
@@ -77,17 +90,39 @@ void GameDisplayer::declareWinners(vector<const Player*> leaderboard) {
 
     cout << "GAME OVER" << endl;
     if(winners_id.size() == 1) {
-        cout << "Player " << winners_id[0] << " wins.";
+        int id = winners_id[0];
+        setcolor(PLAYERS_COLOR[id-1]);
+        cout << "Player " << id << " wins.";
+        setcolor(LIGHTGRAY);
     } else if(winners_id.size() == leaderboard.size()) {
         if(winners_id.size() == 2) cout << "Both ";
         else cout << "All ";
         cout << "players tied for first place.";
     } else {
         cout << "Players ";
-        for(int &i: winners_id) cout << i << " ";
+        if(winners_id.size() == 3) {
+            setcolor(PLAYERS_COLOR[winners_id[0]-1]);
+            cout << winners_id[0];
+            setcolor(LIGHTGRAY);
+            cout << ", ";
+            setcolor(PLAYERS_COLOR[winners_id[1]-1]);
+            cout << winners_id[1];
+            setcolor(LIGHTGRAY);
+            cout << " and "; 
+            setcolor(PLAYERS_COLOR[winners_id[2]-1]);
+            cout << winners_id[2];
+            setcolor(LIGHTGRAY);
+        } else {
+            setcolor(PLAYERS_COLOR[winners_id[0]-1]);
+            cout << winners_id[0];
+            setcolor(LIGHTGRAY);
+            cout << " and "; 
+            setcolor(PLAYERS_COLOR[winners_id[1]-1]);
+            cout << winners_id[1];
+            setcolor(LIGHTGRAY);
+        }
         
-        if(winners_id.size() > 2) cout << "all ";
-        cout << "tied for first place.";
+        cout << " tied for first place.";
     }
 
     cout << endl;
@@ -210,7 +245,12 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
 
     for(int i = 0; i < players.size(); i++) {
         gotoxy(x_offset, i+2);
-        cout << "P" << i+1 << " " << setw(4) << players[i].getScore() << "      ";
+
+        int id = players[i].getId();
+        setcolor(PLAYERS_COLOR[id-1]);
+        cout << "P" << id;
+        setcolor(LIGHTGRAY);
+        cout << " " << setw(4) << players[i].getScore() << "      ";
         for(auto letter = players[i].handBegin(); letter <= players[i].handEnd(); letter++) {
             if(*letter == Player::EMPTY_HAND) cout << '_' << " ";
             else cout << *letter << " ";
@@ -220,7 +260,6 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
 
 // TODO reduce code duplication
 void GameDisplayer::drawLeaderboard(std::vector<const Player*> players, int x_offset) {
-    static const char* LABELS[] = {"1st", "2nd", "3rd", "4th"};
 
     gotoxy(x_offset + 9, 1);
     cout << "SCORE";
@@ -230,17 +269,25 @@ void GameDisplayer::drawLeaderboard(std::vector<const Player*> players, int x_of
         gotoxy(x_offset, i+2);
         int id = players[i]->getId();
         int score = players[i]->getScore();
-
-        if(score != previous_score) cout << LABELS[i] << "  ";
+        
+        if(score != previous_score) cout << WINNER_LABELS[i] << "  ";
         else cout << "     ";
         
-        cout << "P" << id << " " << setw(4) << score;
+        setcolor(PLAYERS_COLOR[id-1]);
+        cout << "P" << id;
+        setcolor(LIGHTGRAY);
+        cout << " " << setw(4) << score;
+        
+        previous_score = score;
     }
 }
 
 void GameDisplayer::drawCurrentPlayer() {
     Player player = game.getCurrentPlayer();
-    cout << "Player " << game.getCurrentPlayerNumber() << " is playing this turn." << endl;
+    setcolor(PLAYERS_COLOR[player.getId()-1]);
+    cout << "Player " << player.getId();
+    setcolor(LIGHTGRAY);
+    cout << " is playing this turn." << endl;
     if(game.getMovesLeftThisTurn() == 1) {
         cout << "You have 1 move left this turn." << endl;
     } else {
@@ -260,4 +307,5 @@ void GameDisplayer::drawErrorMessages() {
     for(auto &error: error_messages) {
         cout << error << endl;
     }
+    setcolor(LIGHTGRAY);
 }

@@ -7,8 +7,12 @@ class GameDisplayer;
 #include <vector>
 #include "game.h"
 #include "position.h"
+#include "cmd.h"
 
 class GameDisplayer {
+    static const Color PLAYERS_COLOR[];
+    static const char* WINNER_LABELS[];
+
     std::vector<std::string> error_messages;
     Game &game;
 
@@ -28,6 +32,7 @@ class GameDisplayer {
 
     void draw();
     void draw(std::vector<Position> &legal_moves);
+    void drawUnplayable();
     void drawGameOver();
 
     static void drawBoard(const Board &board);
