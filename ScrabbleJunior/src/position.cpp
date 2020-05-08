@@ -8,9 +8,12 @@ Position::Position(): Position(0, 0) {}
 Position::Position(int x, int y): x(x), y(y) {}
 
 Position::Position(char x, char y) {
-    // TODO check if characters are in limits 'A-Z', 'a-z'
     this->x = x - 'a';
     this->y = y - 'A';
+}
+
+bool Position::isValid(char x, char y) {
+    return x >= 'a' && x <='z' && y >= 'A' && y <= 'Z';
 }
 
 int Position::getX() const {
@@ -54,4 +57,8 @@ pair<Position, Position> Position::laterals(Orientation orientation) {
     } else {
         return pair<Position, Position>(Position(x+1, y), Position(x-1, y));
     }
+}
+
+bool Position::operator==(const Position &other) const {
+    return x == other.x && y == other.y;
 }

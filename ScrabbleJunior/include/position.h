@@ -9,6 +9,8 @@ class Position {
     int y;
 
     public:
+    static bool isValid(char x, char y);
+
     Position();
     Position(int x, int y);
     Position(char x, char y);
@@ -22,7 +24,9 @@ class Position {
     void stepBackwards(Orientation orientation);
     std::pair<Position, Position> laterals(Orientation orientation);
 
-    bool inRect(Position start, int width, int height) const;
+    bool inRect(Position start, int width, int height) const; // TODO simpler, inLimits method
+
+    bool operator==(const Position &other) const;
 };
 
 #endif

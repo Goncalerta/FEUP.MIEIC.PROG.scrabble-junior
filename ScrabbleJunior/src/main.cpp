@@ -1,206 +1,384 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <random>
 #include <chrono>
+#include <thread>
 #include "board.h"
 #include "pool.h"
 #include "orientation.h"
 #include "position.h"
 #include "player.h"
+#include "game.h"
+#include "displayer.h"
+#include "cmd.h"
+#include <algorithm>
+#include <limits>
 
 using namespace std;
 
-bool parseBoardFile(istream &board_file, Board &board, Pool &pool) {
-     //string line;
-     //getline(board_file, line);
+bool openBoardFile(ifstream &board_file) {
+    string file_name;
+
+    cout << "Input the name of your board: ";
+    getline(cin, file_name);
+    if(cin.fail()) return false;
+
+    if(file_name.size() == 0) {
+        setcolor(RED);
+        cout << "Must input a file name." << endl;
+        return false;
+    }
+
+    board_file.open(file_name, ios_base::in);
+    if(!board_file.is_open() ) {
+        if(file_name.find_first_of("/\\") == string::npos) {
+
+            file_name += ".txt";
+            board_file.open(file_name, ios_base::in);
+            
+            if(!board_file.is_open()) {
+                setcolor(RED);
+                cout << "File does not exist or is unavailable." << endl;
+                return false;
+            }
+
+        } else {
+            setcolor(RED);
+            cout << "File does not exist or is unavailable." << endl;
+            return false;
+        }
+    }
     
-     //if(board_file.fail()) return false;
-    
-     //while(getline(board_file, line)) {
+    return true;
+}
 
-     //}
-    int width, height;
-    char x;
-    board_file >> height >> x >> width;
+bool loadBoardFile(Board &board, std::istream &board_file) {
+    board = Board();
+    unsigned int width, height;
 
-    if(!board_file || x != 'x') return false; 
 
-    if(!board.setWidth(width)) return false;
-    if(!board.setHeight(height)) return false;
+    board_file >> height;
+    if(board_file.fail()) {
+        setcolor(RED);
+        cout << "Failed to parse height in given file." << endl;
+        return false;
+    }
+    if(height == 0) {
+        setcolor(RED);
+        cout << "Height must not be zero." << endl;
+        return false;
+    }
+    if(height > 20) {
+        setcolor(RED);
+        cout << "Max height is 20." << endl;
+        return false;
+    }
+
+    char _x; // Ignored
+    board_file >> _x;
+
+    board_file >> width;
+    if(board_file.fail()) {
+        setcolor(RED);
+        cout << "Failed to parse width in given file." << endl;
+        return false;
+    }
+    if(width == 0) {
+        setcolor(RED);
+        cout << "Width must not be zero." << endl;
+        return false;
+    }
+    if(width > 20) {
+        setcolor(RED);
+        cout << "Max width is 20." << endl;
+        return false;
+    }
+
+    board.setSize(width, height);
 
     char c_position[2];
     char c_orientation;
     string word;
+
     while(board_file >> c_position >> c_orientation >> word) {
+        if(!Position::isValid(c_position[1], c_position[0])) break;
         Position position(c_position[1], c_position[0]);
-        Orientation orientation;
         
+        Orientation orientation;
         if(c_orientation == 'H') orientation = Horizontal;
         else if(c_orientation == 'V') orientation = Vertical;
-        else return false;
+        else break;
 
-        if(!board.addWord(position, orientation, word)) return false;
-
-        pool.pushWord(word);
+        if(!board.addWord(position, orientation, word)) return false; // TODO ERROR MESSAGE
     }
 
-    return board_file.eof();
+    return true;
 }
 
-int main() {
-    srand(time(0));
-    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-    default_random_engine rng(seed);
-    // TODO ask number of players
-    // TODO ask name of the board file 
-    string board_file_name = "TEST.txt";
-    ifstream board_file(board_file_name);
+bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
+    string p_input;
 
+    do {
+        int player_number = game.getCurrentPlayerNumber();
+
+        if(game.canCurrentPlayerMove()) {
+            vector<Position> edge_case_legal_positions;
+            if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
+                displayer.draw(edge_case_legal_positions);
+                cout << "Input a valid position on the board to play (in the form 'Ab'): ";
+                if(getline(cin, p_input).fail()) return false;
+                displayer.clearErrors();
+
+                if(p_input.size() > 2) {
+                    displayer.pushError("Too many characters in input.");
+                    continue;
+                }
+
+                if(p_input.size() < 2) {
+                    displayer.pushError("Too few characters in input.");
+                    continue;
+                }
+
+                if(!Position::isValid(p_input[1], p_input[0])) {
+                    displayer.pushError("Couldn't parse input as a position.");
+                    continue;
+                }
+
+                Position pos(p_input[1], p_input[0]);
+                game.move(pos, displayer, edge_case_legal_positions); // TODO remove bool?
+                if(game.getMovesLeftThisTurn() == 0) {
+                    game.nextTurn(displayer);
+                }
+            } else {
+                displayer.draw();
+                cout << "Input a valid position on the board to play (in the form 'Ab'): ";
+                if(getline(cin, p_input).fail()) return false;
+                displayer.clearErrors();
+
+                if(p_input.size() > 2) {
+                    displayer.pushError("Too many characters in input.");
+                    continue;
+                }
+
+                if(p_input.size() < 2) {
+                    displayer.pushError("Too few characters in input.");
+                    continue;
+                }
+
+                if(!Position::isValid(p_input[1], p_input[0])) {
+                    displayer.pushError("Couldn't parse input as a position.");
+                    continue;
+                }
+
+                Position pos(p_input[1], p_input[0]);
+                game.move(pos, displayer); // TODO remove bool?
+                if(game.getMovesLeftThisTurn() == 0) {
+                    game.nextTurn(displayer);
+                }
+            }
+        } else if(game.getMovesThisTurn() >= 1) {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any more moves this turn.";
+            displayer.pushError(error.str().c_str());
+
+            displayer.drawUnplayable();
+            displayer.clearErrors();
+            cout << "Press ENTER to continue . . . " << endl;
+            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+
+            game.nextTurn(displayer);
+        } else if(game.getPool().size() >= 2) {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any move." << endl
+                << "Must choose two letters to exchange with the Pool this turn.";
+            displayer.pushError(error.str().c_str());
+
+            displayer.draw();
+            cout << "Input two letters to exchange with the Pool: ";
+            if(getline(cin, p_input).fail()) return false;
+            displayer.clearErrors();
+
+            char letter1, letter2;
+            stringstream input_stream(p_input);
+            input_stream >> letter1 >> letter2;
+            char _ignore;
+
+            if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
+                // TODO maybe something more efficient that .str() ?
+                displayer.pushError("Invalid input.");
+                continue;
+            }
+
+            if(game.exchange(letter1, letter2, displayer, rng)) {
+                game.nextTurn(displayer);
+            }
+        } else if(game.getPool().size() == 1) {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any move." << endl
+                << "Must choose a letter this turn to exchange for the remaining one in the Pool.";
+            displayer.pushError(error.str().c_str());
+
+            displayer.draw();
+            cout << "Input a letter to exchange with the Pool: ";
+            if(getline(cin, p_input).fail()) return false;
+            displayer.clearErrors();
+
+            char letter;
+            stringstream input_stream(p_input);
+            input_stream >> letter;
+            char _ignore;
+
+            if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
+                // TOD maybe something more efficient that .str() ?
+                displayer.pushError("Invalid input.");
+                continue;
+            }
+
+            if(game.exchange(letter, displayer, rng)) {
+                game.nextTurn(displayer);
+            }
+        } else {
+            stringstream error;
+            error << "Player " << player_number << " couldn't make any move." << endl
+                << "The pool is empty. Turn has been skipped.";
+            displayer.pushError(error.str().c_str());
+
+            displayer.drawUnplayable();
+            displayer.clearErrors();
+            cout << "Press ENTER to continue . . . " << endl;
+            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+
+            game.nextTurn(displayer);
+        }
+    } while(!game.isOver());
+
+    return true;
+}
+
+bool promptPlayAgain() {
+    string input;
+    while(true) {
+        cout << "Play again? (Y/N): ";
+        getline(cin, input);
+        if(cin.fail()) return false;
+
+        char answer;
+        stringstream input_stream(input);
+        input_stream >> answer;
+
+        if(input_stream.fail()) {
+            setcolor(RED);
+            std::cout << "Invalid input." << endl;
+            setcolor(LIGHTGRAY);
+        } else if(answer == 'Y' || answer == 'y') return true;
+        else if(answer == 'N' || answer == 'n') return false;
+        else {
+            setcolor(RED);
+            std::cout << "Invalid input." << endl;
+            setcolor(LIGHTGRAY);
+        }
+    }
+}
+
+int playOnce(default_random_engine rng) {
+    ifstream board_file;
     Board board;
-    Pool pool;
+    bool load_successful = false;
 
-    if(!parseBoardFile(board_file, board, pool)) {
-        cout << "Invalid board file";
-        return 1; // TODO 
+    while(!load_successful) {
+        setcolor(LIGHTGRAY);
+        if(!openBoardFile(board_file)) {
+            if(cin.fail()) return 1;
+            else continue;
+        }
+        
+        if(loadBoardFile(board, board_file)) {
+            if(board.countLetters() >= 14) {
+                load_successful = true;
+            } else {
+                setcolor(RED);
+                cout << "Board must have at least 14 letters in order to be playable." << endl;    
+            }
+        } else {
+            setcolor(RED);
+            cout << "Unable to load board." << endl;
+        }
+
+        board_file.close();
     }
 
-    pool.shuffle(rng);
+    string input_line;
+    int num_players;
+    bool valid_num_players = false;
+    unsigned int max_players = min(4u, board.countLetters()/7);
 
-    Player p1;
-    Player p2;
-    int turn = 0;
-
-    p1.refillHand(pool);
-    p2.refillHand(pool);
-
-    board.printGrid(cout);
-    cout << "P1 hand:" << endl;
-    for(auto i = p1.handBegin(); i <= p1.handEnd(); i++) {
-        cout << *i << " ";
-    }    
     cout << endl;
-    cout << "P2 hand:" << endl;
-    for(auto i = p2.handBegin(); i <= p2.handEnd(); i++) {
-        cout << *i << " ";
-    }    
+    GameDisplayer::drawBoard(board);
     cout << endl;
 
-    string p_input;
-    while(getline(cin, p_input)) {
-        if(p_input.size() != 2) {
-            cout << "Too many chars in input";
+    if(max_players == 2) {
+        cout << "This board only allows you to play a game with " << max_players << " players." << endl;
+        cout << "Press ENTER to start a game with 2 players . . . " << endl;
+        cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+
+        num_players = 2;
+        valid_num_players = true;
+    }
+
+    while(!valid_num_players) {
+        
+        setcolor(LIGHTGRAY);
+        cout << "This board allows you to play a game with up to " << max_players << " players." << endl;
+        cout << "Input the number of players (2-" << max_players << "): ";
+        getline(cin, input_line);
+        if(cin.fail()) return 1;
+
+        stringstream input_line_stream(input_line);
+        input_line_stream >> num_players;
+        char _ignore;
+
+        if(input_line_stream.fail() || !(input_line_stream >> _ignore).eof()) {
+            setcolor(RED);
+            cout << endl << "Expected an integer." << endl;
+            continue;
+        }
+    	
+        if(num_players < 2) {
+            setcolor(RED);
+            cout << endl << "Must have at least 2 players." << endl;
             continue;
         }
 
-        Position pos(p_input[1], p_input[0]);
-        if(turn % 2 == 0) {
-            char l = board.getLetter(pos);
-            if(!p1.hasLetter(l)) {
-                cout << "Doesn't have letter.";
-                continue;
-            }
-            int score_gain = board.cover(pos);
-            if(score_gain == Board::ILLEGAL_MOVE) {
-                cout << "Illegal move.";
-                continue;
-            }
-            p1.useLetter(l);
-            p1.addScore(score_gain);
-        } else {
-
+        if(num_players > max_players) {
+            setcolor(RED);
+            cout << endl << "Must have at most " << max_players << " players." << endl;
+            continue;
         }
-        turn++;
+
+        valid_num_players = true;
     }
+
+    Game game(board, num_players, rng);
+    GameDisplayer displayer(game);
+    if(!playGame(game, displayer, rng)) return 1;
+    
+    displayer.drawGameOver();
 
     return 0;
 }
 
+int main() {
+    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+    default_random_engine rng(seed);
+    
+    bool playAgain;
+    do {
+        if(playOnce(rng) == 1) return 1; // TODO
+        cout << endl;
+        playAgain = promptPlayAgain();
+    } while(playAgain);
 
-// // PROG - MIEIC
-// // JAS
-// // Example of a program that prints colored characters on the console (in text mode)
-// #include <iostream>
-// #include <ctime>
-// #include <cstdlib>
-// #include <windows.h>
-// //==========================================================================================
-// //COLOR CODES: (alternative: use symbolic const’s)
-// #define BLACK 0
-// #define BLUE 1
-// #define GREEN 2
-// #define CYAN 3
-// #define RED 4
-// #define MAGENTA 5
-// #define BROWN 6
-// #define LIGHTGRAY 7
-// #define DARKGRAY 8
-// #define LIGHTBLUE 9
-// #define LIGHTGREEN 10
-// #define LIGHTCYAN 11
-// #define LIGHTRED 12
-// #define LIGHTMAGENTA 13
-// #define YELLOW 14
-// #define WHITE 15
-// //==========================================================================================
-// void clrscr(void)
-// {
-//  COORD coordScreen = { 0, 0 }; // upper left corner
-//  DWORD cCharsWritten;
-//  DWORD dwConSize;
-//  HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-//  CONSOLE_SCREEN_BUFFER_INFO csbi;
-//  GetConsoleScreenBufferInfo(hCon, &csbi);
-//  dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-//  // fill with spaces
-//  FillConsoleOutputCharacter(hCon, TEXT(' '), dwConSize, coordScreen, &cCharsWritten);
-//  GetConsoleScreenBufferInfo(hCon, &csbi);
-//  FillConsoleOutputAttribute(hCon, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
-//  // cursor to upper left corner
-//  SetConsoleCursorPosition(hCon, coordScreen);
-// }
-// //==========================================================================================
-// // Position the cursor at column 'x', line 'y'
-// // The coodinates of upper left corner of the screen are (x,y)=(0,0)
-// void gotoxy(int x, int y)
-// {
-//  COORD coord;
-//  coord.X = x;
-//  coord.Y = y;
-//  SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-// }
-// //==========================================================================================
-// // Set text color
-// void setcolor(unsigned int color)
-// {
-//  HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
-//  SetConsoleTextAttribute(hcon, color);
-// }
-// //==========================================================================================
-// // Set text color & background
-// void setcolor(unsigned int color, unsigned int background_color)
-// {
-//  HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-//  if (background_color == BLACK)
-//  SetConsoleTextAttribute(hCon, color);
-//  else
-//  SetConsoleTextAttribute(hCon, color | BACKGROUND_BLUE | BACKGROUND_GREEN |
-//  BACKGROUND_RED);
-// }
-// //==========================================================================================
-// // Fill the screen with colored numbers
-// int main()
-// {
-//  clrscr();
-//  srand((unsigned int)time(NULL));
-//  for (int x = 0; x < 80; x++)
-//  for (int y = 0; y < 24; y++)
-//  {
-//  gotoxy(x, y);
-//  if (rand() % 2 == 0)
-//  setcolor(x % 15 + 1);
-//  else
-//  setcolor(y % 15 + 1, rand() % 2);
-//  cout << x % 10;
-//  }
-// }
+    return 0;
+}

@@ -4,15 +4,10 @@
 using namespace std;
 
 Pool::Pool() {}
+Pool::Pool(vector<char> &letters): letters(move(letters)) {}
 
 void Pool::pushLetter(char c) {
     letters.push_back(c);
-}
-
-void Pool::pushWord(string s) {
-    for(auto c: s) {
-        pushLetter(c);
-    }
 }
 
 char Pool::popLetter() {
@@ -27,4 +22,17 @@ void Pool::shuffle(default_random_engine &rng) {
 
 bool Pool::isEmpty() const {
     return letters.empty();
+}
+
+int Pool::size() const {
+    return letters.size();
+}
+
+void Pool::exchange(char *letter) {
+    swap(letters[0], *letter);
+}
+
+void Pool::exchange(char *letter1, char *letter2) {
+    swap(letters[0], *letter1);
+    swap(letters[1], *letter2);
 }

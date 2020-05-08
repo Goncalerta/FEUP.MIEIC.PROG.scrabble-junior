@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "cell.h"
 
 using namespace std;
@@ -19,10 +20,12 @@ void Cell::allowMove(Orientation orientation) {
     }
 }
 
-pair<bool, bool> Cell::cover() {
-    // if(!coverable) TODO
+void Cell::cover() {
     covered = true;
     coverable = false;
+}
+
+std::pair<bool, bool> Cell::getPropagation() const {
     return pair<bool, bool>(propagates_horizontally, propagates_vertically);
 }
 
@@ -44,4 +47,9 @@ bool Cell::isCoverable() const {
 
 bool Cell::isEmpty() const {
     return letter == EMPTY;
+}
+
+bool Cell::canCover(const char *hand_begin, const char *hand_end) const {
+    if(!coverable) return false;
+    return any_of(hand_begin, hand_end, [this](auto i){return i == this->letter;});
 }
