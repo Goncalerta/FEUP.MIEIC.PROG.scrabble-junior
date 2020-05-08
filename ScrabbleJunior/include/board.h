@@ -7,6 +7,7 @@
 #include "position.h"
 #include "orientation.h"
 #include "word.h"
+#include "hand.h"
 
 class Board {
     unsigned int width;
@@ -39,12 +40,12 @@ class Board {
     
     char getLetter(Position position) const;
     void cover(Position position, std::vector<Word> &completed_words);
-    bool hasMove(const char *hand_begin, const char *hand_end);
+    bool hasMove(const Hand &hand);
 
     const Cell& getCell(Position position) const;
     std::vector<char> getLettersInBoard() const;
 
-    bool mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *hand_begin, const char *hand_end);
+    bool mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &hand);
 };
 
 #endif

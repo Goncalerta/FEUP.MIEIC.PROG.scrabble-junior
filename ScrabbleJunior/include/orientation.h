@@ -6,6 +6,4 @@ enum Orientation {
     Horizontal,
 };
 
-char orientationToChar(Orientation orientation);
-
 #endif

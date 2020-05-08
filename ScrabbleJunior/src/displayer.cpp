@@ -26,7 +26,7 @@ void GameDisplayer::draw() {
     clrscr();
     
     Player &current_player = game.getCurrentPlayer();
-    drawBoard(game.getBoard(), current_player.handBegin(), current_player.handEnd());
+    drawBoard(game.getBoard(), current_player.getHand());
     
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
     drawPlayers(game.getPlayers(), player_x_offset);
@@ -42,7 +42,7 @@ void GameDisplayer::draw(std::vector<Position> &legal_moves) {
     clrscr();
     
     Player &current_player = game.getCurrentPlayer();
-    drawBoard(game.getBoard(), current_player.handBegin(), current_player.handEnd(), legal_moves);
+    drawBoard(game.getBoard(), legal_moves);
     
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
     drawPlayers(game.getPlayers(), player_x_offset);
@@ -131,7 +131,7 @@ void GameDisplayer::declareWinners(vector<const Player*> leaderboard) {
     cout << endl;
 }
 
-void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end) {
+void GameDisplayer::drawBoard(const Board &board, const Hand &hand) {
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -151,7 +151,7 @@ void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const 
                 cout << ' ';
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
-                else if(cell.canCover(hand_begin, hand_end)) setcolor(BLACK, YELLOW);
+                else if(cell.canCover(hand)) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
                 cout << cell.getLetter();
@@ -204,7 +204,7 @@ void GameDisplayer::drawBoard(const Board &board) {
 }
 
 // TODO reduce code duplication
-void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end, std::vector<Position> &legal_moves) {
+void GameDisplayer::drawBoard(const Board &board, std::vector<Position> &legal_moves) {
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -254,10 +254,7 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
         cout << "P" << id;
         setcolor(LIGHTGRAY);
         cout << " " << setw(4) << players[i].getScore() << "      ";
-        for(auto letter = players[i].handBegin(); letter <= players[i].handEnd(); letter++) {
-            if(*letter == Player::EMPTY_HAND) cout << '_' << " ";
-            else cout << *letter << " ";
-        }
+        cout << players[i].getHand();
     }
 }
 
@@ -300,12 +297,7 @@ void GameDisplayer::drawCurrentPlayer() {
         cout << "You have " << game.getMovesLeftThisTurn() << " moves left this turn." << endl;
     }
     
-    cout << "Your hand:  ";
-    for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-        if(*i == Player::EMPTY_HAND) cout << '_' << " ";
-        else cout << *i << " ";
-    }
-    cout << endl << endl;
+    cout << "Your hand:  " << player.getHand() << endl << endl;
 }
 
 void GameDisplayer::drawErrorMessages() {
@@ -324,7 +316,7 @@ void GameDisplayer::noticeDepletedPool() {
     this_thread::sleep_for(chrono::milliseconds(1250));
 }
 
-SwapHandAnimator GameDisplayer::animateRefillHand() {
+Hand::SwapLetterAnimator GameDisplayer::animateRefillHand() {
     drawUnplayable();
     setcolor(YELLOW);
     cout << "Refilling hand . . .";
@@ -354,7 +346,7 @@ void GameDisplayer::drawEmptyPoolWhenRefilling() {
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-SwapHandAnimator GameDisplayer::animateExchange(char letter) {
+Hand::SwapLetterAnimator GameDisplayer::animateExchange(char letter) {
     drawUnplayable();
     setcolor(YELLOW);
     cout << "Exchanging letter '" << letter << "' . . .";
@@ -374,7 +366,7 @@ SwapHandAnimator GameDisplayer::animateExchange(char letter) {
     };
 }
 
-SwapHandAnimator GameDisplayer::animateExchange(char letter1, char letter2) {
+Hand::SwapLetterAnimator GameDisplayer::animateExchange(char letter1, char letter2) {
     drawUnplayable();
     setcolor(YELLOW);
     cout << "Exchanging letters '" << letter1 << "' and '" << letter2 << "' . . .";

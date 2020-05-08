@@ -150,10 +150,10 @@ int Board::getWidth() const {
     return width;
 }
 
-bool Board::hasMove(const char *hand_begin, const char *hand_end) {
+bool Board::hasMove(const Hand &hand) {
     for(auto &row: grid) {
         for(auto &cell: row) {
-            if(cell.canCover(hand_begin, hand_end)) return true;
+            if(cell.canCover(hand)) return true;
         }
     }
     return false;
@@ -169,7 +169,7 @@ vector<char> Board::getLettersInBoard() const {
     return letters;
 }
 
-bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *hand_begin, const char *hand_end) {
+bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &hand) {
     // This edge case happens when:
     // 1- All possible moves are with the same letter
     // 2- Player has just one such letter in hand
@@ -184,12 +184,12 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *
             Cell &cell = grid[j][i];
             Position position(i, j);
 
-            if(cell.canCover(hand_begin, hand_end)) {
+            if(cell.canCover(hand)) {
                 
                 if(!letter) {
                     letter = cell.getLetter();
                     // Check condition '2'
-                    if(count(hand_begin, hand_end, letter) == 2) return false;
+                    if(count(hand.begin(), hand.end(), letter) == 2) return false;
                 } else if(letter != cell.getLetter()) return false; // Check condition '1'
 
                 // Check condition '3'
@@ -202,7 +202,7 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *
                     if(next_cell) {
                         char next_letter = next_cell->getLetter();
 
-                        if(next_letter != letter && any_of(hand_begin, hand_end, [next_letter](auto hand) { return next_letter == hand; })) {
+                        if(next_letter != letter && any_of(hand.begin(), hand.end(), [next_letter](auto hand) { return next_letter == hand; })) {
                             positions.push_back(position);
                         }
                     }
@@ -213,7 +213,7 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *
                     if(next_cell) {
                         char next_letter = next_cell->getLetter();
 
-                        if(next_letter != letter && any_of(hand_begin, hand_end, [next_letter](auto hand) { return next_letter == hand; })) {
+                        if(next_letter != letter && any_of(hand.begin(), hand.end(), [next_letter](auto hand) { return next_letter == hand; })) {
                             positions.push_back(position);
                         }
                     }

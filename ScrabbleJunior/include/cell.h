@@ -5,6 +5,7 @@
 #include <vector>
 #include "position.h"
 #include "orientation.h"
+#include "hand.h"
 
 class Cell {
     char letter;
@@ -28,7 +29,7 @@ class Cell {
     bool isCoverable() const;
     bool isEmpty() const;
 
-    bool canCover(const char *hand_begin, const char *hand_end) const;
+    bool canCover(const Hand &hand) const;
 };
 
 #endif

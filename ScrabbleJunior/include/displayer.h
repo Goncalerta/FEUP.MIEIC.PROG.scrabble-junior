@@ -10,6 +10,7 @@ class GameDisplayer;
 #include "cmd.h"
 #include "player.h"
 #include "word.h"
+#include "hand.h"
 
 // TODO optimize for really big boards (20x20)
 // by not redrawing the board every time
@@ -21,8 +22,8 @@ class GameDisplayer {
     std::vector<std::string> error_messages;
     Game &game;
 
-    void drawBoard(const Board &board, const char *hand_begin, const char *hand_end);
-    void drawBoard(const Board &board, const char *hand_begin, const char *hand_end, std::vector<Position> &legal_moves);
+    void drawBoard(const Board &board, const Hand &hand);
+    void drawBoard(const Board &board, std::vector<Position> &legal_moves);
     void drawPlayers(const std::vector<Player> &players, int x_offset);
     void drawLeaderboard(std::vector<const Player*> players, int x_offset);
     void declareWinners(std::vector<const Player*> leaderboard);
@@ -40,9 +41,9 @@ class GameDisplayer {
     void drawUnplayable();
     void drawGameOver();
 
-    SwapHandAnimator animateRefillHand();
-    SwapHandAnimator animateExchange(char letter);
-    SwapHandAnimator animateExchange(char letter1, char letter2);
+    Hand::SwapLetterAnimator animateRefillHand();
+    Hand::SwapLetterAnimator animateExchange(char letter);
+    Hand::SwapLetterAnimator animateExchange(char letter1, char letter2);
     void drawEmptyPoolWhenRefilling();
     void noticeDepletedPool();
 

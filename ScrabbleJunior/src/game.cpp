@@ -15,7 +15,7 @@ Game::Game(Board &board, unsigned int num_players, std::default_random_engine &r
     
     for(int i = 1; i <= num_players; i++) {
         Player player(i);
-        player.refillHand(pool);
+        player.getHand().refill(pool);
         players.push_back(player);
     }
 }
@@ -93,7 +93,7 @@ bool Game::move(Position position, GameDisplayer &displayer) {
         return false;
     }
 
-    if(!player.hasLetter(l)) {
+    if(!player.getHand().hasLetter(l)) {
         stringstream error;
         error << "You don't have letter '" << l << "' in your hand.";
         displayer.pushError(error.str().c_str());
@@ -101,7 +101,7 @@ bool Game::move(Position position, GameDisplayer &displayer) {
     }
 
     moves_left -= 1;
-    player.useLetter(l);
+    player.getHand().useLetter(l);
 
     vector<Word> completed_words;
     board.cover(position, completed_words);
@@ -140,7 +140,7 @@ bool Game::move(Position position, GameDisplayer &displayer, std::vector<Positio
         return false;
     }
 
-    if(!player.hasLetter(l)) {
+    if(!player.getHand().hasLetter(l)) {
         stringstream error;
         error << "You don't have letter '" << l << "' in your hand.";
         displayer.pushError(error.str().c_str());
@@ -154,7 +154,7 @@ bool Game::move(Position position, GameDisplayer &displayer, std::vector<Positio
     }
 
     moves_left -= 1;
-    player.useLetter(l);
+    player.getHand().useLetter(l);
 
     vector<Word> completed_words;
     board.cover(position, completed_words);
@@ -178,7 +178,7 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
         return false;
     }
 
-    if(!player.hasLetter(letter)) {
+    if(!player.getHand().hasLetter(letter)) {
         stringstream error;
         error << "You don't have letter '" << letter << "' in your hand.";
         displayer.pushError(error.str().c_str());
@@ -186,7 +186,7 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
     }
 
     auto animator = displayer.animateExchange(letter);
-    player.exchange(pool, letter, animator);
+    player.getHand().exchange(pool, letter, animator);
 
     pool.shuffle(rng);
     return true;
@@ -212,14 +212,14 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
 
     bool has_letters = true;
 
-    if(!player.hasLetter(letter1)) {
+    if(!player.getHand().hasLetter(letter1)) {
         stringstream error;
         error << "You don't have letter '" << letter1 << "' in your hand.";
         displayer.pushError(error.str().c_str());
         has_letters = false;
     }
 
-    if(!player.hasLetter(letter2)) {
+    if(!player.getHand().hasLetter(letter2)) {
         stringstream error;
         error << "You don't have letter '" << letter2 << "' in your hand.";
         displayer.pushError(error.str().c_str());
@@ -229,7 +229,7 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
     if(!has_letters) return false;
 
     auto animator = displayer.animateExchange(letter1, letter2);
-    player.exchange(pool, letter1, letter2, animator);
+    player.getHand().exchange(pool, letter1, letter2, animator);
 
     pool.shuffle(rng);
     return true;
@@ -237,11 +237,11 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
 
 void Game::nextTurn(GameDisplayer &displayer) {
     Player &current = getCurrentPlayer();
-    if(current.needsRefill()) {
+    if(!current.getHand().isFull()) {
         if(pool.isEmpty()) displayer.drawEmptyPoolWhenRefilling();
         else {
             auto animator = displayer.animateRefillHand();
-            current.refillHand(pool, animator);
+            current.getHand().refill(pool, animator);
 
             if(pool.isEmpty()) displayer.noticeDepletedPool();
             else displayer.delay(750);
@@ -254,11 +254,11 @@ void Game::nextTurn(GameDisplayer &displayer) {
 
 bool Game::canCurrentPlayerMove() {
     Player &current = getCurrentPlayer();
-    return board.hasMove(current.handBegin(), current.handEnd());
+    return board.hasMove(current.getHand());
 }
 
 bool Game::mustPlayTwiceEdgeCase(std::vector<Position> &positions) {
     if(getMovesThisTurn() > 0) return false;
     Player &current_player = getCurrentPlayer();
-    return board.mustPlayTwiceEdgeCase(positions, current_player.handBegin(), current_player.handEnd());
+    return board.mustPlayTwiceEdgeCase(positions, current_player.getHand());
 }
