@@ -6,9 +6,11 @@ class GameDisplayer;
 #include <string>
 #include <vector>
 #include "game.h"
+#include "board.h"
 #include "position.h"
 #include "cmd.h"
 #include "player.h"
+#include "hand.h"
 #include "word.h"
 #include "hand.h"
 
@@ -48,7 +50,7 @@ class GameDisplayer {
     void noticeDepletedPool();
 
     void animateWordComplete(const Word &word);
-    void drawWordComplete(std::vector<Word> &words_completed);
+    void drawWordComplete(const std::vector<Word> &words_completed);
 
     static void drawBoard(const Board &board);
     void delay(int milliseconds);

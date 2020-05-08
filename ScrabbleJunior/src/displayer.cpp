@@ -1,8 +1,8 @@
 #include <iostream>
 #include <iomanip>
-#include "displayer.h"
 #include <chrono>
 #include <thread>
+#include "displayer.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ void GameDisplayer::clearErrors() {
 void GameDisplayer::draw() {
     clrscr();
     
-    Player &current_player = game.getCurrentPlayer();
+    const Player &current_player = game.getCurrentPlayer();
     drawBoard(game.getBoard(), current_player.getHand());
     
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
@@ -41,7 +41,7 @@ void GameDisplayer::draw() {
 void GameDisplayer::draw(vector<Position> &legal_moves) {
     clrscr();
     
-    Player &current_player = game.getCurrentPlayer();
+    const Player &current_player = game.getCurrentPlayer();
     drawBoard(game.getBoard(), legal_moves);
     
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
@@ -83,7 +83,7 @@ void GameDisplayer::declareWinners(vector<const Player*> leaderboard) {
     int winner_score = leaderboard[0]->getScore();
     vector<int> winners_id;
 
-    for(auto &player: leaderboard) {
+    for(const Player *player: leaderboard) {
         int score = player->getScore();
         int id = player->getId();
         
@@ -419,7 +419,7 @@ void GameDisplayer::animateWordComplete(const Word &word) {
     setcolor(LIGHTGRAY);
 }
 
-void GameDisplayer::drawWordComplete(vector<Word> &words_completed) {
+void GameDisplayer::drawWordComplete(const vector<Word> &words_completed) {
     drawUnplayable();
     setcolor(GREEN);
     cout << "Score!";
@@ -430,7 +430,7 @@ void GameDisplayer::drawWordComplete(vector<Word> &words_completed) {
 
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
 
-    for(auto &word: words_completed) {
+    for(const Word &word: words_completed) {
         animateWordComplete(word);
 
         score+=1; 

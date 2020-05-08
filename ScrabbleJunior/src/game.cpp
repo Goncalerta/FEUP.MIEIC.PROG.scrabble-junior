@@ -8,7 +8,7 @@ using namespace std;
 Game::Game(Board &board, unsigned int num_players, default_random_engine &rng):
     board(board),
     pool(board.getLettersInBoard()),
-    turn(0),
+    current_player_index(0),
     moves_left(2)
 {
     pool.shuffle(rng);
@@ -18,22 +18,6 @@ Game::Game(Board &board, unsigned int num_players, default_random_engine &rng):
         player.getHand().refill(pool);
         players.push_back(player);
     }
-}
-
-Player& Game::getCurrentPlayer() {
-    return players[turn % players.size()];
-}
-
-int Game::getCurrentPlayerNumber() const {
-    return (turn % players.size()) + 1;
-}
-
-int Game::getMovesLeftThisTurn() const {
-    return moves_left;
-}
-
-int Game::getMovesThisTurn() const {
-    return 2 - moves_left;
 }
 
 const vector<Player>& Game::getPlayers() const {
@@ -48,33 +32,38 @@ const Pool& Game::getPool() const {
     return pool;
 }
 
+const Player& Game::getCurrentPlayer() const {
+    return players[current_player_index];
+}
+
+int Game::getMovesLeftThisTurn() const {
+    return moves_left;
+}
+
 bool Game::isOver() const {
     return board.isFullyCovered();
 }
 
 vector<const Player*> Game::getLeaderboard() const {
     vector<const Player*> leaderboard;
-    for(auto &player: players) {
+    for(const Player &player: players) {
         leaderboard.push_back(&player);
     }
 
     stable_sort(leaderboard.begin(), leaderboard.end(), 
-            [](auto p1, auto p2){ return p1->getScore() > p2->getScore(); });
+            [](auto p1, auto p2) { return p1->getScore() > p2->getScore(); });
             
     return leaderboard;
 }
 
-int Game::getLeadingScorePlayerNumber() const {
-    // TODO doesn't take into account draws
-    return max_element(players.begin(), players.end(), [](auto p1, auto p2){return p1.getScore() < p2.getScore();}) - players.begin() + 1;
-}
-
-bool Game::move(Position position, GameDisplayer &displayer) {
-    Player &player = getCurrentPlayer();
+bool Game::validateMove(Position position, GameDisplayer &displayer) {
+    Player &player = players[current_player_index];
+    
     if(!position.inLimits(board.getWidth(), board.getHeight())) {
         displayer.pushError("Position is outside board limits.");
         return false;
     }
+
     char l = board.getLetter(position);
     const Board &cboard = board;
 
@@ -99,59 +88,13 @@ bool Game::move(Position position, GameDisplayer &displayer) {
         displayer.pushError(error.str().c_str());
         return false;
     }
-
-    moves_left -= 1;
-    player.getHand().useLetter(l);
-
-    vector<Word> completed_words;
-    board.cover(position, completed_words);
-
-    if(completed_words.size() != 0) {
-        displayer.drawWordComplete(completed_words);
-    }
-    
-    player.addScore(completed_words.size());
 
     return true;
 }
 
-// TODO reduce duplication
-bool Game::move(Position position, GameDisplayer &displayer, vector<Position> &legal_moves) {
-    Player &player = getCurrentPlayer();
-    if(!position.inLimits(board.getWidth(), board.getHeight())) {
-        displayer.pushError("Position is outside board limits.");
-        return false;
-    }
+void Game::_move(Position position, GameDisplayer &displayer) {
+    Player &player = players[current_player_index];
     char l = board.getLetter(position);
-    const Board &cboard = board;
-
-    if(cboard.getCell(position).isEmpty()) {
-        displayer.pushError("The given position has no letter.");
-        return false;
-    }
-
-    if(cboard.getCell(position).isCovered()) {
-        displayer.pushError("That position has already been covered.");
-        return false;
-    }
-
-    if(!cboard.getCell(position).isCoverable()) {
-        displayer.pushError("Can't move to that position.");
-        return false;
-    }
-
-    if(!player.getHand().hasLetter(l)) {
-        stringstream error;
-        error << "You don't have letter '" << l << "' in your hand.";
-        displayer.pushError(error.str().c_str());
-        return false;
-    }
-
-    bool is_legal = any_of(legal_moves.begin(), legal_moves.end(), [position](Position pos){ return pos == position;});
-    if(!is_legal) {
-        displayer.pushError("There is at least one move that allows you to play twice this turn. This move would only allow you to play once.");
-        return false;
-    }
 
     moves_left -= 1;
     player.getHand().useLetter(l);
@@ -164,12 +107,32 @@ bool Game::move(Position position, GameDisplayer &displayer, vector<Position> &l
     }
     
     player.addScore(completed_words.size());
+}
+
+bool Game::move(Position position, GameDisplayer &displayer) {
+    if(!validateMove(position, displayer)) return false;
+    _move(position, displayer);
+
+    return true;
+}
+
+bool Game::move(Position position, GameDisplayer &displayer, vector<Position> &legal_moves) {
+    if(!validateMove(position, displayer)) return false;
+    
+    bool is_legal = find(legal_moves.begin(), legal_moves.end(), position) != legal_moves.end();
+
+    if(!is_legal) {
+        displayer.pushError("There is at least one move that allows you to play twice this turn. This move would only allow you to play once.");
+        return false;
+    }
+    
+    _move(position, displayer);
 
     return true;
 }
 
 bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine &rng) {
-    Player &player = getCurrentPlayer();
+    Player &player = players[current_player_index];
     letter = toupper(letter);
     if(letter < 'A' || letter > 'Z') {
         stringstream error;
@@ -193,7 +156,7 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
 }
 
 bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, default_random_engine &rng) {
-    Player &player = getCurrentPlayer();
+    Player &player = players[current_player_index];
     letter1 = toupper(letter1);
     if(letter1 < 'A' || letter1 > 'Z') {
         stringstream error;
@@ -236,12 +199,12 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
 }
 
 void Game::nextTurn(GameDisplayer &displayer) {
-    Player &current = getCurrentPlayer();
-    if(!current.getHand().isFull()) {
+    Player &player = players[current_player_index];
+    if(!player.getHand().isFull()) {
         if(pool.isEmpty()) displayer.drawEmptyPoolWhenRefilling();
         else {
             auto animator = displayer.animateRefillHand();
-            current.getHand().refill(pool, animator);
+            player.getHand().refill(pool, animator);
 
             if(pool.isEmpty()) displayer.noticeDepletedPool();
             else displayer.delay(750);
@@ -249,16 +212,12 @@ void Game::nextTurn(GameDisplayer &displayer) {
     } 
     
     moves_left = 2;
-    turn++;
-}
-
-bool Game::canCurrentPlayerMove() {
-    Player &current = getCurrentPlayer();
-    return board.hasMove(current.getHand());
+    current_player_index++;
+    if(current_player_index == players.size()) current_player_index = 0;
 }
 
 bool Game::mustPlayTwiceEdgeCase(vector<Position> &positions) {
-    if(getMovesThisTurn() > 0) return false;
-    Player &current_player = getCurrentPlayer();
-    return board.mustPlayTwiceEdgeCase(positions, current_player.getHand());
+    if(moves_left < 2) return false;
+    Player &player = players[current_player_index];
+    return board.mustPlayTwiceEdgeCase(positions, player.getHand());
 }

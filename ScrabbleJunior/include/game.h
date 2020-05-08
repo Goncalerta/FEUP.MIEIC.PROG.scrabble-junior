@@ -17,25 +17,24 @@ class Game {
     Board &board;
     std::vector<Player> players;
     Pool pool;
-    unsigned int turn;
+    unsigned int current_player_index;
     unsigned int moves_left;
+
+    bool validateMove(Position position, GameDisplayer &displayer);
+    void _move(Position position, GameDisplayer &displayer);
 
     public:
     Game(Board &board, unsigned int num_players, std::default_random_engine &rng);
 
     const std::vector<Player>& getPlayers() const;
     const Board& getBoard() const;
-    const Pool& getPool() const;
+    const Pool& getPool() const; // Do I need this?
 
-    Player& getCurrentPlayer(); // TODO make const
-    int getCurrentPlayerNumber() const;
-    int getMovesLeftThisTurn() const;
-    int getMovesThisTurn() const;
-    bool canCurrentPlayerMove(); // TODO make const
+    const Player& getCurrentPlayer() const;
+    int getMovesLeftThisTurn() const; 
     
     bool isOver() const;
     std::vector<const Player*> getLeaderboard() const;
-    int getLeadingScorePlayerNumber() const;
 
     bool move(Position position, GameDisplayer &displayer);
     bool move(Position position, GameDisplayer &displayer, std::vector<Position> &legal_moves);

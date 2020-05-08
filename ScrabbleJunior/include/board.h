@@ -40,7 +40,7 @@ class Board {
     
     char getLetter(Position position) const;
     void cover(Position position, std::vector<Word> &completed_words);
-    bool hasMove(const Hand &hand);
+    bool hasMove(const Hand &hand) const;
 
     const Cell& getCell(Position position) const;
     std::vector<char> getLettersInBoard() const;

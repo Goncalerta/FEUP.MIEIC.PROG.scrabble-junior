@@ -149,7 +149,7 @@ int Board::getWidth() const {
     return width;
 }
 
-bool Board::hasMove(const Hand &hand) {
+bool Board::hasMove(const Hand &hand) const {
     for(auto &row: grid) {
         for(auto &cell: row) {
             char letter = cell.getLetter();

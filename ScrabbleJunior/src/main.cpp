@@ -120,9 +120,9 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
     string p_input;
 
     do {
-        int player_number = game.getCurrentPlayerNumber();
+        const Player &player = game.getCurrentPlayer();
 
-        if(game.canCurrentPlayerMove()) {
+        if(game.getBoard().hasMove(player.getHand())) {
             vector<Position> edge_case_legal_positions;
             if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
                 displayer.draw(edge_case_legal_positions);
@@ -177,9 +177,9 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                     game.nextTurn(displayer);
                 }
             }
-        } else if(game.getMovesThisTurn() >= 1) {
+        } else if(game.getMovesLeftThisTurn() == 1) {
             stringstream error;
-            error << "Player " << player_number << " couldn't make any more moves this turn.";
+            error << "Player " << player.getId() << " couldn't make any more moves this turn.";
             displayer.pushError(error.str().c_str());
 
             displayer.drawUnplayable();
@@ -190,7 +190,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             game.nextTurn(displayer);
         } else if(game.getPool().size() >= 2) {
             stringstream error;
-            error << "Player " << player_number << " couldn't make any move." << endl
+            error << "Player " << player.getId() << " couldn't make any move." << endl
                 << "Must choose two letters to exchange with the Pool this turn.";
             displayer.pushError(error.str().c_str());
 
@@ -215,7 +215,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             }
         } else if(game.getPool().size() == 1) {
             stringstream error;
-            error << "Player " << player_number << " couldn't make any move." << endl
+            error << "Player " << player.getId() << " couldn't make any move." << endl
                 << "Must choose a letter this turn to exchange for the remaining one in the Pool.";
             displayer.pushError(error.str().c_str());
 
@@ -240,7 +240,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             }
         } else {
             stringstream error;
-            error << "Player " << player_number << " couldn't make any move." << endl
+            error << "Player " << player.getId() << " couldn't make any move." << endl
                 << "The pool is empty. Turn has been skipped.";
             displayer.pushError(error.str().c_str());
 
