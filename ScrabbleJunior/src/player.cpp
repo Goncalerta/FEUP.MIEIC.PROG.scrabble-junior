@@ -8,10 +8,6 @@ Player::Player(unsigned int id):
     score(0)
 {}
 
-bool Player::isValidLetter(char letter) {
-    return letter >= 'A' && letter <= 'Z';
-}
-
 const Hand& Player::getHand() const {
     return hand;
 }

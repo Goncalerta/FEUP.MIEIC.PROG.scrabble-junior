@@ -31,7 +31,7 @@ class Board {
 
     unsigned int countLetters();
 
-    bool addWord(Position start, Orientation orientation, std::string word); // TODO change to Word
+    bool addWord(Word word);
     Word findWord(Position position, Orientation orientation);
     bool isFullyCovered() const;
 

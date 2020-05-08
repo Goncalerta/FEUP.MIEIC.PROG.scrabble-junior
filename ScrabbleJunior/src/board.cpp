@@ -16,14 +16,17 @@ Board::Board(unsigned int width, unsigned int height):
   grid(height, vector<Cell>(width)) 
 {}
 
-bool Board::addWord(Position pos, Orientation orientation, std::string word) {
+bool Board::addWord(Word word) {
     // TODO check if everything is valid
-    getCell(pos).allowMove(orientation);
-    for(int i = 0; i < word.size(); i++) {
-        Cell &cell = getCell(pos);
+    Position position = word.getStart();
+    Orientation orientation = word.getOrientation();
+
+    getCell(position).allowMove(orientation);
+    for(const char &letter: word) {
+        Cell &cell = getCell(position);
         if(cell.isEmpty()) total_letters += 1;
-        getCell(pos).setLetter(word[i]);
-        pos.stepForward(orientation);
+        cell.setLetter(letter);
+        position.stepForward(orientation);
     }
     
     return true;

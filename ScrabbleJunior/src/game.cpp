@@ -171,7 +171,7 @@ bool Game::move(Position position, GameDisplayer &displayer, std::vector<Positio
 bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine &rng) {
     Player &player = getCurrentPlayer();
     letter = toupper(letter);
-    if(!Player::isValidLetter(letter)) {
+    if(letter < 'A' || letter > 'Z') {
         stringstream error;
         error << "Character '" << letter << "' is not a letter.";
         displayer.pushError(error.str().c_str());
@@ -195,7 +195,7 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
 bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, default_random_engine &rng) {
     Player &player = getCurrentPlayer();
     letter1 = toupper(letter1);
-    if(!Player::isValidLetter(letter1)) {
+    if(letter1 < 'A' || letter1 > 'Z') {
         stringstream error;
         error << "Character '" << letter1 << "' is not a letter.";
         displayer.pushError(error.str().c_str());
@@ -203,7 +203,7 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
     }
 
     letter2 = toupper(letter2);
-    if(!Player::isValidLetter(letter2)) {
+    if(letter2 < 'A' || letter2 > 'Z') {
         stringstream error;
         error << "Character '" << letter2 << "' is not a letter.";
         displayer.pushError(error.str().c_str());

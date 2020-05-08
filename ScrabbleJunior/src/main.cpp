@@ -110,7 +110,7 @@ bool loadBoardFile(Board &board, std::istream &board_file) {
         else if(c_orientation == 'V') orientation = Vertical;
         else break;
 
-        if(!board.addWord(position, orientation, word)) return false; // TODO ERROR MESSAGE
+        if(!board.addWord(Word(position, orientation, word))) return false; // TODO ERROR MESSAGE
     }
 
     return true;

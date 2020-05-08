@@ -398,7 +398,7 @@ void GameDisplayer::animateWordComplete(const Word &word) {
     int x = position.getX()*2 + 1;
     int y = position.getY() + 1;
     setcolor(GREEN, LIGHTGRAY);
-    for(const char &c: word.getWord()) {
+    for(const char &c: word) {
         gotoxy(x, y);
         cout << c;
         this_thread::sleep_for(chrono::milliseconds(200));
@@ -409,7 +409,7 @@ void GameDisplayer::animateWordComplete(const Word &word) {
     x = position.getX()*2 + 1;
     y = position.getY() + 1;
     setcolor(RED, LIGHTGRAY);
-    for(const char &c: word.getWord()) {
+    for(const char &c: word) {
         gotoxy(x, y);
         cout << c;
         if(word.getOrientation() == Horizontal) x += 2;

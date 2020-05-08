@@ -27,8 +27,7 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void setcolor(Color color, Color background_color)
-{
+void setcolor(Color color, Color background_color) {
     HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
     if (background_color == BLACK) {
         SetConsoleTextAttribute(hCon, color);

@@ -8,9 +8,7 @@ class Player {
     unsigned int id;
     Hand hand;
 
-    public:
-    static bool isValidLetter(char letter); // TODO shouldn't be here
-    
+    public:    
     Player(unsigned int id);
 
     const Hand& getHand() const;
