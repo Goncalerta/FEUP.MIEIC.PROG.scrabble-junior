@@ -56,11 +56,11 @@ vector<const Player*> Game::getLeaderboard() const {
     return leaderboard;
 }
 
-bool Game::validateMove(Position position, GameDisplayer &displayer) {
+bool Game::validateMove(Position position, ostream &error_stream) {
     Player &player = players[current_player_index];
     
     if(!position.inLimits(board.getWidth(), board.getHeight())) {
-        displayer.pushError("Position is outside board limits.");
+        error_stream << "Position is outside board limits.\n";
         return false;
     }
 
@@ -68,24 +68,22 @@ bool Game::validateMove(Position position, GameDisplayer &displayer) {
     const Board &cboard = board;
 
     if(cboard.getCell(position).isEmpty()) {
-        displayer.pushError("The given position has no letter.");
+        error_stream << "The given position has no letter.\n";
         return false;
     }
 
     if(cboard.getCell(position).isCovered()) {
-        displayer.pushError("That position has already been covered.");
+        error_stream << "That position has already been covered.\n";
         return false;
     }
 
     if(!cboard.getCell(position).isCoverable()) {
-        displayer.pushError("Can't move to that position.");
+        error_stream << "Can't move to that position.\n";
         return false;
     }
 
     if(!player.getHand().hasLetter(l)) {
-        stringstream error;
-        error << "You don't have letter '" << l << "' in your hand.";
-        displayer.pushError(error.str().c_str());
+        error_stream << "You don't have letter '" << l << "' in your hand.\n";
         return false;
     }
 
@@ -110,19 +108,19 @@ void Game::_move(Position position, GameDisplayer &displayer) {
 }
 
 bool Game::move(Position position, GameDisplayer &displayer) {
-    if(!validateMove(position, displayer)) return false;
+    if(!validateMove(position, displayer.getErrorStream())) return false;
     _move(position, displayer);
 
     return true;
 }
 
 bool Game::move(Position position, GameDisplayer &displayer, vector<Position> &legal_moves) {
-    if(!validateMove(position, displayer)) return false;
+    if(!validateMove(position, displayer.getErrorStream())) return false;
     
     bool is_legal = find(legal_moves.begin(), legal_moves.end(), position) != legal_moves.end();
 
     if(!is_legal) {
-        displayer.pushError("There is at least one move that allows you to play twice this turn. This move would only allow you to play once.");
+        displayer.getErrorStream() << "There is at least one move that allows you to play twice this turn. This move would only allow you to play once.\n";
         return false;
     }
     
@@ -135,16 +133,12 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
     Player &player = players[current_player_index];
     letter = toupper(letter);
     if(letter < 'A' || letter > 'Z') {
-        stringstream error;
-        error << "Character '" << letter << "' is not a letter.";
-        displayer.pushError(error.str().c_str());
+        displayer.getErrorStream() << "Character '" << letter << "' is not a letter.\n";
         return false;
     }
 
     if(!player.getHand().hasLetter(letter)) {
-        stringstream error;
-        error << "You don't have letter '" << letter << "' in your hand.";
-        displayer.pushError(error.str().c_str());
+        displayer.getErrorStream() << "You don't have letter '" << letter << "' in your hand.\n";
         return false;
     }
 
@@ -159,33 +153,25 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
     Player &player = players[current_player_index];
     letter1 = toupper(letter1);
     if(letter1 < 'A' || letter1 > 'Z') {
-        stringstream error;
-        error << "Character '" << letter1 << "' is not a letter.";
-        displayer.pushError(error.str().c_str());
+        displayer.getErrorStream() << "Character '" << letter1 << "' is not a letter.\n";
         return false;
     }
 
     letter2 = toupper(letter2);
     if(letter2 < 'A' || letter2 > 'Z') {
-        stringstream error;
-        error << "Character '" << letter2 << "' is not a letter.";
-        displayer.pushError(error.str().c_str());
+        displayer.getErrorStream() << "Character '" << letter2 << "' is not a letter.\n";
         return false;
     }
 
     bool has_letters = true;
 
     if(!player.getHand().hasLetter(letter1)) {
-        stringstream error;
-        error << "You don't have letter '" << letter1 << "' in your hand.";
-        displayer.pushError(error.str().c_str());
+        displayer.getErrorStream() << "You don't have letter '" << letter1 << "' in your hand.\n";
         has_letters = false;
     }
 
     if(!player.getHand().hasLetter(letter2)) {
-        stringstream error;
-        error << "You don't have letter '" << letter2 << "' in your hand.";
-        displayer.pushError(error.str().c_str());
+        displayer.getErrorStream() << "You don't have letter '" << letter2 << "' in your hand.\n";
         has_letters = false;
     }
 

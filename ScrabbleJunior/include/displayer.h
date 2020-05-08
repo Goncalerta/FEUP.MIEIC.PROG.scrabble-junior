@@ -4,6 +4,7 @@
 class GameDisplayer;
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include "game.h"
 #include "board.h"
@@ -21,7 +22,7 @@ class GameDisplayer {
     static const Color PLAYERS_COLOR[];
     static const char* WINNER_LABELS[];
 
-    std::vector<std::string> error_messages;
+    std::ostringstream error_messages;
     Game &game;
 
     void drawBoard(const Board &board, const Hand &hand);
@@ -35,7 +36,7 @@ class GameDisplayer {
     public:
     GameDisplayer(Game &game);
 
-    void pushError(const char *error);
+    std::ostream& getErrorStream();
     void clearErrors();
 
     void draw();

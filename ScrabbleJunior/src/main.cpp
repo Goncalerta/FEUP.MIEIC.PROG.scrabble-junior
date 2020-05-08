@@ -116,7 +116,7 @@ bool loadBoardFile(Board &board, istream &board_file) {
     return true;
 }
 
-bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
+bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
     string p_input;
 
     do {
@@ -131,17 +131,17 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 displayer.clearErrors();
 
                 if(p_input.size() > 2) {
-                    displayer.pushError("Too many characters in input.");
+                    displayer.getErrorStream() << "Too many characters in input.\n";
                     continue;
                 }
 
                 if(p_input.size() < 2) {
-                    displayer.pushError("Too few characters in input.");
+                    displayer.getErrorStream() << "Too few characters in input.\n";
                     continue;
                 }
 
                 if(!Position::isValid(p_input[1], p_input[0])) {
-                    displayer.pushError("Couldn't parse input as a position.");
+                    displayer.getErrorStream() << "Couldn't parse input as a position.\n";
                     continue;
                 }
 
@@ -157,17 +157,17 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 displayer.clearErrors();
 
                 if(p_input.size() > 2) {
-                    displayer.pushError("Too many characters in input.");
+                    displayer.getErrorStream() << "Too many characters in input.\n";
                     continue;
                 }
 
                 if(p_input.size() < 2) {
-                    displayer.pushError("Too few characters in input.");
+                    displayer.getErrorStream() << "Too few characters in input.\n";
                     continue;
                 }
 
                 if(!Position::isValid(p_input[1], p_input[0])) {
-                    displayer.pushError("Couldn't parse input as a position.");
+                    displayer.getErrorStream() << "Couldn't parse input as a position.\n";
                     continue;
                 }
 
@@ -178,9 +178,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 }
             }
         } else if(game.getMovesLeftThisTurn() == 1) {
-            stringstream error;
-            error << "Player " << player.getId() << " couldn't make any more moves this turn.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any more moves this turn.\n";
 
             displayer.drawUnplayable();
             displayer.clearErrors();
@@ -189,10 +187,8 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
 
             game.nextTurn(displayer);
         } else if(game.getPool().size() >= 2) {
-            stringstream error;
-            error << "Player " << player.getId() << " couldn't make any move." << endl
-                << "Must choose two letters to exchange with the Pool this turn.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                    << "Must choose two letters to exchange with the Pool this turn.\n";
 
             displayer.draw();
             cout << "Input two letters to exchange with the Pool: ";
@@ -205,8 +201,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             char _ignore;
 
             if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
-                // TODO maybe something more efficient that .str() ?
-                displayer.pushError("Invalid input.");
+                displayer.getErrorStream() << "Invalid input.\n";
                 continue;
             }
 
@@ -214,10 +209,8 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 game.nextTurn(displayer);
             }
         } else if(game.getPool().size() == 1) {
-            stringstream error;
-            error << "Player " << player.getId() << " couldn't make any move." << endl
-                << "Must choose a letter this turn to exchange for the remaining one in the Pool.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                    << "Must choose a letter this turn to exchange for the remaining one in the Pool.\n";
 
             displayer.draw();
             cout << "Input a letter to exchange with the Pool: ";
@@ -230,8 +223,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             char _ignore;
 
             if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
-                // TOD maybe something more efficient that .str() ?
-                displayer.pushError("Invalid input.");
+                displayer.getErrorStream() << "Invalid input.\n";
                 continue;
             }
 
@@ -239,10 +231,8 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 game.nextTurn(displayer);
             }
         } else {
-            stringstream error;
-            error << "Player " << player.getId() << " couldn't make any move." << endl
-                << "The pool is empty. Turn has been skipped.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                    << "The pool is empty. Turn has been skipped.\n";
 
             displayer.drawUnplayable();
             displayer.clearErrors();

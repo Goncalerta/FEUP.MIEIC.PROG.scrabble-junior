@@ -5,7 +5,7 @@ class Game;
 
 #include <string>
 #include <vector>
-#include <iostream>
+#include <ostream>
 #include <random>
 #include "player.h"
 #include "board.h"
@@ -20,7 +20,7 @@ class Game {
     unsigned int current_player_index;
     unsigned int moves_left;
 
-    bool validateMove(Position position, GameDisplayer &displayer);
+    bool validateMove(Position position, std::ostream &error_stream);
     void _move(Position position, GameDisplayer &displayer);
 
     public:

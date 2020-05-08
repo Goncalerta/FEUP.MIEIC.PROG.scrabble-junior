@@ -10,16 +10,15 @@ const Color GameDisplayer::PLAYERS_COLOR[] = {CYAN, LIGHTRED, GREEN, YELLOW};
 const char* GameDisplayer::WINNER_LABELS[] = {"1st", "2nd", "3rd", "4th"};
 
 GameDisplayer::GameDisplayer(Game &game): 
-    game(game), 
-    error_messages(0)
+    game(game)
 {}
 
-void GameDisplayer::pushError(const char *error) {
-    error_messages.push_back(string(error));
+std::ostream& GameDisplayer::getErrorStream() {
+    return error_messages;
 }
 
 void GameDisplayer::clearErrors() {
-    error_messages.clear();
+    error_messages.str("");
 }
 
 void GameDisplayer::draw() {
@@ -303,9 +302,7 @@ void GameDisplayer::drawCurrentPlayer() {
 
 void GameDisplayer::drawErrorMessages() {
     setcolor(RED);
-    for(auto &error: error_messages) {
-        cout << error << endl;
-    }
+    cout << error_messages.str();
     setcolor(LIGHTGRAY);
 }
 
