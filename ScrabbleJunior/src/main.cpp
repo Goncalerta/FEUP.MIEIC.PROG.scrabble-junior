@@ -12,14 +12,14 @@
 using namespace std;
 
 bool parseBoardFile(istream &board_file, Board &board, Pool &pool) {
-    // string line;
-    // getline(board_file, line);
+     //string line;
+     //getline(board_file, line);
     
-    // if(board_file.fail()) return false;
+     //if(board_file.fail()) return false;
     
-    // while(getline(board_file, line)) {
+     //while(getline(board_file, line)) {
 
-    // }
+     //}
     int width, height;
     char x;
     board_file >> height >> x >> width;
