@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "cell.h"
 
 using namespace std;
@@ -25,10 +24,6 @@ void Cell::cover() {
     coverable = false;
 }
 
-std::pair<bool, bool> Cell::getPropagation() const {
-    return pair<bool, bool>(propagates_horizontally, propagates_vertically);
-}
-
 char Cell::getLetter() const {
     return letter;
 }
@@ -49,7 +44,10 @@ bool Cell::isEmpty() const {
     return letter == EMPTY;
 }
 
-bool Cell::canCover(const Hand &hand) const {
-    if(!coverable) return false;
-    return any_of(hand.begin(), hand.end(), [this](auto i){return i == this->letter;});
+bool Cell::propagatesHorizontally() const {
+    return propagates_horizontally;
+}
+
+bool Cell::propagatesVertically() const {
+    return propagates_vertically;
 }

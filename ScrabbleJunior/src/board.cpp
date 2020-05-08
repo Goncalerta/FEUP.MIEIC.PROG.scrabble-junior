@@ -33,16 +33,16 @@ bool Board::addWord(Word word) {
 }
 
 Word Board::findWord(Position position, Orientation orientation) {
-    std::string word;
+    string word;
     
-    while(position.inRect(Position(0, 0), width, height) && !getCell(position).isEmpty()) {
+    while(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         position.stepBackwards(orientation);
     }
 
     position.stepForward(orientation);
     Position start = position;
 
-    while(position.inRect(Position(0, 0), width, height) && !getCell(position).isEmpty()) {
+    while(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         word.push_back(getCell(position).getLetter());
         position.stepForward(orientation);
     }
@@ -86,19 +86,15 @@ void Board::cover(Position position, vector<Word> &completed_words) {
     Cell &cell = getCell(position);
 
     cell.cover();
-    pair<bool, bool> propagation = cell.getPropagation();
-    bool propagates_horizontally = propagation.first;
-    bool propagates_vertically = propagation.second;
-
     int score = 0;
 
-    if(propagates_horizontally) {
+    if(cell.propagatesHorizontally()) {
         if(propagate(position, Horizontal)) {
             completed_words.push_back(findWord(position, Horizontal));
         }
     }
 
-    if(propagates_vertically) {
+    if(cell.propagatesVertically()) {
         if(propagate(position, Vertical)) {
             completed_words.push_back(findWord(position, Vertical));
         }
@@ -156,7 +152,8 @@ int Board::getWidth() const {
 bool Board::hasMove(const Hand &hand) {
     for(auto &row: grid) {
         for(auto &cell: row) {
-            if(cell.canCover(hand)) return true;
+            char letter = cell.getLetter();
+            if(cell.isCoverable() && hand.hasLetter(letter)) return true;
         }
     }
     return false;
@@ -172,7 +169,7 @@ vector<char> Board::getLettersInBoard() const {
     return letters;
 }
 
-bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &hand) {
+bool Board::mustPlayTwiceEdgeCase(vector<Position> &positions, const Hand &hand) {
     // This edge case happens when:
     // 1- All possible moves are with the same letter
     // 2- Player has just one such letter in hand
@@ -187,7 +184,7 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &
             Cell &cell = grid[j][i];
             Position position(i, j);
 
-            if(cell.canCover(hand)) {
+            if(cell.isCoverable() && hand.hasLetter(cell.getLetter())) {
                 
                 if(!letter) {
                     letter = cell.getLetter();
@@ -196,11 +193,7 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &
                 } else if(letter != cell.getLetter()) return false; // Check condition '1'
 
                 // Check condition '3'
-                pair<bool, bool> propagation = cell.getPropagation();
-                bool propagates_horizontally = propagation.first;
-                bool propagates_vertically = propagation.second;
-
-                if(propagates_horizontally) {
+                if(cell.propagatesHorizontally()) {
                     const Cell *next_cell = getNextUncoveredCell(position, Horizontal);
                     if(next_cell) {
                         char next_letter = next_cell->getLetter();
@@ -211,7 +204,7 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &
                     }
                 }
 
-                if(propagates_vertically) {
+                if(cell.propagatesVertically()) {
                     const Cell *next_cell = getNextUncoveredCell(position, Vertical);
                     if(next_cell) {
                         char next_letter = next_cell->getLetter();

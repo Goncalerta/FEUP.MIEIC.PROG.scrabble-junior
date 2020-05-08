@@ -54,7 +54,7 @@ bool openBoardFile(ifstream &board_file) {
     return true;
 }
 
-bool loadBoardFile(Board &board, std::istream &board_file) {
+bool loadBoardFile(Board &board, istream &board_file) {
     board = Board();
     unsigned int width, height;
 
@@ -185,7 +185,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             displayer.drawUnplayable();
             displayer.clearErrors();
             cout << "Press ENTER to continue . . . " << endl;
-            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             game.nextTurn(displayer);
         } else if(game.getPool().size() >= 2) {
@@ -247,7 +247,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             displayer.drawUnplayable();
             displayer.clearErrors();
             cout << "Press ENTER to continue . . . " << endl;
-            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             game.nextTurn(displayer);
         }
@@ -269,13 +269,13 @@ bool promptPlayAgain() {
 
         if(input_stream.fail()) {
             setcolor(RED);
-            std::cout << "Invalid input." << endl;
+            cout << "Invalid input." << endl;
             setcolor(LIGHTGRAY);
         } else if(answer == 'Y' || answer == 'y') return true;
         else if(answer == 'N' || answer == 'n') return false;
         else {
             setcolor(RED);
-            std::cout << "Invalid input." << endl;
+            cout << "Invalid input." << endl;
             setcolor(LIGHTGRAY);
         }
     }
@@ -320,7 +320,7 @@ int playOnce(default_random_engine rng) {
     if(max_players == 2) {
         cout << "This board only allows you to play a game with " << max_players << " players." << endl;
         cout << "Press ENTER to start a game with 2 players . . . " << endl;
-        cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         num_players = 2;
         valid_num_players = true;

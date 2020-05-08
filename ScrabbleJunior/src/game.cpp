@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Game::Game(Board &board, unsigned int num_players, std::default_random_engine &rng):
+Game::Game(Board &board, unsigned int num_players, default_random_engine &rng):
     board(board),
     pool(board.getLettersInBoard()),
     turn(0),
@@ -36,7 +36,7 @@ int Game::getMovesThisTurn() const {
     return 2 - moves_left;
 }
 
-const std::vector<Player>& Game::getPlayers() const {
+const vector<Player>& Game::getPlayers() const {
     return players;
 }
 
@@ -71,7 +71,7 @@ int Game::getLeadingScorePlayerNumber() const {
 
 bool Game::move(Position position, GameDisplayer &displayer) {
     Player &player = getCurrentPlayer();
-    if(!position.inRect(Position(0, 0), board.getWidth(), board.getHeight())) {
+    if(!position.inLimits(board.getWidth(), board.getHeight())) {
         displayer.pushError("Position is outside board limits.");
         return false;
     }
@@ -116,9 +116,9 @@ bool Game::move(Position position, GameDisplayer &displayer) {
 }
 
 // TODO reduce duplication
-bool Game::move(Position position, GameDisplayer &displayer, std::vector<Position> &legal_moves) {
+bool Game::move(Position position, GameDisplayer &displayer, vector<Position> &legal_moves) {
     Player &player = getCurrentPlayer();
-    if(!position.inRect(Position(0, 0), board.getWidth(), board.getHeight())) {
+    if(!position.inLimits(board.getWidth(), board.getHeight())) {
         displayer.pushError("Position is outside board limits.");
         return false;
     }
@@ -257,7 +257,7 @@ bool Game::canCurrentPlayerMove() {
     return board.hasMove(current.getHand());
 }
 
-bool Game::mustPlayTwiceEdgeCase(std::vector<Position> &positions) {
+bool Game::mustPlayTwiceEdgeCase(vector<Position> &positions) {
     if(getMovesThisTurn() > 0) return false;
     Player &current_player = getCurrentPlayer();
     return board.mustPlayTwiceEdgeCase(positions, current_player.getHand());

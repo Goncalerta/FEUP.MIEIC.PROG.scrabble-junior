@@ -38,7 +38,7 @@ void GameDisplayer::draw() {
 }
 
 // TODO reduce code duplication
-void GameDisplayer::draw(std::vector<Position> &legal_moves) {
+void GameDisplayer::draw(vector<Position> &legal_moves) {
     clrscr();
     
     Player &current_player = game.getCurrentPlayer();
@@ -145,16 +145,17 @@ void GameDisplayer::drawBoard(const Board &board, const Hand &hand) {
         
         for(int i = 0; i < board.getWidth(); i++) {
             const Cell cell = board.getCell(Position(i, j));
-            
+            char letter = cell.getLetter();
+
             if(cell.isEmpty()) {
                 setcolor(BLACK, LIGHTGRAY);
                 cout << ' ';
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
-                else if(cell.canCover(hand)) setcolor(BLACK, YELLOW);
+                else if(cell.isCoverable() && hand.hasLetter(letter)) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
-                cout << cell.getLetter();
+                cout << letter;
             }
 
             if(i+1 != board.getWidth()) {
@@ -204,7 +205,7 @@ void GameDisplayer::drawBoard(const Board &board) {
 }
 
 // TODO reduce code duplication
-void GameDisplayer::drawBoard(const Board &board, std::vector<Position> &legal_moves) {
+void GameDisplayer::drawBoard(const Board &board, vector<Position> &legal_moves) {
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -259,7 +260,7 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
 }
 
 // TODO reduce code duplication
-void GameDisplayer::drawLeaderboard(std::vector<const Player*> players, int x_offset) {
+void GameDisplayer::drawLeaderboard(vector<const Player*> players, int x_offset) {
 
     gotoxy(x_offset + 9, 1);
     cout << "SCORE";

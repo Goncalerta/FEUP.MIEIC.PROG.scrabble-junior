@@ -5,26 +5,27 @@
 #include "orientation.h"
 
 class Position {
-    int x;
-    int y;
+    unsigned int x;
+    unsigned int y;
 
     public:
-    static bool isValid(char x, char y);
+    static bool isValid(char x, char y); // TODO should this belong to position?
 
     Position();
     Position(int x, int y);
-    Position(char x, char y);
+    Position(unsigned int x, unsigned int y);
+    // TODO should this belong to position? maybe it could be a static method instead of constructor
+    // somehow unified with `isValid` and removing the need for signed and unsigned constructors.
+    Position(char x, char y); 
 
     int getX() const;
     int getY() const;
-    char getXChar() const;
-    char getYChar() const;
 
     void stepForward(Orientation orientation);
     void stepBackwards(Orientation orientation);
-    std::pair<Position, Position> laterals(Orientation orientation);
+    std::pair<Position, Position> laterals(Orientation orientation) const;
 
-    bool inRect(Position start, int width, int height) const; // TODO simpler, inLimits method
+    bool inLimits(int width, int height) const;
 
     bool operator==(const Position &other) const;
 };

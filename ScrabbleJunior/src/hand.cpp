@@ -1,6 +1,6 @@
-#include "hand.h"
 #include <iterator>
 #include <algorithm>
+#include "hand.h"
 
 Hand::Hand() {
     std::fill(std::begin(hand), std::end(hand), EMPTY);

@@ -1,7 +1,4 @@
-#include <algorithm>
 #include "player.h"
-
-using namespace std;
 
 Player::Player(unsigned int id): 
     id(id), 
