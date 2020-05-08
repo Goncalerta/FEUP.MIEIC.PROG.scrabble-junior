@@ -54,7 +54,7 @@ bool openBoardFile(ifstream &board_file) {
     return true;
 }
 
-bool loadBoardFile(Board &board, std::istream &board_file) {
+bool loadBoardFile(Board &board, istream &board_file) {
     board = Board();
     unsigned int width, height;
 
@@ -110,19 +110,19 @@ bool loadBoardFile(Board &board, std::istream &board_file) {
         else if(c_orientation == 'V') orientation = Vertical;
         else break;
 
-        if(!board.addWord(position, orientation, word)) return false; // TODO ERROR MESSAGE
+        if(!board.addWord(Word(position, orientation, word))) return false; // TODO ERROR MESSAGE
     }
 
     return true;
 }
 
-bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
+bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
     string p_input;
 
     do {
-        int player_number = game.getCurrentPlayerNumber();
+        const Player &player = game.getCurrentPlayer();
 
-        if(game.canCurrentPlayerMove()) {
+        if(game.getBoard().hasMove(player.getHand())) {
             vector<Position> edge_case_legal_positions;
             if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
                 displayer.draw(edge_case_legal_positions);
@@ -131,17 +131,17 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 displayer.clearErrors();
 
                 if(p_input.size() > 2) {
-                    displayer.pushError("Too many characters in input.");
+                    displayer.getErrorStream() << "Too many characters in input.\n";
                     continue;
                 }
 
                 if(p_input.size() < 2) {
-                    displayer.pushError("Too few characters in input.");
+                    displayer.getErrorStream() << "Too few characters in input.\n";
                     continue;
                 }
 
                 if(!Position::isValid(p_input[1], p_input[0])) {
-                    displayer.pushError("Couldn't parse input as a position.");
+                    displayer.getErrorStream() << "Couldn't parse input as a position.\n";
                     continue;
                 }
 
@@ -157,17 +157,17 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 displayer.clearErrors();
 
                 if(p_input.size() > 2) {
-                    displayer.pushError("Too many characters in input.");
+                    displayer.getErrorStream() << "Too many characters in input.\n";
                     continue;
                 }
 
                 if(p_input.size() < 2) {
-                    displayer.pushError("Too few characters in input.");
+                    displayer.getErrorStream() << "Too few characters in input.\n";
                     continue;
                 }
 
                 if(!Position::isValid(p_input[1], p_input[0])) {
-                    displayer.pushError("Couldn't parse input as a position.");
+                    displayer.getErrorStream() << "Couldn't parse input as a position.\n";
                     continue;
                 }
 
@@ -177,22 +177,18 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                     game.nextTurn(displayer);
                 }
             }
-        } else if(game.getMovesThisTurn() >= 1) {
-            stringstream error;
-            error << "Player " << player_number << " couldn't make any more moves this turn.";
-            displayer.pushError(error.str().c_str());
+        } else if(game.getMovesLeftThisTurn() == 1) {
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any more moves this turn.\n";
 
             displayer.drawUnplayable();
             displayer.clearErrors();
             cout << "Press ENTER to continue . . . " << endl;
-            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             game.nextTurn(displayer);
         } else if(game.getPool().size() >= 2) {
-            stringstream error;
-            error << "Player " << player_number << " couldn't make any move." << endl
-                << "Must choose two letters to exchange with the Pool this turn.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                    << "Must choose two letters to exchange with the Pool this turn.\n";
 
             displayer.draw();
             cout << "Input two letters to exchange with the Pool: ";
@@ -205,8 +201,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             char _ignore;
 
             if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
-                // TODO maybe something more efficient that .str() ?
-                displayer.pushError("Invalid input.");
+                displayer.getErrorStream() << "Invalid input.\n";
                 continue;
             }
 
@@ -214,10 +209,8 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 game.nextTurn(displayer);
             }
         } else if(game.getPool().size() == 1) {
-            stringstream error;
-            error << "Player " << player_number << " couldn't make any move." << endl
-                << "Must choose a letter this turn to exchange for the remaining one in the Pool.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                    << "Must choose a letter this turn to exchange for the remaining one in the Pool.\n";
 
             displayer.draw();
             cout << "Input a letter to exchange with the Pool: ";
@@ -230,8 +223,7 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
             char _ignore;
 
             if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
-                // TOD maybe something more efficient that .str() ?
-                displayer.pushError("Invalid input.");
+                displayer.getErrorStream() << "Invalid input.\n";
                 continue;
             }
 
@@ -239,15 +231,13 @@ bool playGame(Game &game, GameDisplayer displayer, default_random_engine rng) {
                 game.nextTurn(displayer);
             }
         } else {
-            stringstream error;
-            error << "Player " << player_number << " couldn't make any move." << endl
-                << "The pool is empty. Turn has been skipped.";
-            displayer.pushError(error.str().c_str());
+            displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                    << "The pool is empty. Turn has been skipped.\n";
 
             displayer.drawUnplayable();
             displayer.clearErrors();
             cout << "Press ENTER to continue . . . " << endl;
-            cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             game.nextTurn(displayer);
         }
@@ -269,13 +259,13 @@ bool promptPlayAgain() {
 
         if(input_stream.fail()) {
             setcolor(RED);
-            std::cout << "Invalid input." << endl;
+            cout << "Invalid input." << endl;
             setcolor(LIGHTGRAY);
         } else if(answer == 'Y' || answer == 'y') return true;
         else if(answer == 'N' || answer == 'n') return false;
         else {
             setcolor(RED);
-            std::cout << "Invalid input." << endl;
+            cout << "Invalid input." << endl;
             setcolor(LIGHTGRAY);
         }
     }
@@ -320,7 +310,7 @@ int playOnce(default_random_engine rng) {
     if(max_players == 2) {
         cout << "This board only allows you to play a game with " << max_players << " players." << endl;
         cout << "Press ENTER to start a game with 2 players . . . " << endl;
-        cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         num_players = 2;
         valid_num_players = true;

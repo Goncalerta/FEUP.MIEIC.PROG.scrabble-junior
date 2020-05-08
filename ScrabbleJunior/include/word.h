@@ -6,16 +6,19 @@
 #include "orientation.h"
 
 class Word {
-    Position start;
-    Orientation orientation;
-    std::string word;
+    const Position start;
+    const Orientation orientation;
+    const std::string word;
 
     public:
-    Word(Position start, Orientation orientation, std::string word);
+    typedef std::string::const_iterator const_iterator;
+    Word(Position start, Orientation orientation, std::string &word);
 
     Position getStart() const;
-    const std::string& getWord() const;
     Orientation getOrientation() const;
+
+    const_iterator begin() const;
+    const_iterator end() const;
 };
 
 #endif

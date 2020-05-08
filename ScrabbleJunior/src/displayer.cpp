@@ -1,8 +1,8 @@
 #include <iostream>
 #include <iomanip>
-#include "displayer.h"
 #include <chrono>
 #include <thread>
+#include "displayer.h"
 
 using namespace std;
 
@@ -10,23 +10,22 @@ const Color GameDisplayer::PLAYERS_COLOR[] = {CYAN, LIGHTRED, GREEN, YELLOW};
 const char* GameDisplayer::WINNER_LABELS[] = {"1st", "2nd", "3rd", "4th"};
 
 GameDisplayer::GameDisplayer(Game &game): 
-    game(game), 
-    error_messages(0)
+    game(game)
 {}
 
-void GameDisplayer::pushError(const char *error) {
-    error_messages.push_back(string(error));
+std::ostream& GameDisplayer::getErrorStream() {
+    return error_messages;
 }
 
 void GameDisplayer::clearErrors() {
-    error_messages.clear();
+    error_messages.str("");
 }
 
 void GameDisplayer::draw() {
     clrscr();
     
-    Player &current_player = game.getCurrentPlayer();
-    drawBoard(game.getBoard(), current_player.handBegin(), current_player.handEnd());
+    const Player &current_player = game.getCurrentPlayer();
+    drawBoard(game.getBoard(), current_player.getHand());
     
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
     drawPlayers(game.getPlayers(), player_x_offset);
@@ -38,11 +37,11 @@ void GameDisplayer::draw() {
 }
 
 // TODO reduce code duplication
-void GameDisplayer::draw(std::vector<Position> &legal_moves) {
+void GameDisplayer::draw(vector<Position> &legal_moves) {
     clrscr();
     
-    Player &current_player = game.getCurrentPlayer();
-    drawBoard(game.getBoard(), current_player.handBegin(), current_player.handEnd(), legal_moves);
+    const Player &current_player = game.getCurrentPlayer();
+    drawBoard(game.getBoard(), legal_moves);
     
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
     drawPlayers(game.getPlayers(), player_x_offset);
@@ -83,7 +82,7 @@ void GameDisplayer::declareWinners(vector<const Player*> leaderboard) {
     int winner_score = leaderboard[0]->getScore();
     vector<int> winners_id;
 
-    for(auto &player: leaderboard) {
+    for(const Player *player: leaderboard) {
         int score = player->getScore();
         int id = player->getId();
         
@@ -131,7 +130,7 @@ void GameDisplayer::declareWinners(vector<const Player*> leaderboard) {
     cout << endl;
 }
 
-void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end) {
+void GameDisplayer::drawBoard(const Board &board, const Hand &hand) {
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -145,16 +144,17 @@ void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const 
         
         for(int i = 0; i < board.getWidth(); i++) {
             const Cell cell = board.getCell(Position(i, j));
-            
+            char letter = cell.getLetter();
+
             if(cell.isEmpty()) {
                 setcolor(BLACK, LIGHTGRAY);
                 cout << ' ';
             } else {
                 if(cell.isCovered()) setcolor(RED, LIGHTGRAY);
-                else if(cell.canCover(hand_begin, hand_end)) setcolor(BLACK, YELLOW);
+                else if(cell.isCoverable() && hand.hasLetter(letter)) setcolor(BLACK, YELLOW);
                 else setcolor(BLACK, LIGHTGRAY);
                 
-                cout << cell.getLetter();
+                cout << letter;
             }
 
             if(i+1 != board.getWidth()) {
@@ -204,7 +204,7 @@ void GameDisplayer::drawBoard(const Board &board) {
 }
 
 // TODO reduce code duplication
-void GameDisplayer::drawBoard(const Board &board, const char *hand_begin, const char *hand_end, std::vector<Position> &legal_moves) {
+void GameDisplayer::drawBoard(const Board &board, vector<Position> &legal_moves) {
     cout << ' ';
     setcolor(LIGHTGRAY);
     for(int i = 0; i < board.getWidth(); i++) {
@@ -254,15 +254,12 @@ void GameDisplayer::drawPlayers(const vector<Player> &players, int x_offset) {
         cout << "P" << id;
         setcolor(LIGHTGRAY);
         cout << " " << setw(4) << players[i].getScore() << "      ";
-        for(auto letter = players[i].handBegin(); letter <= players[i].handEnd(); letter++) {
-            if(*letter == Player::EMPTY_HAND) cout << '_' << " ";
-            else cout << *letter << " ";
-        }
+        cout << players[i].getHand();
     }
 }
 
 // TODO reduce code duplication
-void GameDisplayer::drawLeaderboard(std::vector<const Player*> players, int x_offset) {
+void GameDisplayer::drawLeaderboard(vector<const Player*> players, int x_offset) {
 
     gotoxy(x_offset + 9, 1);
     cout << "SCORE";
@@ -300,19 +297,12 @@ void GameDisplayer::drawCurrentPlayer() {
         cout << "You have " << game.getMovesLeftThisTurn() << " moves left this turn." << endl;
     }
     
-    cout << "Your hand:  ";
-    for(auto i = player.handBegin(); i <= player.handEnd(); i++) {
-        if(*i == Player::EMPTY_HAND) cout << '_' << " ";
-        else cout << *i << " ";
-    }
-    cout << endl << endl;
+    cout << "Your hand:  " << player.getHand() << endl << endl;
 }
 
 void GameDisplayer::drawErrorMessages() {
     setcolor(RED);
-    for(auto &error: error_messages) {
-        cout << error << endl;
-    }
+    cout << error_messages.str();
     setcolor(LIGHTGRAY);
 }
 
@@ -324,7 +314,7 @@ void GameDisplayer::noticeDepletedPool() {
     this_thread::sleep_for(chrono::milliseconds(1250));
 }
 
-SwapHandAnimator GameDisplayer::animateRefillHand() {
+Hand::SwapLetterAnimator GameDisplayer::animateRefillHand() {
     drawUnplayable();
     setcolor(YELLOW);
     cout << "Refilling hand . . .";
@@ -354,7 +344,7 @@ void GameDisplayer::drawEmptyPoolWhenRefilling() {
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-SwapHandAnimator GameDisplayer::animateExchange(char letter) {
+Hand::SwapLetterAnimator GameDisplayer::animateExchange(char letter) {
     drawUnplayable();
     setcolor(YELLOW);
     cout << "Exchanging letter '" << letter << "' . . .";
@@ -374,7 +364,7 @@ SwapHandAnimator GameDisplayer::animateExchange(char letter) {
     };
 }
 
-SwapHandAnimator GameDisplayer::animateExchange(char letter1, char letter2) {
+Hand::SwapLetterAnimator GameDisplayer::animateExchange(char letter1, char letter2) {
     drawUnplayable();
     setcolor(YELLOW);
     cout << "Exchanging letters '" << letter1 << "' and '" << letter2 << "' . . .";
@@ -406,7 +396,7 @@ void GameDisplayer::animateWordComplete(const Word &word) {
     int x = position.getX()*2 + 1;
     int y = position.getY() + 1;
     setcolor(GREEN, LIGHTGRAY);
-    for(const char &c: word.getWord()) {
+    for(const char &c: word) {
         gotoxy(x, y);
         cout << c;
         this_thread::sleep_for(chrono::milliseconds(200));
@@ -417,7 +407,7 @@ void GameDisplayer::animateWordComplete(const Word &word) {
     x = position.getX()*2 + 1;
     y = position.getY() + 1;
     setcolor(RED, LIGHTGRAY);
-    for(const char &c: word.getWord()) {
+    for(const char &c: word) {
         gotoxy(x, y);
         cout << c;
         if(word.getOrientation() == Horizontal) x += 2;
@@ -426,7 +416,7 @@ void GameDisplayer::animateWordComplete(const Word &word) {
     setcolor(LIGHTGRAY);
 }
 
-void GameDisplayer::drawWordComplete(vector<Word> &words_completed) {
+void GameDisplayer::drawWordComplete(const vector<Word> &words_completed) {
     drawUnplayable();
     setcolor(GREEN);
     cout << "Score!";
@@ -437,7 +427,7 @@ void GameDisplayer::drawWordComplete(vector<Word> &words_completed) {
 
     int player_x_offset = game.getBoard().getWidth() * 2 + 2;
 
-    for(auto &word: words_completed) {
+    for(const Word &word: words_completed) {
         animateWordComplete(word);
 
         score+=1; 

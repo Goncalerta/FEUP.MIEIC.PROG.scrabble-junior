@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "position.h"
 #include "orientation.h"
 
 class Cell {
@@ -19,7 +18,6 @@ class Cell {
     Cell(char letter = EMPTY);
     void allowMove(Orientation word_orientation);
     void cover();
-    std::pair<bool, bool> getPropagation() const;
     
     char getLetter() const;
     void setLetter(char l);
@@ -27,8 +25,8 @@ class Cell {
     bool isCovered() const;
     bool isCoverable() const;
     bool isEmpty() const;
-
-    bool canCover(const char *hand_begin, const char *hand_end) const;
+    bool propagatesHorizontally() const;
+    bool propagatesVertically() const;
 };
 
 #endif

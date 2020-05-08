@@ -16,30 +16,33 @@ Board::Board(unsigned int width, unsigned int height):
   grid(height, vector<Cell>(width)) 
 {}
 
-bool Board::addWord(Position pos, Orientation orientation, std::string word) {
+bool Board::addWord(Word word) {
     // TODO check if everything is valid
-    getCell(pos).allowMove(orientation);
-    for(int i = 0; i < word.size(); i++) {
-        Cell &cell = getCell(pos);
+    Position position = word.getStart();
+    Orientation orientation = word.getOrientation();
+
+    getCell(position).allowMove(orientation);
+    for(const char &letter: word) {
+        Cell &cell = getCell(position);
         if(cell.isEmpty()) total_letters += 1;
-        getCell(pos).setLetter(word[i]);
-        pos.stepForward(orientation);
+        cell.setLetter(letter);
+        position.stepForward(orientation);
     }
     
     return true;
 }
 
 Word Board::findWord(Position position, Orientation orientation) {
-    std::string word;
+    string word;
     
-    while(position.inRect(Position(0, 0), width, height) && !getCell(position).isEmpty()) {
+    while(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         position.stepBackwards(orientation);
     }
 
     position.stepForward(orientation);
     Position start = position;
 
-    while(position.inRect(Position(0, 0), width, height) && !getCell(position).isEmpty()) {
+    while(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         word.push_back(getCell(position).getLetter());
         position.stepForward(orientation);
     }
@@ -83,19 +86,15 @@ void Board::cover(Position position, vector<Word> &completed_words) {
     Cell &cell = getCell(position);
 
     cell.cover();
-    pair<bool, bool> propagation = cell.getPropagation();
-    bool propagates_horizontally = propagation.first;
-    bool propagates_vertically = propagation.second;
-
     int score = 0;
 
-    if(propagates_horizontally) {
+    if(cell.propagatesHorizontally()) {
         if(propagate(position, Horizontal)) {
             completed_words.push_back(findWord(position, Horizontal));
         }
     }
 
-    if(propagates_vertically) {
+    if(cell.propagatesVertically()) {
         if(propagate(position, Vertical)) {
             completed_words.push_back(findWord(position, Vertical));
         }
@@ -150,10 +149,11 @@ int Board::getWidth() const {
     return width;
 }
 
-bool Board::hasMove(const char *hand_begin, const char *hand_end) {
+bool Board::hasMove(const Hand &hand) const {
     for(auto &row: grid) {
         for(auto &cell: row) {
-            if(cell.canCover(hand_begin, hand_end)) return true;
+            char letter = cell.getLetter();
+            if(cell.isCoverable() && hand.hasLetter(letter)) return true;
         }
     }
     return false;
@@ -169,7 +169,7 @@ vector<char> Board::getLettersInBoard() const {
     return letters;
 }
 
-bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *hand_begin, const char *hand_end) {
+bool Board::mustPlayTwiceEdgeCase(vector<Position> &positions, const Hand &hand) {
     // This edge case happens when:
     // 1- All possible moves are with the same letter
     // 2- Player has just one such letter in hand
@@ -184,36 +184,32 @@ bool Board::mustPlayTwiceEdgeCase(std::vector<Position> &positions, const char *
             Cell &cell = grid[j][i];
             Position position(i, j);
 
-            if(cell.canCover(hand_begin, hand_end)) {
+            if(cell.isCoverable() && hand.hasLetter(cell.getLetter())) {
                 
                 if(!letter) {
                     letter = cell.getLetter();
                     // Check condition '2'
-                    if(count(hand_begin, hand_end, letter) == 2) return false;
+                    if(count(hand.begin(), hand.end(), letter) == 2) return false;
                 } else if(letter != cell.getLetter()) return false; // Check condition '1'
 
                 // Check condition '3'
-                pair<bool, bool> propagation = cell.getPropagation();
-                bool propagates_horizontally = propagation.first;
-                bool propagates_vertically = propagation.second;
-
-                if(propagates_horizontally) {
+                if(cell.propagatesHorizontally()) {
                     const Cell *next_cell = getNextUncoveredCell(position, Horizontal);
                     if(next_cell) {
                         char next_letter = next_cell->getLetter();
 
-                        if(next_letter != letter && any_of(hand_begin, hand_end, [next_letter](auto hand) { return next_letter == hand; })) {
+                        if(next_letter != letter && any_of(hand.begin(), hand.end(), [next_letter](auto hand) { return next_letter == hand; })) {
                             positions.push_back(position);
                         }
                     }
                 }
 
-                if(propagates_vertically) {
+                if(cell.propagatesVertically()) {
                     const Cell *next_cell = getNextUncoveredCell(position, Vertical);
                     if(next_cell) {
                         char next_letter = next_cell->getLetter();
 
-                        if(next_letter != letter && any_of(hand_begin, hand_end, [next_letter](auto hand) { return next_letter == hand; })) {
+                        if(next_letter != letter && any_of(hand.begin(), hand.end(), [next_letter](auto hand) { return next_letter == hand; })) {
                             positions.push_back(position);
                         }
                     }

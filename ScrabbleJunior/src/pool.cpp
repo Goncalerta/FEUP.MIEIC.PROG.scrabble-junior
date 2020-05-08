@@ -3,17 +3,21 @@
 
 using namespace std;
 
-Pool::Pool() {}
 Pool::Pool(vector<char> &letters): letters(move(letters)) {}
-
-void Pool::pushLetter(char c) {
-    letters.push_back(c);
-}
 
 char Pool::popLetter() {
     char letter = letters.back();
     letters.pop_back();
     return letter;
+}
+
+void Pool::exchange(char *letter) {
+    swap(letters[0], *letter);
+}
+
+void Pool::exchange(char *letter1, char *letter2) {
+    swap(letters[0], *letter1);
+    swap(letters[1], *letter2);
 }
 
 void Pool::shuffle(default_random_engine &rng) {
@@ -26,13 +30,4 @@ bool Pool::isEmpty() const {
 
 int Pool::size() const {
     return letters.size();
-}
-
-void Pool::exchange(char *letter) {
-    swap(letters[0], *letter);
-}
-
-void Pool::exchange(char *letter1, char *letter2) {
-    swap(letters[0], *letter1);
-    swap(letters[1], *letter2);
 }
