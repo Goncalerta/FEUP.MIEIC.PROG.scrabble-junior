@@ -22,7 +22,8 @@ void GameDisplayer::clearErrors() {
 }
 
 void GameDisplayer::draw() {
-    clrscr();
+    clrscr(0, game.getBoard().getHeight()+2);
+    gotoxy(0, 0);
     
     const Player &current_player = game.getCurrentPlayer();
     drawBoard(game.getBoard(), current_player.getHand());
@@ -38,7 +39,8 @@ void GameDisplayer::draw() {
 
 // TODO reduce code duplication
 void GameDisplayer::draw(vector<Position> &legal_moves) {
-    clrscr();
+    clrscr(0, game.getBoard().getHeight()+2);
+    gotoxy(0, 0);
     
     const Player &current_player = game.getCurrentPlayer();
     drawBoard(game.getBoard(), legal_moves);
@@ -53,7 +55,8 @@ void GameDisplayer::draw(vector<Position> &legal_moves) {
 }
 
 void GameDisplayer::drawUnplayable() {
-    clrscr();
+    clrscr(0, game.getBoard().getHeight()+2);
+    gotoxy(0, 0);
     
     drawBoard(game.getBoard());
     
@@ -137,7 +140,7 @@ void GameDisplayer::drawBoard(const Board &board, const Hand &hand) {
         cout << (char)('a' + i) << ' ';
     }
 
-    cout << endl;
+    cout << '\n';
     for(int j = 0; j < board.getHeight(); j++) {
         setcolor(LIGHTGRAY);
         cout << (char)('A' + j);
@@ -162,7 +165,7 @@ void GameDisplayer::drawBoard(const Board &board, const Hand &hand) {
                 cout << ' ';
             }
         }
-        cout << endl;
+        cout << '\n';
     }
     setcolor(LIGHTGRAY);
 }
@@ -175,7 +178,7 @@ void GameDisplayer::drawBoard(const Board &board) {
         cout << (char)('a' + i) << ' ';
     }
 
-    cout << endl;
+    cout << '\n';
     for(int j = 0; j < board.getHeight(); j++) {
         setcolor(LIGHTGRAY);
         cout << (char)('A' + j);
@@ -198,7 +201,7 @@ void GameDisplayer::drawBoard(const Board &board) {
                 cout << ' ';
             }
         }
-        cout << endl;
+        cout << '\n';
     }
     setcolor(LIGHTGRAY);
 }
@@ -211,7 +214,7 @@ void GameDisplayer::drawBoard(const Board &board, vector<Position> &legal_moves)
         cout << (char)('a' + i) << ' ';
     }
 
-    cout << endl;
+    cout << '\n';
     for(int j = 0; j < board.getHeight(); j++) {
         setcolor(LIGHTGRAY);
         cout << (char)('A' + j);
@@ -237,7 +240,7 @@ void GameDisplayer::drawBoard(const Board &board, vector<Position> &legal_moves)
                 cout << ' ';
             }
         }
-        cout << endl;
+        cout << '\n';
     }
     setcolor(LIGHTGRAY);
 }

@@ -26,7 +26,7 @@ enum Color {
     WHITE = 15
 };
 
-void clrscr();
+void clrscr(int x = 0, int y = 0);
 
 // Position the cursor at column 'x', line 'y'
 // The coodinates of upper left corner of the screen are (x,y) = (0,0)

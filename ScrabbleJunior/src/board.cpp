@@ -70,7 +70,7 @@ Board& Board::setHeight(unsigned int height) {
     return *this;
 }
 
-unsigned int Board::countLetters() {
+unsigned int Board::countLetters() const {
     return total_letters;
 }
 

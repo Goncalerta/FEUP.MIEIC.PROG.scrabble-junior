@@ -232,7 +232,7 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
             }
         } else {
             displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
-                    << "The pool is empty. Turn has been skipped.\n";
+                    << "Turn has been skipped.\n";
 
             displayer.drawUnplayable();
             displayer.clearErrors();
@@ -349,6 +349,8 @@ int playOnce(default_random_engine rng) {
         valid_num_players = true;
     }
 
+    clrscr();
+
     Game game(board, num_players, rng);
     GameDisplayer displayer(game);
     if(!playGame(game, displayer, rng)) return 1;
@@ -359,6 +361,7 @@ int playOnce(default_random_engine rng) {
 }
 
 int main() {
+    ios::sync_with_stdio(false);
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
     default_random_engine rng(seed);
     

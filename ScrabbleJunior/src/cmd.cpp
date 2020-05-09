@@ -4,14 +4,16 @@
 
 using namespace std;
 
-void clrscr() {
-    COORD coordScreen = { 0, 0 }; // upper left corner
+void clrscr(int x, int y) {
+    COORD coordScreen;
+    coordScreen.X = x;
+    coordScreen.Y = y;
     DWORD cCharsWritten;
     DWORD dwConSize;
     HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(hCon, &csbi);
-    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+    dwConSize = (csbi.dwSize.X-x) * (csbi.dwSize.Y-y);
     // fill with spaces
     FillConsoleOutputCharacter(hCon, TEXT(' '), dwConSize, coordScreen, &cCharsWritten);
     GetConsoleScreenBufferInfo(hCon, &csbi);

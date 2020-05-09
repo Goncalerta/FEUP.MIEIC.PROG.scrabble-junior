@@ -29,7 +29,7 @@ class Board {
     Board& setWidth(unsigned int width);
     Board& setHeight(unsigned int height);
 
-    unsigned int countLetters();
+    unsigned int countLetters() const;
 
     bool addWord(Word word);
     Word findWord(Position position, Orientation orientation);

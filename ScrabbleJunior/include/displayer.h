@@ -15,9 +15,6 @@ class GameDisplayer;
 #include "word.h"
 #include "hand.h"
 
-// TODO optimize for really big boards (20x20)
-// by not redrawing the board every time
-
 class GameDisplayer {
     static const Color PLAYERS_COLOR[];
     static const char* WINNER_LABELS[];
