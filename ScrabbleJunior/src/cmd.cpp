@@ -18,7 +18,7 @@ void clrscr(int x, int y) {
     FillConsoleOutputCharacter(hCon, TEXT(' '), dwConSize, coordScreen, &cCharsWritten);
     GetConsoleScreenBufferInfo(hCon, &csbi);
     FillConsoleOutputAttribute(hCon, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
-    // cursor to upper left corner
+    
     SetConsoleCursorPosition(hCon, coordScreen);
 }
 

@@ -125,7 +125,11 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
         if(game.getBoard().hasMove(player.getHand())) {
             vector<Position> edge_case_legal_positions;
             if(game.mustPlayTwiceEdgeCase(edge_case_legal_positions)) {
-                displayer.draw(edge_case_legal_positions);
+                vector<Position> &legal_positions = edge_case_legal_positions;
+                auto is_legal = [legal_positions](Position pos, auto _) {
+                    return find(legal_positions.begin(), legal_positions.end(), pos) != legal_positions.end();
+                };
+                displayer.draw(game.getBoard(), game.getPlayers(), game.getCurrentPlayer(), game.getMovesLeftThisTurn(), is_legal);
                 cout << "Input a valid position on the board to play (in the form 'Ab'): ";
                 if(getline(cin, p_input).fail()) return false;
                 displayer.clearErrors();
@@ -151,7 +155,11 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
                     game.nextTurn(displayer);
                 }
             } else {
-                displayer.draw();
+                const Hand &hand = game.getCurrentPlayer().getHand();
+                auto is_legal = [hand](auto _, const Cell &cell) {
+                    return cell.isCoverable() && hand.hasLetter(cell.getLetter());
+                };
+                displayer.draw(game.getBoard(), game.getPlayers(), game.getCurrentPlayer(), game.getMovesLeftThisTurn(), is_legal);
                 cout << "Input a valid position on the board to play (in the form 'Ab'): ";
                 if(getline(cin, p_input).fail()) return false;
                 displayer.clearErrors();
@@ -180,7 +188,7 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
         } else if(game.getMovesLeftThisTurn() == 1) {
             displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any more moves this turn.\n";
 
-            displayer.drawUnplayable();
+            displayer.draw(game.getBoard(), game.getPlayers(), game.getCurrentPlayer(), game.getMovesLeftThisTurn());
             displayer.clearErrors();
             cout << "Press ENTER to continue . . . " << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -190,7 +198,7 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
             displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
                     << "Must choose two letters to exchange with the Pool this turn.\n";
 
-            displayer.draw();
+            displayer.draw(game.getBoard(), game.getPlayers(), game.getCurrentPlayer(), game.getMovesLeftThisTurn());
             cout << "Input two letters to exchange with the Pool: ";
             if(getline(cin, p_input).fail()) return false;
             displayer.clearErrors();
@@ -212,7 +220,7 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
             displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
                     << "Must choose a letter this turn to exchange for the remaining one in the Pool.\n";
 
-            displayer.draw();
+            displayer.draw(game.getBoard(), game.getPlayers(), game.getCurrentPlayer(), game.getMovesLeftThisTurn());
             cout << "Input a letter to exchange with the Pool: ";
             if(getline(cin, p_input).fail()) return false;
             displayer.clearErrors();
@@ -234,7 +242,7 @@ bool playGame(Game &game, GameDisplayer &displayer, default_random_engine rng) {
             displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
                     << "Turn has been skipped.\n";
 
-            displayer.drawUnplayable();
+            displayer.draw(game.getBoard(), game.getPlayers(), game.getCurrentPlayer(), game.getMovesLeftThisTurn());
             displayer.clearErrors();
             cout << "Press ENTER to continue . . . " << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -304,7 +312,7 @@ int playOnce(default_random_engine rng) {
     unsigned int max_players = min(4u, board.countLetters()/7);
 
     cout << endl;
-    GameDisplayer::drawBoard(board);
+    GameDisplayer::printBoard(board);
     cout << endl;
 
     if(max_players == 2) {
@@ -352,10 +360,10 @@ int playOnce(default_random_engine rng) {
     clrscr();
 
     Game game(board, num_players, rng);
-    GameDisplayer displayer(game);
+    GameDisplayer displayer(board.getWidth(), board.getHeight());
     if(!playGame(game, displayer, rng)) return 1;
     
-    displayer.drawGameOver();
+    displayer.drawGameOver(board, game.getLeaderboard());
 
     return 0;
 }

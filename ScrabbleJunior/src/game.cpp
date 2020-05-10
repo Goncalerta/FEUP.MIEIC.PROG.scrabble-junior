@@ -56,32 +56,31 @@ vector<const Player*> Game::getLeaderboard() const {
     return leaderboard;
 }
 
-bool Game::validateMove(Position position, ostream &error_stream) {
-    Player &player = players[current_player_index];
-    
+bool Game::validateMove(Position position, ostream &error_stream) const {
     if(!position.inLimits(board.getWidth(), board.getHeight())) {
         error_stream << "Position is outside board limits.\n";
         return false;
     }
 
-    char l = board.getLetter(position);
-    const Board &cboard = board;
+    const Board &board = this->board; // Cast to const
 
-    if(cboard.getCell(position).isEmpty()) {
+    if(board.getCell(position).isEmpty()) {
         error_stream << "The given position has no letter.\n";
         return false;
     }
 
-    if(cboard.getCell(position).isCovered()) {
+    if(board.getCell(position).isCovered()) {
         error_stream << "That position has already been covered.\n";
         return false;
     }
 
-    if(!cboard.getCell(position).isCoverable()) {
+    if(!board.getCell(position).isCoverable()) {
         error_stream << "Can't move to that position.\n";
         return false;
     }
 
+    const Player &player = players[current_player_index];
+    char l = board.getCell(position).getLetter();
     if(!player.getHand().hasLetter(l)) {
         error_stream << "You don't have letter '" << l << "' in your hand.\n";
         return false;
@@ -101,7 +100,7 @@ void Game::_move(Position position, GameDisplayer &displayer) {
     board.cover(position, completed_words);
 
     if(completed_words.size() != 0) {
-        displayer.drawWordComplete(completed_words);
+        displayer.animateWordComplete(player, completed_words);
     }
     
     player.addScore(completed_words.size());
@@ -142,8 +141,8 @@ bool Game::exchange(char letter, GameDisplayer &displayer, default_random_engine
         return false;
     }
 
-    auto animator = displayer.animateExchange(letter);
-    player.getHand().exchange(pool, letter, animator);
+    displayer.animateExchange(letter);
+    player.getHand().exchange(pool, letter, displayer.getSwapLetterCallback());
 
     pool.shuffle(rng);
     return true;
@@ -177,8 +176,8 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
 
     if(!has_letters) return false;
 
-    auto animator = displayer.animateExchange(letter1, letter2);
-    player.getHand().exchange(pool, letter1, letter2, animator);
+    displayer.animateExchange(letter1, letter2);
+    player.getHand().exchange(pool, letter1, letter2, displayer.getSwapLetterCallback());
 
     pool.shuffle(rng);
     return true;
@@ -186,14 +185,16 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
 
 void Game::nextTurn(GameDisplayer &displayer) {
     Player &player = players[current_player_index];
+    displayer.clearTurnInfo();
+
     if(!player.getHand().isFull()) {
-        if(pool.isEmpty()) displayer.drawEmptyPoolWhenRefilling();
+        if(pool.isEmpty()) displayer.noticeEmptyPool();
         else {
-            auto animator = displayer.animateRefillHand();
-            player.getHand().refill(pool, animator);
+            displayer.animateRefillHand();
+            player.getHand().refill(pool, displayer.getSwapLetterCallback());
 
             if(pool.isEmpty()) displayer.noticeDepletedPool();
-            else displayer.delay(750);
+            else displayer.delayAfterRefill();
         }
     } 
     

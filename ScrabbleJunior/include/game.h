@@ -1,8 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-class Game;
-
 #include <string>
 #include <vector>
 #include <ostream>
@@ -20,7 +18,7 @@ class Game {
     unsigned int current_player_index;
     unsigned int moves_left;
 
-    bool validateMove(Position position, std::ostream &error_stream);
+    bool validateMove(Position position, std::ostream &error_stream) const;
     void _move(Position position, GameDisplayer &displayer);
 
     public:
