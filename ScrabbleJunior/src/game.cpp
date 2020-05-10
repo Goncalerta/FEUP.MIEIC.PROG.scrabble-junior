@@ -1,3 +1,4 @@
+#include <iostream> // TODO get rid of this
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -5,19 +6,158 @@
 
 using namespace std;
 
-Game::Game(Board &board, unsigned int num_players, default_random_engine &rng):
+Game::Game(Board &board, unsigned int num_players):
     board(board),
     pool(board.getLettersInBoard()),
     current_player_index(0),
-    moves_left(2)
+    moves_left(2),
+    displayer(board.getWidth(), board.getHeight())
 {
-    pool.shuffle(rng);
-    
     for(int i = 1; i <= num_players; i++) {
         Player player(i);
-        player.getHand().refill(pool);
         players.push_back(player);
     }
+}
+
+bool Game::play(default_random_engine &rng) {
+    pool.shuffle(rng);
+    
+    for(Player &player: players) {
+        player.getHand().refill(pool);
+    }
+
+    clrscr();
+    while(!isOver()) {
+        bool game_ended_without_error = playLoop(rng);
+        if(!game_ended_without_error) return false;
+    }
+    displayer.drawGameOver(board, getLeaderboard());
+    return true;
+}
+
+bool Game::playLoop(default_random_engine &rng) {
+    string p_input;
+
+    const Player &player = getCurrentPlayer();
+
+    if(board.hasMove(player.getHand())) {
+        vector<Position> edge_case_legal_positions;
+        bool must_play_twice = mustPlayTwiceEdgeCase(edge_case_legal_positions);
+        GameDisplayer::CheckLegalMove is_legal = nullptr;
+
+        if(must_play_twice) {
+            vector<Position> &legal_positions = edge_case_legal_positions;
+            is_legal = [legal_positions](Position pos, auto _) {
+                return find(legal_positions.begin(), legal_positions.end(), pos) != legal_positions.end();
+            };
+        } else {
+            const Hand &hand = player.getHand();
+            is_legal = [hand](auto _, const Cell &cell) {
+                return cell.isCoverable() && hand.hasLetter(cell.getLetter());
+            };
+        }
+
+        displayer.draw(board, players, player, moves_left, is_legal);
+        displayer.clearErrors();
+        cout << "Input a valid position on the board to play (in the form 'Ab'): ";
+        getline(cin, p_input);
+        if(cin.fail()) return false;
+
+        if(p_input.size() > 2) {
+            displayer.getErrorStream() << "Too many characters in input.\n";
+            return true;
+        }
+
+        if(p_input.size() < 2) {
+            displayer.getErrorStream() << "Too few characters in input.\n";
+            return true;
+        }
+
+        if(!Position::isValid(p_input[1], p_input[0])) {
+            displayer.getErrorStream() << "Couldn't parse input as a position.\n";
+            return true;
+        }
+
+        Position pos(p_input[1], p_input[0]);
+            
+        if(must_play_twice) {
+            move(pos, displayer, edge_case_legal_positions); // TODO remove bool?
+        } else {
+            move(pos, displayer); // TODO remove bool?
+        }
+
+        if(moves_left == 0) {
+            nextTurn(displayer);
+        }
+    } else if(moves_left == 1) {
+        displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any more moves this turn.\n";
+
+        displayer.draw(board, players, player, moves_left);
+        displayer.clearErrors();
+
+        cout << "Press ENTER to continue . . . " << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        nextTurn(displayer);
+    } else if(pool.size() >= 2) {
+        displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                << "Must choose two letters to exchange with the Pool this turn.\n";
+
+        displayer.draw(board, players, player, moves_left);
+        displayer.clearErrors();
+        cout << "Input two letters to exchange with the Pool: ";
+        getline(cin, p_input);
+        if(cin.fail()) return false;
+        
+        char letter1, letter2;
+        stringstream input_stream(p_input);
+        input_stream >> letter1 >> letter2;
+        char _ignore;
+
+        if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
+            displayer.getErrorStream() << "Invalid input.\n";
+            return true;
+        }
+
+        if(exchange(letter1, letter2, displayer, rng)) {
+            nextTurn(displayer);
+        }
+    } else if(pool.size() == 1) {
+        displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                << "Must choose a letter this turn to exchange for the remaining one in the Pool.\n";
+
+        displayer.draw(board, players, player, moves_left);
+        displayer.clearErrors();
+        cout << "Input a letter to exchange with the Pool: ";
+        getline(cin, p_input);
+        if(cin.fail()) return false;
+
+        char letter;
+        stringstream input_stream(p_input);
+        input_stream >> letter;
+        char _ignore;
+
+        if(input_stream.fail() || !(input_stream >> _ignore).eof()) {
+            displayer.getErrorStream() << "Invalid input.\n";
+            return true;
+        }
+
+        if(exchange(letter, displayer, rng)) {
+            nextTurn(displayer);
+        }
+    } else {
+        displayer.getErrorStream() << "Player " << player.getId() << " couldn't make any move.\n"
+                << "Turn has been skipped.\n";
+
+        displayer.draw(board, players, player, moves_left);
+        displayer.clearErrors();
+        cout << "Press ENTER to continue . . . " << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        nextTurn(displayer);
+    }
+
+    return true;
 }
 
 const vector<Player>& Game::getPlayers() const {

@@ -141,11 +141,11 @@ const Cell* Board::getNextUncoveredCell(Position pos, Orientation orientation) c
     return cell;
 }
 
-int Board::getHeight() const {
+unsigned int Board::getHeight() const {
     return height;
 }
 
-int Board::getWidth() const {
+unsigned int Board::getWidth() const {
     return width;
 }
 

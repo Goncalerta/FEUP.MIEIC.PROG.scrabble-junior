@@ -35,8 +35,8 @@ class Board {
     Word findWord(Position position, Orientation orientation);
     bool isFullyCovered() const;
 
-    int getHeight() const;
-    int getWidth() const;
+    unsigned int getHeight() const;
+    unsigned int getWidth() const;
     
     char getLetter(Position position) const;
     void cover(Position position, std::vector<Word> &completed_words);

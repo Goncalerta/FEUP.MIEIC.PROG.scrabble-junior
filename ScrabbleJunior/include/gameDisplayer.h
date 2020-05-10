@@ -1,5 +1,5 @@
-#ifndef DISPLAYER_H
-#define DISPLAYER_H
+#ifndef GAME_DISPLAYER_H
+#define GAME_DISPLAYER_H
 
 #include <string>
 #include <sstream>
@@ -17,8 +17,6 @@ class GameDisplayer {
     static const Color PLAYERS_COLOR[];
     static const char* WINNER_LABELS[];
 
-    static const Color TEXT_COLOR;
-    static const Color ERROR_COLOR;
     static const Color WARNING_COLOR;
     static const Color SWAP_LETTER_COLOR;
     static const Color LETTER_UNCOVERED_COLOR;
@@ -46,6 +44,9 @@ class GameDisplayer {
     static void printColoredId(int id);
 
     public:
+    static const Color TEXT_COLOR;
+    static const Color ERROR_COLOR;
+    
     typedef std::function<bool (Position, Cell)> CheckLegalMove;
 
     GameDisplayer(unsigned int board_width, unsigned int board_height); 

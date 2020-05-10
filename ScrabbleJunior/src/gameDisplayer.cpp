@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <chrono>
 #include <thread>
-#include "displayer.h"
+#include "gameDisplayer.h"
 
 using namespace std;
 
@@ -277,6 +277,7 @@ void GameDisplayer::draw(const Board &board, const vector<Player> &players, cons
     printBoard(board, check_legal_move);
     printScoreboard(players);
     printTurnInfo(current_player, moves_left);
+    setcolor(ERROR_COLOR);
     cout << error_messages.str();
 }
 

@@ -9,21 +9,26 @@
 #include "board.h"
 #include "pool.h"
 #include "position.h"
-#include "displayer.h"
+#include "gameDisplayer.h"
 
 class Game {
     Board &board;
-    std::vector<Player> players;
     Pool pool;
+    std::vector<Player> players;
+    GameDisplayer displayer;
     unsigned int current_player_index;
     unsigned int moves_left;
 
     bool validateMove(Position position, std::ostream &error_stream) const;
     void _move(Position position, GameDisplayer &displayer);
+    bool playLoop(std::default_random_engine &rng);
 
     public:
-    Game(Board &board, unsigned int num_players, std::default_random_engine &rng);
+    Game(Board &board, unsigned int num_players);
 
+    bool play(std::default_random_engine &rng);
+    
+    // TODO do I need any of those below me to be public?!?!
     const std::vector<Player>& getPlayers() const;
     const Board& getBoard() const;
     const Pool& getPool() const; // TODO Do I need this?
