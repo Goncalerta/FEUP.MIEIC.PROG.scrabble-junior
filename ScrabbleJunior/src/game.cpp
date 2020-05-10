@@ -100,6 +100,7 @@ void Game::_move(Position position, GameDisplayer &displayer) {
     board.cover(position, completed_words);
 
     if(completed_words.size() != 0) {
+        displayer.draw(board, players, player, moves_left);
         displayer.animateWordComplete(player, completed_words);
     }
     
@@ -185,9 +186,12 @@ bool Game::exchange(char letter1, char letter2, GameDisplayer &displayer, defaul
 
 void Game::nextTurn(GameDisplayer &displayer) {
     Player &player = players[current_player_index];
-    displayer.clearTurnInfo();
+    
 
     if(!player.getHand().isFull()) {
+        displayer.clearTurnInfo();
+        displayer.draw(board, players, player, 0);
+
         if(pool.isEmpty()) displayer.noticeEmptyPool();
         else {
             displayer.animateRefillHand();
