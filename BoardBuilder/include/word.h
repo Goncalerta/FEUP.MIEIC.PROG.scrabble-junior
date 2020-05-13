@@ -5,25 +5,27 @@
 #include <string>
 #include "orientation.h"
 #include "position.h"
-#include "cursor.h"
-#include "command.h"
 
 class Word {
-    static const char* DICTIONARY;
+    friend std::ostream& operator<<(std::ostream &out, const Word &word);
 
     Position start;
     Orientation orientation;
     std::string word;
 
     public:
-    Word(Position start, Orientation orientation, std::string word);
-    Word(Command cmd);
+    typedef std::string::const_iterator const_iterator;
+    Word(Position start, Orientation orientation, std::string &word);
 
     void printToStream(std::ostream &out) const;
-    std::string getWord() const;
-    Cursor getCursorAtStart() const;
-    int size() const; // unused right now
-    bool inDict() const;
+    Position getStart() const;
+    Orientation getOrientation() const;
+
+    const_iterator begin() const;
+    const_iterator end() const;
+    bool inDict(std::istream &dict) const;
 };
+
+std::ostream& operator<<(std::ostream &out, const Word &word);
 
 #endif

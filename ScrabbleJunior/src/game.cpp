@@ -1,4 +1,5 @@
 #include <iostream> // TODO get rid of this
+#include <utility>
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -202,7 +203,7 @@ bool Game::validateMove(Position position, ostream &error_stream) const {
         return false;
     }
 
-    const Board &board = this->board; // Cast to const
+    const Board &board = as_const(board);
 
     if(board.getCell(position).isEmpty()) {
         error_stream << "The given position has no letter.\n";
@@ -231,7 +232,7 @@ bool Game::validateMove(Position position, ostream &error_stream) const {
 
 void Game::_move(Position position, GameDisplayer &displayer) {
     Player &player = players[current_player_index];
-    char l = board.getLetter(position);
+    char l = as_const(board).getCell(position).getLetter();
 
     moves_left -= 1;
     player.getHand().useLetter(l);

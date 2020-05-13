@@ -78,10 +78,6 @@ bool Board::isFullyCovered() const {
     return total_covered == total_letters;
 }
 
-char Board::getLetter(Position position) const {
-    return getCell(position).getLetter();
-}
-
 void Board::cover(Position position, vector<Word> &completed_words) {
     Cell &cell = getCell(position);
 

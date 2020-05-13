@@ -1,109 +1,107 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <ios>
 #include <limits>
+#include <cctype>
+#include <algorithm>
 #include "board.h"
 #include "word.h"
-#include "command.h"
+#include "boardBuilder.h"
+#include "cmd.h"
 
 using namespace std;
 
-void promptWidth(Board &board) {
-    int width;
-    while(true) {
-        cout << "Width (number of columns): ";
-        // TODO should the line be read all at once? (in other words, unallow inputs such as "10p") 
-        cin >> width;
+const Color TEXT_COLOR = LIGHTGRAY;
+const Color ERROR_COLOR = RED;
 
-        if(cin.fail()) {
-            // if(cin.eof()) TODO
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
+bool promptSize(int &size, char *prompt, char *dimension) {
+    while(true) {
+        setcolor(TEXT_COLOR);
+        cout << prompt;
+        string input_line;
+        getline(cin, input_line);
+        if(cin.fail()) return false;
+
+        stringstream input_line_stream(input_line);
+        input_line_stream >> size;
+        char _ignore;
+
+        if(input_line_stream.fail() || !(input_line_stream >> _ignore).eof() || size <= 0) {
+            setcolor(ERROR_COLOR);
+            cout << "Expected a positive integer." << endl;
+            continue;
+        }
+
+        if(size > 20) {
+            setcolor(ERROR_COLOR);
+            cout << dimension << " can only be at most 20." << endl;
             continue;
         } 
-        
-        if(board.setWidth(width)) break;
-        else cout << "The given input is invalid." << endl;
+
+        return true;
     }
 }
 
-// TODO reduce code duplication
-void promptHeight(Board &board) {
-    int height;
-    while(true) {
-        cout << "Height (number of rows): ";
-        // TODO should the line be read all at once? (in other words, unallow inputs such as "10p") 
-        cin >> height;
+bool isValidCharForName(char c) {
+    return isalnum(c) || c == '_';
+}
 
-        if(cin.fail()) {
-            // if(cin.eof()) TODO
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
+bool promptBoardName(string &board_name) {
+    while(true) {
+        setcolor(TEXT_COLOR);
+        cout << "Name of new board: ";
+        getline(cin, board_name);
+        if(cin.fail()) return 0;
+
+        if(board_name.size() == 0) {
+            setcolor(ERROR_COLOR);
+            cout << "Must input a name." << endl;
             continue;
-        } 
-        
-        if(board.setHeight(height)) break;
-        else cout << "The given input is invalid." << endl;
+        }
+
+        auto begin = board_name.begin();
+        auto end = board_name.end();
+
+        auto invalid_char = find_if_not(begin, end, isValidCharForName);
+        if(invalid_char != end) {
+            setcolor(ERROR_COLOR);
+            
+            cout << "Only ASCII alfanumeric letters and underscores are allowed in board name." << endl;
+            if(isspace(*invalid_char)) cout << "Whitespace is not allowed." << endl;
+            else cout << "'" << *invalid_char << "' is not allowed." << endl;
+
+            continue;
+        }
+
+        cout << "Board will be saved as '" << board_name << ".txt'." << endl;
+
+        return true;
     }
 }
 
 int main() {
     // TODO check whether dictionary is present.
-    string boardname;
-    Board board;
+    string board_name;
+    int width, height;
 
-    int width;
-    cout << "Name of new board: ";
-    cin >> boardname;
-    if(cin.fail()) return 0;
-    // TODO check if it is a valid name (is it really necessary?)
+    if(!promptBoardName(board_name)) return 0;
+    if(!promptSize(width, "Width (number of columns): ", "Width")) return 0;
+    if(!promptSize(height, "Height (number of rows): ", "Height")) return 0;
 
-    promptWidth(board);
-    promptHeight(board);
+    Board board(width, height);
+    BoardBuilder builder(board_name, board);
+
+    clrscr();
+    builder.printBoard();
+
 
     do {
-        cout << endl;
-        board.printGrid(cout);
-        cout << endl;
-
-        cout << "Enter a word (\"Aa H|V WORD\") or use Ctrl+Z to submit file: ";
-        char cx, cy, corientation;
-        string cword;
-        // TODO should the line be read all at once? (in other words, unallow inputs such as "Aa\nH\nword") 
-        cin >> cy >> cx >> corientation >> cword;
         
-        // Validate and parse input
-        if(cin.fail()) {       
-            if(cin.eof()) break;     
-            cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
-            continue;
-        } 
+    } while(builder.loop());
 
-        Command command(cx, cy, corientation, cword);
-        if(!command.isValid()) {
-            cout << "The given input is invalid." << endl;
-            continue;
-        }
-
-        Word word(command);
-        if(!word.inDict()) {
-            cout << "The given word wasn't found in the dictionary." << endl;
-            continue;
-        }
-
-        if(!board.addWord(word)) {
-            cout << "The given word doesn't fit the board or collides with incompatible words at given position." << endl;
-            continue;
-        }
-    } while(!cin.eof());
-
-    ofstream outfile(boardname + ".txt");
-    board.printData(outfile);
+    
 
     return 0;
 }

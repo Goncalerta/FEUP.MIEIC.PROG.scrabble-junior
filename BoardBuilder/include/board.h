@@ -1,27 +1,34 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <iostream>
+#include <ostream>
 #include <vector>
 #include "word.h"
+#include "position.h"
+#include "cell.h"
 
 class Board {
-    int width;
-    int height;
+    unsigned int width;
+    unsigned int height;
+
+    unsigned int total_letters;
     std::vector<Word> words;
+
     // Auxiliary matrix to track character positions
-    // It is either \0 (empty cell) or a character A-Z (character that occupies the cell). 
-    std::vector<std::vector<char>> grid;
+    std::vector<std::vector<Cell>> grid;
 
     public:
-    Board();
-    Board(int width, int height);
+    Board(unsigned int width, unsigned int height);
 
-    bool addWord(Word word);
-    bool setWidth(int width);
-    bool setHeight(int height);
-    void printData(std::ostream &out) const;
-    void printGrid(std::ostream &out) const;
+    unsigned int countLetters() const;
+    unsigned int countWords() const;
+    unsigned int getHeight() const;
+    unsigned int getWidth() const;
+    const Cell& getCell(Position position) const;
+    Cell& getCell(Position position);
+
+    void addWord(Word word);
+    void writeData(std::ostream &out) const;
 };
 
 #endif

@@ -1,8 +1,12 @@
 #include "position.h"
 
+using namespace std;
+
 Position::Position(): Position(0, 0) {}
 
 Position::Position(int x, int y): x(x), y(y) {}
+
+Position::Position(unsigned int x, unsigned int y): x(x), y(y) {}
 
 Position::Position(char x, char y) {
     this->x = x - 'a';
@@ -16,14 +20,29 @@ int Position::getY() const {
     return y;
 }
 
-char Position::getXChar() const {
-    return x + 'a';
+void Position::stepForward(Orientation orientation) {
+    if(orientation == Horizontal) x += 1;
+    else y += 1;
 }
 
-char Position::getYChar() const {
-    return y + 'A';
+void Position::stepBackwards(Orientation orientation) {
+    if(orientation == Horizontal) x -= 1;
+    else y -= 1;
 }
 
-bool Position::inRect(Position start, int width, int height) const {
-    return x >= start.x && x < start.x + width && y >= start.y && y < start.y + height;
+pair<Position, Position> Position::laterals(Orientation orientation) const {
+    if(orientation == Horizontal) {
+        return pair<Position, Position>(Position(x, y+1), Position(x, y-1));
+    } else {
+        return pair<Position, Position>(Position(x+1, y), Position(x-1, y));
+    }
+}
+
+bool Position::inLimits(int width, int height) const {
+    return x < width && y < height;
+}
+
+ostream& operator<<(ostream &out, Position pos) {
+    out << (pos.y + 'A') << (pos.x + 'a');
+    return out;
 }

@@ -38,7 +38,6 @@ class Board {
     unsigned int getHeight() const;
     unsigned int getWidth() const;
     
-    char getLetter(Position position) const;
     void cover(Position position, std::vector<Word> &completed_words);
     bool hasMove(const Hand &hand) const;
 

@@ -2,99 +2,86 @@
 
 using namespace std;
 
-Board::Board(): Board(15, 15) {}
-
-Board::Board(int width, int height): 
+Board::Board(unsigned int width, unsigned int height): 
   width(width), 
   height(height), 
-  words({}), 
-  grid(height, vector<char>(width, '\0'))
+  grid(height, vector<Cell>(width)),
+  total_letters(0)
 {}
 
-bool Board::addWord(Word word) {
-    // TODO check if word already exists (dont duplicate it)
-    string w = word.getWord();
-    Cursor cursor = word.getCursorAtStart();
-    cursor.stepBackwards();
-    if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
-        return false;
-    }
+unsigned int Board::countLetters() const {
+    return total_letters;
+}
 
-    for(int i = 0; i < w.size(); i++) {
-        cursor.stepForward();
-        if(!cursor.inRect(Position(0, 0), width, height)) {
-            return false;
-        }
-        char current_char = grid[cursor.getY()][cursor.getX()];
+unsigned int Board::countWords() const {
+    return words.size();
+}
 
-        if(current_char == '\0') {
-            cursor.stepLateral(1);
-            if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
-                return false;
-            }
-            cursor.stepLateral(-2);
-            if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
-                return false;
-            }
-            cursor.stepLateral(1);
-        } else if(current_char != w[i]) {
-            return false;
-        }
-    }
-    cursor.stepForward();
-    if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
-        return false;
-    }
+unsigned int Board::getHeight() const {
+    return height;
+}
 
-    cursor = word.getCursorAtStart();
-    for(int i = 0; i < w.size(); i++) {
-        grid[cursor.getY()][cursor.getX()] = w[i];
-        cursor.stepForward();
+unsigned int Board::getWidth() const {
+    return width;
+}
+
+const Cell& Board::getCell(Position position) const {
+    return grid[position.getY()][position.getX()];
+}
+
+Cell& Board::getCell(Position position) {
+    return grid[position.getY()][position.getX()];
+}
+
+void Board::addWord(Word word) {
+    // Position position = word.getStart();
+    // Orientation orientation = word.getOrientation();
+
+    // position.stepBackwards(orientation);
+    // if(!position.inLimits(width, height) && !getCell(position).isEmpty()) {
+    //     return false;
+    // }
+
+    // for(char current_letter: word) {
+    //     position.stepForward(orientation);
+    //     if(!position.inLimits(width, height)) {
+    //         return false;
+    //     }
+    //     Cell &current_cell = getCell(position);
+
+    //     if(current_cell.isEmpty()) {
+    //         std::pair<Position, Position> laterals = position.laterals(orientation);
+
+    //         if(laterals.first.inLimits(width, height) && !getCell(laterals.first).isEmpty()) {
+    //             return false;
+    //         }
+    //         if(laterals.second.inLimits(width, height) && !getCell(laterals.second).isEmpty()) {
+    //             return false;
+    //         }
+    //     } else if(current_cell.getLetter() == current_letter) {
+    //         return false;
+    //     }
+    // }
+    // position.stepForward(orientation);
+    // if(!position.inLimits(width, height) && !getCell(position).isEmpty()) {
+    //     return false;
+    // }
+    Position position = word.getStart();
+    Orientation orientation = word.getOrientation();
+
+    position = word.getStart();
+    for(char letter: word) {
+        getCell(position).setLetter(letter);
+        position.stepForward(orientation);
     }
 
     words.push_back(word);
-    return true;
 }
 
-bool Board::setWidth(int width) {
-    if(width > 0 && width <= 20) {
-        this->width = width;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool Board::setHeight(int height) {
-    if(height > 0 && height <= 20) {
-        this->height = height;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void Board::printData(ostream &out) const {
+void Board::writeData(ostream &out) const {
     out << height << " x " << width << endl;
-    for(int i = 0; i < words.size(); i++) {
-        words[i].printToStream(out);
-    }
-}
 
-void Board::printGrid(ostream &out) const {
-    out << "  ";
-    for(int i = 0; i < width; i++) {
-        out << (char)('a' + i) << ' ';
-    }
-    out << endl;
-    for(int j = 0; j < height; j++) {
-        out << (char)('A' + j) << ' ';
-        for(int i = 0; i < width; i++) {
-            char cell = grid[j][i];
-
-            if(cell == '\0') out << "  ";
-            else out << grid[j][i] << ' ';
-        }
-        out << endl;
+    for(const Word &word: words) {
+        out << word << endl;
     }
 }

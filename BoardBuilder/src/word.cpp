@@ -5,35 +5,29 @@
 
 using namespace std;
 
-const char* Word::DICTIONARY = "WORDS.txt";
-
-Word::Word(Position start, Orientation orientation, string word): 
+Word::Word(Position start, Orientation orientation, string &word): 
   start(start),
   orientation(orientation),
-  word(word) {}
+  word(move(word)) 
+{}
 
-Word::Word(Command cmd): Word(cmd.getPos(), cmd.getOrientation(), cmd.getWord()) {}
-
-void Word::printToStream(ostream &out) const {
-    out << start.getYChar() << start.getXChar() << ' ';
-    out << orientationToChar(orientation);
-    out << ' ' << word << endl;
+Position Word::getStart() const {
+    return start;
 }
 
-std::string Word::getWord() const {
-    return word;
+Orientation Word::getOrientation() const {
+    return orientation;
 }
 
-Cursor Word::getCursorAtStart() const {
-    return Cursor(start, orientation);
+Word::const_iterator Word::begin() const {
+    return word.begin();
 }
 
-int Word::size() const {
-    return word.size();
+Word::const_iterator Word::end() const {
+    return word.end();
 }
 
-bool Word::inDict() const {
-    ifstream dict(DICTIONARY);
+bool Word::inDict(istream &dict) const {
     string dict_word;
 
     while(dict >> dict_word) {
@@ -42,4 +36,9 @@ bool Word::inDict() const {
     } 
     
     return false;
+}
+
+ostream& operator<<(ostream &out, const Word &word) {
+    out << word.start << ' ' << word.orientation << ' ' << word.word;
+    return out;
 }

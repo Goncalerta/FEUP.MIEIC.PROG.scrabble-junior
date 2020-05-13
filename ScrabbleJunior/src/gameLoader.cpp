@@ -53,7 +53,6 @@ bool GameLoader::openBoardFile(ifstream &board_file) {
         return false;
     }
 
-
     if(file_name.size() == 0) {
         setcolor(ERROR_COLOR);
         cout << "Must input a file name." << endl;
