@@ -7,13 +7,12 @@
 class Position {
     friend std::ostream& operator<<(std::ostream &out, Position pos);
 
-    unsigned int x;
-    unsigned int y;
+    int x;
+    int y;
 
     public:
     Position();
     Position(int x, int y);
-    Position(unsigned int x, unsigned int y);
     // TODO should this belong to position? maybe it could be a static method instead of constructor
     // somehow unified with `isValid` and removing the need for signed and unsigned constructors.
     Position(char x, char y); 
@@ -21,11 +20,11 @@ class Position {
     int getX() const;
     int getY() const;
 
-    void stepForward(Orientation orientation);
-    void stepBackwards(Orientation orientation);
+    Position& stepForward(Orientation orientation);
+    Position& stepBackwards(Orientation orientation);
     std::pair<Position, Position> laterals(Orientation orientation) const;
 
-    bool inLimits(int width, int height) const;
+    bool inLimits(unsigned int width, unsigned int height) const;
 };
 
 std::ostream& operator<<(std::ostream &out, Position pos);

@@ -138,7 +138,12 @@ bool GameLoader::loadBoardFile(Board &board, ifstream &board_file) {
         else if(c_orientation == 'V') orientation = Vertical;
         else break;
 
-        if(!board.addWord(Word(position, orientation, word))) return false; // TODO ERROR MESSAGE
+        Word word(Position(cx, cy), parseOrientation(corientation), cword);
+
+        if(!board.isWordValid(word, error_messages)) return break;
+
+        printNewWord(word);
+        board.addWord(word);
     }
 
     return true;

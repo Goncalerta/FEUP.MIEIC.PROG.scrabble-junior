@@ -7,13 +7,11 @@
 #include "board.h"
 
 class BoardBuilder {
-    static const char* DICTIONARY;
-
     static const Color TEXT_COLOR;
     static const Color TEXT_COLOR_DARK;
     static const Color ERROR_COLOR;
     static const Color WARNING_COLOR;
-    static const Color OK_COLOR;
+    static const Color SUCCESS_COLOR;
     static const Color LETTER_COLOR;
     static const Color BOARD_BACKGROUND;
 
@@ -30,6 +28,9 @@ class BoardBuilder {
     void printNewWord(const Word &word) const;
 
     public:
+    static const char* DICTIONARY;
+    
+    static bool inDict(std::istream &dict, std::string word);
     BoardBuilder(std::string &board_name, Board &board);
 
     bool loop();

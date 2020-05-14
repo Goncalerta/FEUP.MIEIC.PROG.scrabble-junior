@@ -60,10 +60,12 @@ bool Game::playLoop(default_random_engine &rng) {
 
         displayer.draw(board, players, player, moves_left, is_legal);
         displayer.clearErrors();
+        setcolor(GameDisplayer::TEXT_COLOR);
         cout << "Input a valid position on the board to play (in the form 'Ab'): ";
         getline(cin, p_input);
         if(cin.fail()) return false;
 
+        // TODO allow trailing whitespace: use "Expected" tecnique
         if(p_input.size() > 2) {
             displayer.getErrorStream() << "Too many characters in input.\n";
             return true;
@@ -203,7 +205,7 @@ bool Game::validateMove(Position position, ostream &error_stream) const {
         return false;
     }
 
-    const Board &board = as_const(board);
+    const Board &board = as_const(this->board); // Cast board to const
 
     if(board.getCell(position).isEmpty()) {
         error_stream << "The given position has no letter.\n";
@@ -232,10 +234,10 @@ bool Game::validateMove(Position position, ostream &error_stream) const {
 
 void Game::_move(Position position, GameDisplayer &displayer) {
     Player &player = players[current_player_index];
-    char l = as_const(board).getCell(position).getLetter();
+    char letter = as_const(board).getCell(position).getLetter();
 
     moves_left -= 1;
-    player.getHand().useLetter(l);
+    player.getHand().useLetter(letter);
 
     vector<Word> completed_words;
     board.cover(position, completed_words);

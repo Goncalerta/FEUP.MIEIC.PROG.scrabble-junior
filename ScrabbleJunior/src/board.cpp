@@ -16,8 +16,7 @@ Board::Board(unsigned int width, unsigned int height):
   grid(height, vector<Cell>(width)) 
 {}
 
-bool Board::addWord(Word word) {
-    // TODO check if everything is valid
+void Board::addWord(Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
@@ -28,8 +27,6 @@ bool Board::addWord(Word word) {
         cell.setLetter(letter);
         position.stepForward(orientation);
     }
-    
-    return true;
 }
 
 Word Board::findWord(Position position, Orientation orientation) {
@@ -82,7 +79,6 @@ void Board::cover(Position position, vector<Word> &completed_words) {
     Cell &cell = getCell(position);
 
     cell.cover();
-    int score = 0;
 
     if(cell.propagatesHorizontally()) {
         if(propagate(position, Horizontal)) {

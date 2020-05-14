@@ -38,7 +38,7 @@ class GameDisplayer {
     unsigned int scoreboard_x_offset;
     unsigned int turn_info_y_offset;
 
-    static void GameDisplayer::printWord(const Word &word, bool delay_each_letter);
+    static void printWord(const Word &word, bool delay_each_letter);
 
     static std::vector<int> getWinnersId(const std::vector<const Player*> &leaderboard); // TODO does this belong here?
     static void printColoredId(int id);

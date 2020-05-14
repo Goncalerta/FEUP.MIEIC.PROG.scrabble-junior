@@ -23,7 +23,6 @@ class Word {
 
     const_iterator begin() const;
     const_iterator end() const;
-    bool inDict(std::istream &dict) const;
 };
 
 std::ostream& operator<<(std::ostream &out, const Word &word);

@@ -27,7 +27,9 @@ class Board {
     const Cell& getCell(Position position) const;
     Cell& getCell(Position position);
 
-    void addWord(Word word);
+    void addWord(Word &word);
+    bool isWordValid(const Word &word, ostream &error_messages);
+    bool isWordValid(const Word &word);
     void writeData(std::ostream &out) const;
 };
 
