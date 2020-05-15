@@ -29,16 +29,15 @@ class Board {
     Board& setWidth(unsigned int width);
     Board& setHeight(unsigned int height);
 
-    unsigned int countLetters();
+    unsigned int countLetters() const;
 
-    bool addWord(Word word);
+    void Board::addWord(Word &word);
     Word findWord(Position position, Orientation orientation);
     bool isFullyCovered() const;
 
-    int getHeight() const;
-    int getWidth() const;
+    unsigned int getHeight() const;
+    unsigned int getWidth() const;
     
-    char getLetter(Position position) const;
     void cover(Position position, std::vector<Word> &completed_words);
     bool hasMove(const Hand &hand) const;
 

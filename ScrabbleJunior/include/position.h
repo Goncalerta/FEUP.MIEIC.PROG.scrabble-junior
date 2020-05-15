@@ -5,15 +5,14 @@
 #include "orientation.h"
 
 class Position {
-    unsigned int x;
-    unsigned int y;
+    int x;
+    int y;
 
     public:
     static bool isValid(char x, char y); // TODO should this belong to position?
 
     Position();
     Position(int x, int y);
-    Position(unsigned int x, unsigned int y);
     // TODO should this belong to position? maybe it could be a static method instead of constructor
     // somehow unified with `isValid` and removing the need for signed and unsigned constructors.
     Position(char x, char y); 

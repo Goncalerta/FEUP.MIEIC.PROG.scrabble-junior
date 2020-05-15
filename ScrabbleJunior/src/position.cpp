@@ -6,8 +6,6 @@ Position::Position(): Position(0, 0) {}
 
 Position::Position(int x, int y): x(x), y(y) {}
 
-Position::Position(unsigned int x, unsigned int y): x(x), y(y) {}
-
 Position::Position(char x, char y) {
     this->x = x - 'a';
     this->y = y - 'A';

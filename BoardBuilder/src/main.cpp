@@ -1,109 +1,232 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <ios>
 #include <limits>
+#include <cctype>
+#include <algorithm>
 #include "board.h"
 #include "word.h"
-#include "command.h"
+#include "boardBuilder.h"
+#include "cmd.h"
 
 using namespace std;
 
-void promptWidth(Board &board) {
-    int width;
-    while(true) {
-        cout << "Width (number of columns): ";
-        // TODO should the line be read all at once? (in other words, unallow inputs such as "10p") 
-        cin >> width;
+const Color TEXT_COLOR = LIGHTGRAY;
+const Color ERROR_COLOR = RED;
+const Color WARNING_COLOR = YELLOW;
 
-        if(cin.fail()) {
-            // if(cin.eof()) TODO
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
+bool promptSize(int &size, char *prompt, char *dimension) {
+    while(true) {
+        setcolor(TEXT_COLOR);
+        cout << prompt;
+        string input_line;
+        getline(cin, input_line);
+        if(cin.fail()) return false;
+
+        stringstream input_line_stream(input_line);
+        input_line_stream >> size;
+        
+
+        if(input_line_stream.fail() || size <= 0) {
+            setcolor(ERROR_COLOR);
+            cout << "Expected a positive integer." << endl;
+            continue;
+        }
+
+        std::string unexpected;
+        input_line_stream >> unexpected;
+        if(unexpected.size() != 0) {
+            setcolor(ERROR_COLOR);
+            cout << "Unexpected '" << unexpected << "'." << endl;
+            continue;
+        }
+
+        if(size > 20) {
+            setcolor(ERROR_COLOR);
+            cout << dimension << " can only be at most 20." << endl;
             continue;
         } 
-        
-        if(board.setWidth(width)) break;
-        else cout << "The given input is invalid." << endl;
+
+        return true;
     }
 }
 
-// TODO reduce code duplication
-void promptHeight(Board &board) {
-    int height;
-    while(true) {
-        cout << "Height (number of rows): ";
-        // TODO should the line be read all at once? (in other words, unallow inputs such as "10p") 
-        cin >> height;
+bool isValidCharForName(char c) {
+    return isalnum(c) || c == '_';
+}
 
-        if(cin.fail()) {
-            // if(cin.eof()) TODO
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
+bool promptBoardName(string &board_name) {
+    while(true) {
+        setcolor(TEXT_COLOR);
+        cout << "Name of new board: ";
+        getline(cin, board_name);
+        if(cin.fail()) return 0;
+
+        if(board_name.size() == 0) {
+            setcolor(ERROR_COLOR);
+            cout << "Must input a name." << endl;
             continue;
-        } 
-        
-        if(board.setHeight(height)) break;
-        else cout << "The given input is invalid." << endl;
+        }
+
+        auto begin = board_name.begin();
+        auto end = board_name.end();
+
+        auto invalid_char = find_if_not(begin, end, isValidCharForName);
+        if(invalid_char != end) {
+            setcolor(ERROR_COLOR);
+            
+            cout << "Only ASCII alfanumeric letters and underscores are allowed in board name." << endl;
+            if(isspace(*invalid_char)) cout << "Whitespace is not allowed." << endl;
+            else cout << "'" << *invalid_char << "' is not allowed." << endl;
+
+            continue;
+        }
+
+        cout << "Board will be saved in file '" << board_name << ".txt'." << endl;
+
+        return true;
+    }
+}
+
+bool promptEditExisting() {
+    string input;
+    while(true) {
+        cout << "Do you wish to edit existing board? (Y/N): ";
+        getline(cin, input);
+        if(cin.fail()) return false;
+
+        char answer;
+        stringstream input_stream(input);
+        input_stream >> answer;
+
+        if(input_stream.fail()) {
+            setcolor(ERROR_COLOR);
+            cout << "Invalid input." << endl;
+            setcolor(TEXT_COLOR);
+        } else if(answer == 'Y' || answer == 'y') return true;
+        else if(answer == 'N' || answer == 'n') return false;
+        else {
+            setcolor(ERROR_COLOR);
+            cout << "Invalid input." << endl;
+            setcolor(TEXT_COLOR);
+        }
     }
 }
 
 int main() {
-    // TODO check whether dictionary is present.
-    string boardname;
-    Board board;
+    while(!ifstream(BoardBuilder::DICTIONARY).is_open()) {
+        setcolor(ERROR_COLOR);
+        cout << "Dictionary file '" << BoardBuilder::DICTIONARY 
+                << "' was not found in the current folder or could not be opened." << endl
+                << "Without this file, you can't fill the boards with words, as they can't be validated." << endl;
+        setcolor(TEXT_COLOR);
+        cout << "Make sure such file exists and can be opened, then press ENTER: ";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
 
-    int width;
-    cout << "Name of new board: ";
-    cin >> boardname;
-    if(cin.fail()) return 0;
-    // TODO check if it is a valid name (is it really necessary?)
+    string board_name;
+    int width, height;
 
-    promptWidth(board);
-    promptHeight(board);
+    if(!promptBoardName(board_name)) return 0;
 
-    do {
-        cout << endl;
-        board.printGrid(cout);
-        cout << endl;
+    ifstream board_file(board_name + ".txt");
+    if(board_file.is_open()) {
+        setcolor(WARNING_COLOR);
+        cout << "File '" << board_name << ".txt" << "' already exists." << endl;
 
-        cout << "Enter a word (\"Aa H|V WORD\") or use Ctrl+Z to submit file: ";
-        char cx, cy, corientation;
-        string cword;
-        // TODO should the line be read all at once? (in other words, unallow inputs such as "Aa\nH\nword") 
-        cin >> cy >> cx >> corientation >> cword;
-        
-        // Validate and parse input
-        if(cin.fail()) {       
-            if(cin.eof()) break;     
+        if(promptEditExisting()) {
+            char _x; // Ignored delimiter character between height and width
+
+            board_file >> height >> _x >> width;            
+
+            if(!(board_file.fail() || height == 0 || height > 20 || width == 0 || width > 20)) {
+                Board board(width, height);
+
+                char x, y, orientation_char;
+                string word_str;
+
+                while(board_file >> y >> x >> orientation_char >> word_str) {
+                    if(x < 'a' || x > 'z' || y < 'A' || y > 'Z') break;
+                    Position position(x, y);
+                    
+                    Orientation orientation;
+                    if(orientation_char == 'H') orientation = Horizontal;
+                    else if(orientation_char == 'V') orientation = Vertical;
+                    else break;
+
+                    Word word(position, orientation, word_str);
+
+                    if(!board.isWordValid(word)) break;
+                    board.addWord(word);
+                }
+
+                BoardBuilder builder(board_name, board);
+
+                clrscr();
+                builder.printBoard();
+
+                do {} while(builder.loop());
+                
+                cin.clear();
+                cout << endl;
+                builder.saveToFile();
+            } else {
+                setcolor(ERROR_COLOR);
+                cout << "Board could not be loaded. Contents of the file may have been corrupted." << endl;
+                setcolor(WARNING_COLOR);
+                cout << "File '" << board_name << ".txt' will be overwritten when saving the board." << endl;
+                if(!promptSize(width, "Width (number of columns): ", "Width")) return 0;
+                if(!promptSize(height, "Height (number of rows): ", "Height")) return 0;
+
+                Board board(width, height);
+                BoardBuilder builder(board_name, board);
+
+                clrscr();
+                builder.printBoard();
+
+                do {} while(builder.loop());
+                
+                cin.clear();
+                cout << endl;
+                builder.saveToFile();
+            }
+        } else {
+            setcolor(WARNING_COLOR);
+            cout << "File '" << board_name << ".txt' will be overwritten when saving the board." << endl;
+            if(!promptSize(width, "Width (number of columns): ", "Width")) return 0;
+            if(!promptSize(height, "Height (number of rows): ", "Height")) return 0;
+
+            Board board(width, height);
+            BoardBuilder builder(board_name, board);
+
+            clrscr();
+            builder.printBoard();
+
+            do {} while(builder.loop());
+            
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
-            continue;
-        } 
-
-        Command command(cx, cy, corientation, cword);
-        if(!command.isValid()) {
-            cout << "The given input is invalid." << endl;
-            continue;
+            cout << endl;
+            builder.saveToFile();
         }
 
-        Word word(command);
-        if(!word.inDict()) {
-            cout << "The given word wasn't found in the dictionary." << endl;
-            continue;
-        }
+    } else {
+        if(!promptSize(width, "Width (number of columns): ", "Width")) return 0;
+        if(!promptSize(height, "Height (number of rows): ", "Height")) return 0;
 
-        if(!board.addWord(word)) {
-            cout << "The given word doesn't fit the board or collides with incompatible words at given position." << endl;
-            continue;
-        }
-    } while(!cin.eof());
+        Board board(width, height);
+        BoardBuilder builder(board_name, board);
 
-    ofstream outfile(boardname + ".txt");
-    board.printData(outfile);
+        clrscr();
+        builder.printBoard();
+
+        do {} while(builder.loop());
+        
+        cin.clear();
+        cout << endl;
+        builder.saveToFile();
+    }
 
     return 0;
 }

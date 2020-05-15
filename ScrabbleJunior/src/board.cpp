@@ -16,8 +16,7 @@ Board::Board(unsigned int width, unsigned int height):
   grid(height, vector<Cell>(width)) 
 {}
 
-bool Board::addWord(Word word) {
-    // TODO check if everything is valid
+void Board::addWord(Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
@@ -28,8 +27,6 @@ bool Board::addWord(Word word) {
         cell.setLetter(letter);
         position.stepForward(orientation);
     }
-    
-    return true;
 }
 
 Word Board::findWord(Position position, Orientation orientation) {
@@ -70,7 +67,7 @@ Board& Board::setHeight(unsigned int height) {
     return *this;
 }
 
-unsigned int Board::countLetters() {
+unsigned int Board::countLetters() const {
     return total_letters;
 }
 
@@ -78,15 +75,10 @@ bool Board::isFullyCovered() const {
     return total_covered == total_letters;
 }
 
-char Board::getLetter(Position position) const {
-    return getCell(position).getLetter();
-}
-
 void Board::cover(Position position, vector<Word> &completed_words) {
     Cell &cell = getCell(position);
 
     cell.cover();
-    int score = 0;
 
     if(cell.propagatesHorizontally()) {
         if(propagate(position, Horizontal)) {
@@ -141,11 +133,11 @@ const Cell* Board::getNextUncoveredCell(Position pos, Orientation orientation) c
     return cell;
 }
 
-int Board::getHeight() const {
+unsigned int Board::getHeight() const {
     return height;
 }
 
-int Board::getWidth() const {
+unsigned int Board::getWidth() const {
     return width;
 }
 

@@ -2,98 +2,174 @@
 
 using namespace std;
 
-Board::Board(): Board(15, 15) {}
-
-Board::Board(int width, int height): 
+Board::Board(unsigned int width, unsigned int height): 
   width(width), 
   height(height), 
-  words({}), 
-  grid(height, vector<char>(width, '\0'))
+  grid(height, vector<Cell>(width)),
+  total_letters(0)
 {}
 
-bool Board::addWord(Word word) {
-    // TODO check if word already exists (dont duplicate it)
-    string w = word.getWord();
-    Cursor cursor = word.getCursorAtStart();
-    cursor.stepBackwards();
-    if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
+unsigned int Board::countLetters() const {
+    return total_letters;
+}
+
+unsigned int Board::countWords() const {
+    return words.size();
+}
+
+unsigned int Board::getHeight() const {
+    return height;
+}
+
+unsigned int Board::getWidth() const {
+    return width;
+}
+
+const Cell& Board::getCell(Position position) const {
+    return grid[position.getY()][position.getX()];
+}
+
+Cell& Board::getCell(Position position) {
+    return grid[position.getY()][position.getX()];
+}
+
+void Board::addWord(Word &word) {
+    Position position = word.getStart();
+    Orientation orientation = word.getOrientation();
+
+    for(char letter: word) {
+        Cell &cell = getCell(position);
+        if(cell.isEmpty()) total_letters += 1;
+        cell.setLetter(letter);
+        position.stepForward(orientation);
+    }
+
+    words.push_back(move(word));
+}
+
+bool Board::isWordValid(const Word &word, ostream &error_messages) {
+    Position position = word.getStart();
+    Orientation orientation = word.getOrientation();
+
+    position.stepBackwards(orientation);
+    if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
+        position.stepForward(orientation);
+        error_messages << "Word would be adjacent to existing word at '" << position << "', creating ambiguity.\n";
         return false;
     }
 
-    for(int i = 0; i < w.size(); i++) {
-        cursor.stepForward();
-        if(!cursor.inRect(Position(0, 0), width, height)) {
+    // Assume word already exists, if at least on of the cells is empty turns into false.
+    bool word_already_exists = true;
+
+    for(char current_letter: word) {
+        position.stepForward(orientation);
+        if(!position.inLimits(width, height)) {
+            position.stepBackwards(orientation);
+            error_messages << "Word goes outside the board after position '" << position << "'.\n";
             return false;
         }
-        char current_char = grid[cursor.getY()][cursor.getX()];
+        Cell &current_cell = getCell(position);
 
-        if(current_char == '\0') {
-            cursor.stepLateral(1);
-            if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
+        if(current_cell.isEmpty()) {
+            word_already_exists = false;
+            std::pair<Position, Position> laterals = position.laterals(orientation);
+
+            if(laterals.first.inLimits(width, height) && !getCell(laterals.first).isEmpty()) {
+                error_messages << "Word would be adjacent to existing word at '" << laterals.first << "', creating ambiguity.\n";
                 return false;
             }
-            cursor.stepLateral(-2);
-            if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
+            if(laterals.second.inLimits(width, height) && !getCell(laterals.second).isEmpty()) {
+                error_messages << "Word would be adjacent to existing word at '" << laterals.second << "', creating ambiguity.\n";
                 return false;
             }
-            cursor.stepLateral(1);
-        } else if(current_char != w[i]) {
+        } else if(current_cell.getLetter() != current_letter) {
+            error_messages << "Word's letter '" << current_letter << "' intersects with existing letter '" << current_cell.getLetter() << "' at position '" << position << "'.\n";
             return false;
         }
     }
-    cursor.stepForward();
-    if(cursor.inRect(Position(0, 0), width, height) && grid[cursor.getY()][cursor.getX()] != '\0') {
+    position.stepForward(orientation);
+    if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
+        position.stepBackwards(orientation);
+        error_messages << "Word would be adjacent to existing word at '" << position << "', creating ambiguity.\n";
         return false;
     }
 
-    cursor = word.getCursorAtStart();
-    for(int i = 0; i < w.size(); i++) {
-        grid[cursor.getY()][cursor.getX()] = w[i];
-        cursor.stepForward();
+    if(word_already_exists) {
+        error_messages << "This word has already been placed in board at that position.\n";
+        return false;
     }
 
-    words.push_back(word);
     return true;
 }
 
-bool Board::setWidth(int width) {
-    if(width > 0 && width <= 20) {
-        this->width = width;
-        return true;
-    } else {
+bool Board::isWordValid(const Word &word) {
+    Position position = word.getStart();
+    Orientation orientation = word.getOrientation();
+
+    position.stepBackwards(orientation);
+    if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         return false;
     }
-}
 
-bool Board::setHeight(int height) {
-    if(height > 0 && height <= 20) {
-        this->height = height;
-        return true;
-    } else {
+    // Assume word already exists, if at least on of the cells is empty turns into false.
+    bool word_already_exists = true;
+
+    for(char current_letter: word) {
+        position.stepForward(orientation);
+        if(!position.inLimits(width, height)) {
+            return false;
+        }
+        Cell &current_cell = getCell(position);
+
+        if(current_cell.isEmpty()) {
+            word_already_exists = false;
+            std::pair<Position, Position> laterals = position.laterals(orientation);
+
+            if(laterals.first.inLimits(width, height) && !getCell(laterals.first).isEmpty()) {
+                return false;
+            }
+            if(laterals.second.inLimits(width, height) && !getCell(laterals.second).isEmpty()) {
+                return false;
+            }
+        } else if(current_cell.getLetter() != current_letter) {
+            return false;
+        }
+    }
+    position.stepForward(orientation);
+    if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         return false;
     }
+
+    if(word_already_exists) {
+        return false;
+    }
+
+    return true;
 }
 
-void Board::printData(ostream &out) const {
+void Board::writeData(ostream &out) const {
     out << height << " x " << width << endl;
-    for(int i = 0; i < words.size(); i++) {
-        words[i].printToStream(out);
-    }
-}
 
-void Board::printGrid(ostream &out) const {
-    out << "  ";
-    for(int i = 0; i < width; i++) {
-        out << (char)('a' + i) << ' ';
+    for(const Word &word: words) {
+        out << word << endl;
+    }
+
+    out << endl << "  ";
+    for(char letter = 'a'; letter < width + 'a'; letter++) {
+        out << letter << ' ';
     }
     out << endl;
-    for(int j = 0; j < height; j++) {
-        out << (char)('A' + j) << ' ';
-        for(int i = 0; i < width; i++) {
-            char cell = grid[j][i];
 
-            if(cell == '\0') out << "  ";
-            else out << grid[j][i] << ' ';
+    for(int j = 0; j < height; j++) {
+        char letter = j + 'A';
+        out << letter << ' ';
+
+        for(int i = 0; i < width; i++) {
+            out << getCell(Position(i, j));
+            
+            if(i+1 != width) {
+                out << ' ';
+            }
         }
         out << endl;
     }

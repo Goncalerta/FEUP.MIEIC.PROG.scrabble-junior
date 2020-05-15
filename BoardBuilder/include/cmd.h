@@ -4,9 +4,7 @@
 // Adapted from the file supplied by the teacher on Moodle.
 // Provides an easy way of controlling the console colors and cursor, and to clear the screen.
 
-#ifndef NOMINMAX
 #define NOMINMAX
-#endif
 #include <windows.h>
 
 enum Color {
