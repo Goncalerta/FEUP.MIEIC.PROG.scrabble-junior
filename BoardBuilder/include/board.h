@@ -11,13 +11,11 @@ class Board {
     unsigned int width;
     unsigned int height;
 
-    unsigned int total_letters;
-
-    std::vector<Word> words;
     std::vector<std::vector<Cell>> grid;
+    std::vector<Word> words;
 
-    Cell& getCell(Position position);
-
+    unsigned int total_letters;
+    
     public:
     Board(unsigned int width, unsigned int height);
 

@@ -62,7 +62,7 @@ bool promptBoardName(string &board_name) {
     }
 }
 
-bool promptSize(int &size, char *prompt, char *dimension) {
+bool promptSize(int &size, const char *prompt, const char *dimension) {
     while(true) {
         setcolor(BoardBuilderDisplayer::TEXT_COLOR);
         cout << prompt;

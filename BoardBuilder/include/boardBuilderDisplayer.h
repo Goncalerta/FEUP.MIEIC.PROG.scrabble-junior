@@ -23,7 +23,7 @@ class BoardBuilderDisplayer {
     static const Color LETTER_COLOR;
     static const Color BOARD_BACKGROUND;
 
-    BoardBuilderDisplayer::BoardBuilderDisplayer(unsigned int board_width, unsigned int board_height);
+    BoardBuilderDisplayer(unsigned int board_width, unsigned int board_height);
 
     std::ostream& getErrorStream();
     void clearErrors();

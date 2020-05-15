@@ -34,18 +34,20 @@ void BoardBuilderDisplayer::clearErrors() {
 void BoardBuilderDisplayer::printBoard(const Board &board) const {
     setcolor(TEXT_COLOR);
     cout << ' ';
-    for(char letter = 'a'; letter < board.getWidth() + 'a'; letter++) {
+    for(unsigned int i = 0; i < board.getWidth(); i++) {
+        char letter = i + 'a';
         cout << letter << ' ';
     }
     cout << '\n';
 
-    for(int j = 0; j < board.getHeight(); j++) {
+    for(unsigned int j = 0; j < board.getHeight(); j++) {
         char letter = j + 'A';
         cout << letter;
         
         setcolor(LETTER_COLOR, BOARD_BACKGROUND);
-        for(int i = 0; i < board.getWidth(); i++) {
-            cout << as_const(board).getCell(Position(i, j));
+        for(unsigned int i = 0; i < board.getWidth(); i++) {
+            Position position((int) i, (int) j);
+            cout << board.getCell(position);
             
             if(i+1 != board.getWidth()) {
                 cout << ' ';
@@ -117,7 +119,7 @@ void BoardBuilderDisplayer::printPrompt(unsigned int max_players, unsigned int t
         case 2:
         case 3:
             letters_needed = (max_players+1)*7-total_letters;
-            
+
             setcolor(WARNING_COLOR);
             cout << "This board needs " << letters_needed 
                     << " more letters in order to be playable by at least " << max_players+1 
@@ -150,7 +152,7 @@ void BoardBuilderDisplayer::printNewWord(const Word &word, const Board &board) c
     int letters = board.countLetters();
 
     for(char c: word) {
-        if(as_const(board).getCell(position).isEmpty()) {
+        if(board.getCell(position).isEmpty()) {
             int x = position.getX()*2 + 1;
             int y = position.getY() + 1;
 

@@ -48,16 +48,12 @@ const Cell& Board::getCell(Position position) const {
     return grid[position.getY()][position.getX()];
 }
 
-Cell& Board::getCell(Position position) {
-    return grid[position.getY()][position.getX()];
-}
-
 void Board::addWord(Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
     for(char letter: word) {
-        Cell &cell = getCell(position);
+        Cell &cell = grid[position.getY()][position.getX()];
         if(cell.isEmpty()) total_letters += 1;
         cell.setLetter(letter);
         position.stepForward(orientation);
@@ -138,16 +134,17 @@ void Board::writeData(ostream &out) const {
     // function doesn't call setcolor and prints an extra space between
     // cells and the row identifiers on the left of the board.
     out << endl << "  ";
-    for(char letter = 'a'; letter < width + 'a'; letter++) {
+    for(unsigned int i = 0; i < width; i++) {
+        char letter = i + 'a';
         out << letter << ' ';
     }
     out << endl;
 
-    for(int j = 0; j < height; j++) {
+    for(unsigned int j = 0; j < height; j++) {
         char letter = j + 'A';
         out << letter << ' ';
 
-        for(int i = 0; i < width; i++) {
+        for(unsigned int i = 0; i < width; i++) {
             out << grid[j][i];
             
             if(i+1 != width) {

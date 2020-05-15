@@ -87,7 +87,8 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
-    auto invalid_char = find_if_not(word_str.begin(), word_str.end(), isalpha);
+    auto is_alpha_lambda = [](char c) { return isalpha(c); };
+    auto invalid_char = find_if_not(word_str.begin(), word_str.end(), is_alpha_lambda);
     if(invalid_char != word_str.end()) {            
         error_messages << "Only allowed words with ASCII alphabetic letters.\n";
         if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed." << endl;
@@ -102,7 +103,8 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
-    transform(word_str.begin(), word_str.end(), word_str.begin(), toupper);
+    auto to_upper_lambda = [](char c) { return toupper(c); };
+    transform(word_str.begin(), word_str.end(), word_str.begin(), to_upper_lambda);
     return true;
 }
 
@@ -203,7 +205,8 @@ bool BoardBuilder::inDict(istream &dict, string word) {
     string dict_word;
 
     while(dict >> dict_word) {
-        transform(dict_word.begin(), dict_word.end(), dict_word.begin(), toupper);
+        auto to_upper_lambda = [](char c) { return toupper(c); };
+        transform(dict_word.begin(), dict_word.end(), dict_word.begin(), to_upper_lambda);
         if(word == dict_word) return true;
     } 
     
