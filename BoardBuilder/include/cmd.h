@@ -4,7 +4,9 @@
 // Adapted from the file supplied by the teacher on Moodle.
 // Provides an easy way of controlling the console colors and cursor, and to clear the screen.
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 
 enum Color {
@@ -26,13 +28,14 @@ enum Color {
     WHITE = 15
 };
 
+// Clears the screen. If 'x' and 'y' are given, only clears the 
+// part of the screen to the right of 'x' and below 'y', inclusive.
 void clrscr(int x = 0, int y = 0);
 
-// Position the cursor at column 'x', line 'y'
-// The coodinates of upper left corner of the screen are (x,y) = (0,0)
+// Position the cursor at column 'x', line 'y'.
 void gotoxy(int x, int y);
 
-// Set text color & background
+// Set text color & background.
 void setcolor(Color color, Color background_color = BLACK);
 
 #endif

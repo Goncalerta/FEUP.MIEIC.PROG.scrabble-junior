@@ -1,14 +1,13 @@
 #include <fstream>
 #include <algorithm>
 #include "word.h"
-#include "board.h"
 
 using namespace std;
 
 Word::Word(Position start, Orientation orientation, string &word): 
-  start(start),
-  orientation(orientation),
-  word(move(word)) 
+    start(start),
+    orientation(orientation),
+    word(move(word)) 
 {}
 
 Position Word::getStart() const {

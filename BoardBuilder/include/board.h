@@ -12,10 +12,11 @@ class Board {
     unsigned int height;
 
     unsigned int total_letters;
-    std::vector<Word> words;
 
-    // Auxiliary matrix to track character positions
+    std::vector<Word> words;
     std::vector<std::vector<Cell>> grid;
+
+    Cell& getCell(Position position);
 
     public:
     Board(unsigned int width, unsigned int height);
@@ -25,11 +26,11 @@ class Board {
     unsigned int getHeight() const;
     unsigned int getWidth() const;
     const Cell& getCell(Position position) const;
-    Cell& getCell(Position position);
 
+    bool isWordValid(const Word &word, ostream &error_messages) const;
     void addWord(Word &word);
-    bool isWordValid(const Word &word, ostream &error_messages);
-    bool isWordValid(const Word &word);
+
+    void loadWords(std::istream &save);
     void writeData(std::ostream &out) const;
 };
 

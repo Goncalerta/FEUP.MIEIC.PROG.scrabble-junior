@@ -28,8 +28,9 @@ char Cell::getLetter() const {
     return letter;
 }
 
-void Cell::setLetter(char l) {
+Cell& Cell::setLetter(char l) {
     letter = l;
+    return *this;
 }
 
 bool Cell::isCovered() const {

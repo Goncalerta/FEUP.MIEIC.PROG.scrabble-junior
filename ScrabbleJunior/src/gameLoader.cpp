@@ -129,20 +129,22 @@ bool GameLoader::loadBoardFile(Board &board, ifstream &board_file) {
     char c_orientation;
     string word;
 
-    while(board_file >> c_position >> c_orientation >> word) {
-        if(!Position::isValid(c_position[1], c_position[0])) break;
-        Position position(c_position[1], c_position[0]);
+    Board board(width, height);
+
+    char x, y, orientation_char;
+    string word_str;
+
+    while(board_file >> y >> x >> orientation_char >> word_str) {
+        if(x < 'a' || x > 'z' || y < 'A' || y > 'Z') break;
+        Position position(x, y);
         
         Orientation orientation;
-        if(c_orientation == 'H') orientation = Horizontal;
-        else if(c_orientation == 'V') orientation = Vertical;
+        if(orientation_char == 'H') orientation = Horizontal;
+        else if(orientation_char == 'V') orientation = Vertical;
         else break;
 
-        Word word(Position(cx, cy), parseOrientation(corientation), cword);
+        Word word(position, orientation, word_str);
 
-        if(!board.isWordValid(word, error_messages)) return break;
-
-        printNewWord(word);
         board.addWord(word);
     }
 

@@ -6,13 +6,13 @@
 #include "orientation.h"
 
 class Cell {
+    static const char EMPTY = ' ';
+
     char letter;
     bool covered;
     bool coverable;
     bool propagates_horizontally;
     bool propagates_vertically;
-
-    static const char EMPTY = '\0';
     
     public:
     Cell(char letter = EMPTY);
@@ -20,7 +20,7 @@ class Cell {
     void cover();
     
     char getLetter() const;
-    void setLetter(char l);
+    Cell& setLetter(char l);
 
     bool isCovered() const;
     bool isCoverable() const;

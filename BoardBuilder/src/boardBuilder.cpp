@@ -43,7 +43,7 @@ void BoardBuilder::printBoard() const {
         
         setcolor(LETTER_COLOR, BOARD_BACKGROUND);
         for(int i = 0; i < board.getWidth(); i++) {
-            cout << board.getCell(Position(i, j));
+            cout << as_const(board).getCell(Position(i, j));
             
             if(i+1 != board.getWidth()) {
                 cout << ' ';
@@ -61,7 +61,7 @@ void BoardBuilder::printNewWord(const Word &word) const {
     int letters = board.countLetters();
 
     for(const char &c: word) {
-        if(board.getCell(position).isEmpty()) {
+        if(as_const(board).getCell(position).isEmpty()) {
             int x = position.getX()*2 + 1;
             int y = position.getY() + 1;
 
@@ -86,12 +86,14 @@ void BoardBuilder::printNewWord(const Word &word) const {
 }
 
 void BoardBuilder::printBoardInfo() const {
+    // Board name
     gotoxy(board_info_x_offset, 1);
     setcolor(TEXT_COLOR_DARK);
     cout << "Board name: "; 
     setcolor(TEXT_COLOR);
     cout << board_name;
 
+    // Playable by
     gotoxy(board_info_x_offset, 2);
     switch(max_players) {
         case 0:
@@ -114,12 +116,14 @@ void BoardBuilder::printBoardInfo() const {
             break;
     }
 
+    // Number of letters
     gotoxy(board_info_x_offset, 4);
     setcolor(TEXT_COLOR_DARK);
     cout << "Number of letters: ";
     setcolor(TEXT_COLOR);
     cout << board.countLetters(); 
 
+    // Number of words
     gotoxy(board_info_x_offset, 5);
     setcolor(TEXT_COLOR_DARK);
     cout << "Number of words: ";
@@ -127,26 +131,27 @@ void BoardBuilder::printBoardInfo() const {
     cout << board.countWords(); 
 }
 
-bool BoardBuilder::loop() {
-    max_players = min(4u, board.countLetters()/7);
-
-    printBoardInfo();
-    clrscr(0, prompt_y_offset);
-
+void BoardBuilder::printPrompt() const {
     switch(max_players) {
         case 0:
         case 1:
             setcolor(ERROR_COLOR);
-            cout << "This board needs " << 14-board.countLetters() << " more letters in order to be playable by at least 2 players." << endl << endl;
+            unsigned int letters_needed = 14-board.countLetters();
+            cout << "This board needs " << letters_needed
+                    << " more letters in order to be playable by at least 2 players." << endl << endl;
             break;
         case 2:
         case 3:
             setcolor(WARNING_COLOR);
-            cout << "This board needs " << (max_players+1)*7-board.countLetters() << " more letters in order to be playable by at least " << max_players+1 << " players." << endl << "Ctrl+Z to save this board to a file and quit." << endl << endl;
+            unsigned int letters_needed = (max_players+1)*7-board.countLetters();
+            cout << "This board needs " << letters_needed 
+                    << " more letters in order to be playable by at least " << max_players+1 
+                    << " players." << endl << "Ctrl+Z to save this board to a file and quit." << endl << endl;
             break;
         case 4:
             setcolor(SUCCESS_COLOR);
-            cout << "This board is playable by 2-4 players." << endl << "Ctrl+Z to save this board to a file and quit." << endl << endl;
+            cout << "This board is playable by 2-4 players." << endl 
+                    << "Ctrl+Z to save this board to a file and quit." << endl << endl;
             break;
     }
 
@@ -159,102 +164,117 @@ bool BoardBuilder::loop() {
     setcolor(ERROR_COLOR);
     cout << error_messages.str();
     setcolor(TEXT_COLOR);
-    error_messages.str("");
 
     cout << "Enter valid position in the form described above: ";
+}
 
-    string input_line;
-    getline(cin, input_line);
-    if(cin.fail()) return false;
+void BoardBuilder::run() {
+    clrscr();
+    printBoard();
 
-    stringstream input_line_stream(input_line);
-    
-    char cpos[2];
-    char corientation;
-    string cword;
+    while(true) {
+        max_players = min(4u, board.countLetters()/7);
 
-    input_line_stream >> cpos;
-    char cx = cpos[1];
-    char cy = cpos[0];
+        printBoardInfo();
+        clrscr(0, prompt_y_offset);
+        printPrompt();
 
-    // TODO dont allow things like 'A a h test'
-    if(input_line_stream.fail()) {
-        error_messages << "Expected position in the form 'Aa'.\n";
-        return true;
-    }
-    
-    if(cx < 'a' || cx > 'z' || cy < 'A' || cy > 'Z') {
-        error_messages << "Couldn't parse '" << cy << cx << "' as a position. Use an uppercase letter followed by a lowercase one.\n" << endl;
-        return true;
-    }
+        error_messages.str("");
 
-    input_line_stream >> corientation;
-    
-    if(input_line_stream.fail()) {
-        error_messages << "Expected orientation ('H' or 'V').\n";
-        return true;
-    }
+        string input;
+        getline(cin, input);
+        if(cin.fail()) break;
 
-    if(corientation != 'H' && corientation != 'h' && corientation != 'V' && corientation != 'v') {
-        error_messages << "Couldn't parse '" << corientation << "' as orientation ('H' or 'V').\n";
-        return true;
-    }
-
-    input_line_stream >> cword;
-
-    if(input_line_stream.fail()) {
-        error_messages << "Expected a word.\n";
-        return true;
-    }
-
-    auto invalid_char = find_if_not(cword.begin(), cword.end(), isalpha);
-    if(invalid_char != cword.end()) {
-        setcolor(ERROR_COLOR);
+        stringstream input_stream(input);
         
-        error_messages << "Only allowed words with ASCII alphabetic letters.\n";
-        if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed." << endl;
-        else error_messages << "'" << *invalid_char << "' is not allowed." << endl;
+        char cpos[2];
+        char corientation;
+        string cword;
 
-        return true;
+        input_stream >> cpos;
+        char cx = cpos[1];
+        char cy = cpos[0];
+
+        // TODO dont allow things like 'A a h test'
+        if(input_stream.fail()) {
+            error_messages << "Expected position in the form 'Aa'.\n";
+            continue;
+        }
+        
+        if(cx < 'a' || cx > 'z' || cy < 'A' || cy > 'Z') {
+            error_messages << "Couldn't parse '" << cy << cx << "' as a position. Use an uppercase letter followed by a lowercase one.\n" << endl;
+            continue;
+        }
+
+        input_stream >> corientation;
+        
+        if(input_stream.fail()) {
+            error_messages << "Expected orientation ('H' or 'V').\n";
+            continue;
+        }
+
+        if(corientation != 'H' && corientation != 'h' && corientation != 'V' && corientation != 'v') {
+            error_messages << "Couldn't parse '" << corientation << "' as orientation ('H' or 'V').\n";
+            continue;
+        }
+
+        input_stream >> cword;
+
+        if(input_stream.fail()) {
+            error_messages << "Expected a word.\n";
+            continue;
+        }
+
+        auto invalid_char = find_if_not(cword.begin(), cword.end(), isalpha);
+        if(invalid_char != cword.end()) {
+            setcolor(ERROR_COLOR);
+            
+            error_messages << "Only allowed words with ASCII alphabetic letters.\n";
+            if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed." << endl;
+            else error_messages << "'" << *invalid_char << "' is not allowed." << endl;
+
+            continue;
+        }
+
+        if(cword.size() < 2) {
+            error_messages << "Only allowed words with at least two letters.\n";
+            continue;
+        }
+
+        std::string unexpected_argument;
+        input_stream >> unexpected_argument;
+        if(unexpected_argument.size() != 0) {
+            error_messages << "Unexpected: '" << unexpected_argument << "'\n";
+            continue;
+        }
+
+        transform(cword.begin(), cword.end(), cword.begin(), toupper);
+
+        ifstream dict(DICTIONARY);
+        if(!dict.is_open()) {
+            error_messages << "Dictionary file '" << DICTIONARY << "' was not found in the current folder or could not be oppened.\n"
+                << "Make sure such file exists and can be opened before inputing your word again.\n";
+            continue;
+        }
+        
+        if(!inDict(dict, cword)) {
+            error_messages << "Word '" << cword << "' not found in dictionary\n";
+            continue;
+        }
+
+        Word word(Position(cx, cy), parseOrientation(corientation), cword);
+
+        if(!board.isWordValid(word, error_messages)) continue;
+
+        printNewWord(word);
+        board.addWord(word);
     }
-
-    if(cword.size() < 2) {
-        error_messages << "Only allowed words with at least two letters.\n";
-        return true;
-    }
-
-    std::string unexpected_argument;
-    input_line_stream >> unexpected_argument;
-    if(unexpected_argument.size() != 0) {
-        error_messages << "Unexpected: '" << unexpected_argument << "'\n";
-        return true;
-    }
-
-    transform(cword.begin(), cword.end(), cword.begin(), toupper);
-
-    ifstream dict(DICTIONARY);
-    if(!dict.is_open()) {
-        error_messages << "Dictionary file '" << DICTIONARY << "' was not found in the current folder or could not be oppened.\n"
-            << "Make sure such file exists and can be opened before inputing your word again.\n";
-        return true;
-    }
-    
-    if(!inDict(dict, cword)) {
-        error_messages << "Word '" << cword << "' not found in dictionary\n";
-        return true;
-    }
-
-    Word word(Position(cx, cy), parseOrientation(corientation), cword);
-
-    if(!board.isWordValid(word, error_messages)) return true;
-
-    printNewWord(word);
-    board.addWord(word);
-    
-    return true;
 }
 
 void BoardBuilder::saveToFile() const {
+    cin.clear();
+    cout << endl;
+
     if(max_players < 2) {
         setcolor(WARNING_COLOR);
         cout << "Board does not have enough letters in order to be playable." << endl

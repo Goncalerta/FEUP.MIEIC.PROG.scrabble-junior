@@ -11,10 +11,6 @@ Position::Position(char x, char y) {
     this->y = y - 'A';
 }
 
-bool Position::isValid(char x, char y) {
-    return x >= 'a' && x <='z' && y >= 'A' && y <= 'Z';
-}
-
 int Position::getX() const {
     return x;
 }
@@ -23,15 +19,18 @@ int Position::getY() const {
     return y;
 }
 
-
-void Position::stepForward(Orientation orientation) {
+Position& Position::stepForward(Orientation orientation) {
     if(orientation == Horizontal) x += 1;
     else y += 1;
+    
+    return *this;
 }
 
-void Position::stepBackwards(Orientation orientation) {
+Position& Position::stepBackwards(Orientation orientation) {
     if(orientation == Horizontal) x -= 1;
     else y -= 1;
+
+    return *this;
 }
 
 pair<Position, Position> Position::laterals(Orientation orientation) const {

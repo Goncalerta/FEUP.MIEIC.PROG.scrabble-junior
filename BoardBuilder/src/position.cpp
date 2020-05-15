@@ -14,6 +14,7 @@ Position::Position(char x, char y) {
 int Position::getX() const {
     return x;
 }
+
 int Position::getY() const {
     return y;
 }
@@ -40,11 +41,11 @@ pair<Position, Position> Position::laterals(Orientation orientation) const {
     }
 }
 
-bool Position::inLimits(unsigned int width, unsigned int height) const {
+bool Position::inLimits(int width, int height) const {
     return x >= 0 && y >= 0 && x < width && y < height;
 }
 
-ostream& operator<<(ostream &out, Position pos) {
+ostream& operator<<(ostream &out, const Position &pos) {
     out << (char)('A' + pos.y) << (char)('a' + pos.x);
     return out;
 }
