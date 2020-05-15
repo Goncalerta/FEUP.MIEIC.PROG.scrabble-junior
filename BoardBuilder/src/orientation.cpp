@@ -3,8 +3,8 @@
 
 using namespace std;
 
-Orientation parseOrientation(char c) {
-    if(toupper(c) == 'H') return Horizontal;
+Orientation charToOrientation(char c) {
+    if(c == 'H') return Horizontal;
     else return Vertical;
 }
 

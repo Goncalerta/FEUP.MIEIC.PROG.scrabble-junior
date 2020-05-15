@@ -1,7 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <ostream>
+#include <iostream>
 #include <vector>
 #include "word.h"
 #include "position.h"
@@ -27,7 +27,7 @@ class Board {
     unsigned int getWidth() const;
     const Cell& getCell(Position position) const;
 
-    bool isWordValid(const Word &word, ostream &error_messages) const;
+    bool isWordValid(const Word &word, std::ostream &error_messages) const;
     void addWord(Word &word);
 
     void loadWords(std::istream &save);

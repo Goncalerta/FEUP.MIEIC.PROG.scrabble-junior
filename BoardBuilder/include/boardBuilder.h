@@ -5,29 +5,18 @@
 #include <sstream>
 #include "board.h"
 #include "boardBuilderDisplayer.h"
+#include "position.h"
+#include "orientation.h"
 
 class BoardBuilder {
-    static const Color TEXT_COLOR;
-    static const Color TEXT_COLOR_DARK;
-    static const Color ERROR_COLOR;
-    static const Color WARNING_COLOR;
-    static const Color SUCCESS_COLOR;
-    static const Color LETTER_COLOR;
-    static const Color BOARD_BACKGROUND;
-
-    static const int ADD_LETTER_TO_BOARD_DELAY;
-
-    std::ostringstream error_messages;
-    unsigned int board_info_x_offset;
-    unsigned int prompt_y_offset;
     std::string board_name;
     Board &board;
+    BoardBuilderDisplayer displayer;
     unsigned int max_players;
 
-    void printBoard() const;
-    void printBoardInfo() const;
-    void printPrompt() const;
-    void printNewWord(const Word &word) const;
+    bool parsePosition(std::istream &input, Position &position);
+    bool parseOrientation(std::istream &input, Orientation &orientation);
+    bool parseWordStr(std::istream &input, std::string &word_str);
 
     public:
     static const char* DICTIONARY;

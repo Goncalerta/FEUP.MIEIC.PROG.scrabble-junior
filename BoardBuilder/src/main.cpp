@@ -13,18 +13,13 @@
 
 using namespace std;
 
-// TODO Colors shouldnt be here
-const Color TEXT_COLOR = LIGHTGRAY;
-const Color ERROR_COLOR = RED;
-const Color WARNING_COLOR = YELLOW;
-
 void checkDictionaryExistence() {
     while(!ifstream(BoardBuilder::DICTIONARY).is_open()) {
-        setcolor(ERROR_COLOR);
+        setcolor(BoardBuilderDisplayer::ERROR_COLOR);
         cout << "Dictionary file '" << BoardBuilder::DICTIONARY 
                 << "' was not found in the current folder or could not be opened." << endl
                 << "Without this file, you can't fill the boards with words, as they can't be validated." << endl;
-        setcolor(TEXT_COLOR);
+        setcolor(BoardBuilderDisplayer::TEXT_COLOR);
         cout << "Make sure such file exists and can be opened, then press ENTER: ";
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
@@ -36,13 +31,13 @@ bool isValidCharForName(char c) {
 
 bool promptBoardName(string &board_name) {
     while(true) {
-        setcolor(TEXT_COLOR);
+        setcolor(BoardBuilderDisplayer::TEXT_COLOR);
         cout << "Name of new board: ";
         getline(cin, board_name);
         if(cin.fail()) return 0;
 
         if(board_name.size() == 0) {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             cout << "Must input a name." << endl;
             continue;
         }
@@ -52,7 +47,7 @@ bool promptBoardName(string &board_name) {
 
         auto invalid_char = find_if_not(begin, end, isValidCharForName);
         if(invalid_char != end) {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             
             cout << "Only ASCII alfanumeric letters and underscores are allowed in board name." << endl;
             if(isspace(*invalid_char)) cout << "Whitespace is not allowed." << endl;
@@ -69,18 +64,18 @@ bool promptBoardName(string &board_name) {
 
 bool promptSize(int &size, char *prompt, char *dimension) {
     while(true) {
-        setcolor(TEXT_COLOR);
+        setcolor(BoardBuilderDisplayer::TEXT_COLOR);
         cout << prompt;
         string input;
         getline(cin, input);
         if(cin.fail()) return false;
 
         stringstream input_stream(input);
-        inpu_stream >> size;
+        input_stream >> size;
         
 
         if(input_stream.fail() || size <= 0) {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             cout << "Expected a positive integer." << endl;
             continue;
         }
@@ -88,13 +83,13 @@ bool promptSize(int &size, char *prompt, char *dimension) {
         std::string unexpected;
         input_stream >> unexpected;
         if(unexpected.size() != 0) {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             cout << "Unexpected '" << unexpected << "'." << endl;
             continue;
         }
 
         if(size > 20) {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             cout << dimension << " can only be at most 20." << endl;
             continue;
         } 
@@ -106,6 +101,7 @@ bool promptSize(int &size, char *prompt, char *dimension) {
 bool askLoadFile() {
     string input;
     while(true) {
+        setcolor(BoardBuilderDisplayer::TEXT_COLOR);
         cout << "Do you wish to edit existing board? (Y/N): ";
         getline(cin, input);
         if(cin.fail()) return false;
@@ -115,15 +111,15 @@ bool askLoadFile() {
         input_stream >> answer;
 
         if(input_stream.fail()) {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             cout << "Invalid input." << endl;
-            setcolor(TEXT_COLOR);
+
         } else if(answer == 'Y' || answer == 'y') return true;
         else if(answer == 'N' || answer == 'n') return false;
         else {
-            setcolor(ERROR_COLOR);
+            setcolor(BoardBuilderDisplayer::ERROR_COLOR);
             cout << "Invalid input." << endl;
-            setcolor(TEXT_COLOR);
+
         }
     }
 }
@@ -143,8 +139,8 @@ int main() {
     if(board_file.is_open()) {
         will_overwrite_file = true;
 
-        setcolor(WARNING_COLOR);
-        cout << "File '" << board_name << ".txt" << "' already exists." << endl;
+        setcolor(BoardBuilderDisplayer::WARNING_COLOR);
+        cout << "File '" << board_name << ".txt' already exists." << endl;
 
         if(askLoadFile()) {
             char _x; // Ignored delimiter character between height and width
@@ -152,7 +148,7 @@ int main() {
             board_file >> board_height >> _x >> board_width;            
 
             if(board_file.fail() || board_height == 0 || board_height > 20 || board_width == 0 || board_width > 20) {
-                setcolor(ERROR_COLOR);
+                setcolor(BoardBuilderDisplayer::ERROR_COLOR);
                 cout << "Board could not be loaded. Contents of the file may have been corrupted." << endl;
             } else {
                 is_file_loadable = true;
@@ -162,7 +158,7 @@ int main() {
 
     if(!is_file_loadable) {
         if(will_overwrite_file) {
-            setcolor(WARNING_COLOR);
+            setcolor(BoardBuilderDisplayer::WARNING_COLOR);
             cout << "File '" << board_name << ".txt' will be overwritten when saving the board." << endl;
         }
         if(!promptSize(board_width, "Width (number of columns): ", "Width")) return 0;
@@ -173,7 +169,6 @@ int main() {
     if(is_file_loadable) board.loadWords(board_file);
     BoardBuilder builder(board_name, board);
 
-    
     builder.run();
     builder.saveToFile();
 

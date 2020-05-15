@@ -8,7 +8,7 @@ enum Orientation {
     Horizontal,
 };
 
-Orientation parseOrientation(char c);
+Orientation charToOrientation(char c);
 
 std::ostream& operator<<(std::ostream &out, Orientation orientation);
 

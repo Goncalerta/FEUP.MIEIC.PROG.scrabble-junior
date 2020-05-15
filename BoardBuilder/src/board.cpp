@@ -70,6 +70,11 @@ bool Board::isWordValid(const Word &word, ostream &error_messages) const {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
+    if(!position.inLimits(width, height)) {
+        error_messages << "Position '" << position << "' is outside the board.\n";
+        return false;
+    }
+
     position.stepBackwards(orientation);
     if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         position.stepForward(orientation);
