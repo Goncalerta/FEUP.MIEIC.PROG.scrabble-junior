@@ -1,4 +1,3 @@
-#include "boardBuilder.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -6,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include "cmd.h"
+#include "boardBuilder.h"
 
 using namespace std;
 
@@ -65,15 +65,15 @@ bool BoardBuilder::parseOrientation(istream &input, Orientation &orientation) {
         return false;
     }
 
-    char orientation_char = toupper(orientation_str[0]);
+    char orientation_char = (char) toupper(orientation_str[0]);
 
-    if(orientation_char != 'H' && orientation_char != 'V') {
+    if(orientation_char == 'H') orientation = Horizontal;
+    else if(orientation_char == 'V') orientation = Vertical;
+    else {
         error_messages << "Couldn't parse '" << orientation_str
                 << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n" << endl;
         return false;
     }
-
-    orientation = charToOrientation(orientation_char);
 
     return true;
 }
@@ -87,8 +87,7 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
-    auto is_alpha_lambda = [](char c) { return isalpha(c); };
-    auto invalid_char = find_if_not(word_str.begin(), word_str.end(), is_alpha_lambda);
+    auto invalid_char = find_if_not(word_str.begin(), word_str.end(), isalpha);
     if(invalid_char != word_str.end()) {            
         error_messages << "Only allowed words with ASCII alphabetic letters.\n";
         if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed." << endl;
@@ -103,8 +102,7 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
-    auto to_upper_lambda = [](char c) { return toupper(c); };
-    transform(word_str.begin(), word_str.end(), word_str.begin(), to_upper_lambda);
+    transform(word_str.begin(), word_str.end(), word_str.begin(), toupper);
     return true;
 }
 
@@ -205,8 +203,7 @@ bool BoardBuilder::inDict(istream &dict, string word) {
     string dict_word;
 
     while(dict >> dict_word) {
-        auto to_upper_lambda = [](char c) { return toupper(c); };
-        transform(dict_word.begin(), dict_word.end(), dict_word.begin(), to_upper_lambda);
+        transform(dict_word.begin(), dict_word.end(), dict_word.begin(), toupper);
         if(word == dict_word) return true;
     } 
     

@@ -33,7 +33,7 @@ unsigned int Board::countLetters() const {
 }
 
 unsigned int Board::countWords() const {
-    return words.size();
+    return (unsigned int) words.size();
 }
 
 unsigned int Board::getHeight() const {
@@ -135,13 +135,13 @@ void Board::writeData(ostream &out) const {
     // cells and the row identifiers on the left of the board.
     out << endl << "  ";
     for(unsigned int i = 0; i < width; i++) {
-        char letter = i + 'a';
+        char letter = (char) i + 'a';
         out << letter << ' ';
     }
     out << endl;
 
     for(unsigned int j = 0; j < height; j++) {
-        char letter = j + 'A';
+        char letter = (char) j + 'A';
         out << letter << ' ';
 
         for(unsigned int i = 0; i < width; i++) {

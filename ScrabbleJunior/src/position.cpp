@@ -48,3 +48,8 @@ bool Position::inLimits(int width, int height) const {
 bool Position::operator==(const Position &other) const {
     return x == other.x && y == other.y;
 }
+
+ostream& operator<<(ostream &out, const Position &pos) {
+    out << (char)('A' + pos.y) << (char)('a' + pos.x);
+    return out;
+}

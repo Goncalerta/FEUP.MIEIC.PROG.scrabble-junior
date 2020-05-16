@@ -3,26 +3,72 @@
 
 using namespace std;
 
-Board::Board(): 
+Board::Board(unsigned int width, unsigned int height): 
+  width(width), 
+  height(height), 
+  grid(height, vector<Cell>(width)),
   total_letters(0),
   total_covered(0)
 {}
 
-Board::Board(unsigned int width, unsigned int height): 
-  width(width), 
-  height(height), 
-  total_letters(0),
-  total_covered(0),
-  grid(height, vector<Cell>(width)) 
-{}
+void Board::loadWords(istream &save) {
+    char x, y, orientation_char;
+    string word_str;
+
+    while(save >> y >> x >> orientation_char >> word_str) {
+        if(x < 'a' || x > 'z' || y < 'A' || y > 'Z') break;
+        Position position(x, y);
+        
+        Orientation orientation;
+        if(orientation_char == 'H') orientation = Horizontal;
+        else if(orientation_char == 'V') orientation = Vertical;
+        else break;
+
+        Word word(position, orientation, word_str);
+
+        addWord(word);
+    }
+}
+
+vector<char> Board::getLettersInBoard() const {
+    vector<char> letters;
+    for(auto &row: grid) {
+        for(auto &cell: row) {
+            if(!cell.isEmpty()) letters.push_back(cell.getLetter());
+        }
+    }
+    return letters;
+}
+
+unsigned int Board::countLetters() const {
+    return total_letters;
+}
+
+bool Board::isFullyCovered() const {
+    return total_covered == total_letters;
+}
+
+unsigned int Board::getHeight() const {
+    return height;
+}
+
+unsigned int Board::getWidth() const {
+    return width;
+}
+
+const Cell& Board::getCell(Position position) const {
+    return grid[position.getY()][position.getX()];
+}
 
 void Board::addWord(Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
-    getCell(position).allowMove(orientation);
+    Cell &cell = grid[position.getY()][position.getX()];
+    cell.allowMove(orientation);
+
     for(const char &letter: word) {
-        Cell &cell = getCell(position);
+        Cell &cell = grid[position.getY()][position.getX()];
         if(cell.isEmpty()) total_letters += 1;
         cell.setLetter(letter);
         position.stepForward(orientation);
@@ -32,6 +78,7 @@ void Board::addWord(Word &word) {
 Word Board::findWord(Position position, Orientation orientation) {
     string word;
     
+    // Find the start of the word
     while(position.inLimits(width, height) && !getCell(position).isEmpty()) {
         position.stepBackwards(orientation);
     }
@@ -47,36 +94,8 @@ Word Board::findWord(Position position, Orientation orientation) {
     return Word(start, orientation, word);
 }
 
-Board& Board::setSize(unsigned int width, unsigned int height) {
-    return setWidth(width).setHeight(height);
-}
-
-Board& Board::setWidth(unsigned int width) {
-    this->width = width;
-    for(auto &row: grid) {
-        row.resize(width);
-    }
-    
-    return *this;
-}
-
-Board& Board::setHeight(unsigned int height) {
-    this->height = height;
-    grid.resize(height, vector<Cell>(width));
-        
-    return *this;
-}
-
-unsigned int Board::countLetters() const {
-    return total_letters;
-}
-
-bool Board::isFullyCovered() const {
-    return total_covered == total_letters;
-}
-
 void Board::cover(Position position, vector<Word> &completed_words) {
-    Cell &cell = getCell(position);
+    Cell &cell = grid[position.getY()][position.getX()];
 
     cell.cover();
 
@@ -95,20 +114,12 @@ void Board::cover(Position position, vector<Word> &completed_words) {
     total_covered += 1;
 }
 
-Cell& Board::getCell(Position position) {
-    return grid[position.getY()][position.getX()];
-}
-
-const Cell& Board::getCell(Position position) const {
-    return grid[position.getY()][position.getX()];
-}
-
 bool Board::propagate(Position pos, Orientation orientation) {
     Cell *cell;
     do {
         pos.stepForward(orientation);
         if(pos.getX() >= width || pos.getY() >= height) return true; 
-        cell = &getCell(pos);
+        cell = &grid[pos.getY()][pos.getX()];
     } while(cell->isCovered());
 
     if(!cell->isEmpty()) {
@@ -118,6 +129,7 @@ bool Board::propagate(Position pos, Orientation orientation) {
     return cell->isEmpty();
 }
 
+// TODO reduce duplication - RELATED TO edge case
 const Cell* Board::getNextUncoveredCell(Position pos, Orientation orientation) const {
     const Cell *cell;
     do {
@@ -133,14 +145,6 @@ const Cell* Board::getNextUncoveredCell(Position pos, Orientation orientation) c
     return cell;
 }
 
-unsigned int Board::getHeight() const {
-    return height;
-}
-
-unsigned int Board::getWidth() const {
-    return width;
-}
-
 bool Board::hasMove(const Hand &hand) const {
     for(auto &row: grid) {
         for(auto &cell: row) {
@@ -151,16 +155,7 @@ bool Board::hasMove(const Hand &hand) const {
     return false;
 }
 
-vector<char> Board::getLettersInBoard() const {
-    vector<char> letters;
-    for(auto &row: grid) {
-        for(auto &cell: row) {
-            if(!cell.isEmpty()) letters.push_back(cell.getLetter());
-        }
-    }
-    return letters;
-}
-
+// TODO edge case
 bool Board::mustPlayTwiceEdgeCase(vector<Position> &positions, const Hand &hand) {
     // This edge case happens when:
     // 1- All possible moves are with the same letter

@@ -1,7 +1,7 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <iostream>
+#include <ostream>
 #include "orientation.h"
 
 class Position {

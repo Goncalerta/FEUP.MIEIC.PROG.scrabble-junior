@@ -1,10 +1,13 @@
 #ifndef POSITION_H
 #define POSITION_H
 
+#include <ostream>
 #include <utility>
 #include "orientation.h"
 
 class Position {
+    friend std::ostream& operator<<(std::ostream &out, const Position &pos);
+
     int x;
     int y;
 
@@ -24,5 +27,7 @@ class Position {
 
     bool operator==(const Position &other) const;
 };
+
+std::ostream& operator<<(std::ostream &out, const Position &pos);
 
 #endif

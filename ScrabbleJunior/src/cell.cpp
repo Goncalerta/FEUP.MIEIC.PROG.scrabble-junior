@@ -52,3 +52,7 @@ bool Cell::propagatesHorizontally() const {
 bool Cell::propagatesVertically() const {
     return propagates_vertically;
 }
+
+ostream& operator<<(ostream &out, const Cell &cell) {
+    return out << cell.letter;
+}

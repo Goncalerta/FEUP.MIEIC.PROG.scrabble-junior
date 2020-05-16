@@ -76,7 +76,7 @@ bool Game::playLoop(default_random_engine &rng) {
             return true;
         }
 
-        if(!Position::isValid(p_input[1], p_input[0])) {
+        if(p_input[0] < 'a' || p_input[0] > 'z' || p_input[1] < 'A' || p_input[1] > 'Z') {
             displayer.getErrorStream() << "Couldn't parse input as a position.\n";
             return true;
         }

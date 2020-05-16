@@ -1,10 +1,10 @@
-#include "boardBuilderDisplayer.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include "boardBuilderDisplayer.h"
 
 using namespace std;
 
@@ -35,13 +35,13 @@ void BoardBuilderDisplayer::printBoard(const Board &board) const {
     setcolor(TEXT_COLOR);
     cout << ' ';
     for(unsigned int i = 0; i < board.getWidth(); i++) {
-        char letter = i + 'a';
+        char letter = (char) i + 'a';
         cout << letter << ' ';
     }
     cout << '\n';
 
     for(unsigned int j = 0; j < board.getHeight(); j++) {
-        char letter = j + 'A';
+        char letter = (char) j + 'A';
         cout << letter;
         
         setcolor(LETTER_COLOR, BOARD_BACKGROUND);
