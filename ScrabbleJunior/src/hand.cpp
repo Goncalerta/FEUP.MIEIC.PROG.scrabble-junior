@@ -53,6 +53,10 @@ bool Hand::hasLetter(char letter) const {
     return std::find(std::begin(hand), std::end(hand), letter) != std::end(hand);
 }
 
+int Hand::countLetter(char letter) const {
+    return std::count(std::begin(hand), std::end(hand), letter);
+}
+
 void Hand::useLetter(char letter) {
     char *l = std::find(std::begin(hand), std::end(hand), letter);
     if(l != std::end(hand)) *l = EMPTY;

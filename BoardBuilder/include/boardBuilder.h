@@ -17,10 +17,10 @@ class BoardBuilder {
     bool parsePosition(std::istream &input, Position &position);
     bool parseOrientation(std::istream &input, Orientation &orientation);
     bool parseWordStr(std::istream &input, std::string &word_str);
+    static bool inDict(std::istream &dict, std::string word);
 
     public:
     static const char* DICTIONARY;
-    static bool inDict(std::istream &dict, std::string word);
 
     BoardBuilder(std::string &board_name, Board &board);
 

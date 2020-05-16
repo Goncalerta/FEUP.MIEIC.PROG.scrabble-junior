@@ -140,10 +140,10 @@ void BoardBuilder::run() {
         if(!parseWordStr(input_stream, word_str)) continue;
 
         // Player shouldn't input anything else
-        std::string unexpected_argument;
-        input_stream >> unexpected_argument;
-        if(unexpected_argument.size() != 0) {
-            error_messages << "Unexpected: '" << unexpected_argument << "'\n";
+        std::string unexpected;
+        input_stream >> unexpected;
+        if(unexpected.size() != 0) {
+            error_messages << "Unexpected: '" << unexpected << "'\n";
             continue;
         }
 

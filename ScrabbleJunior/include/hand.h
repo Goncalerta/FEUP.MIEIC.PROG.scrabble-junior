@@ -26,6 +26,7 @@ class Hand {
     void exchange(Pool &pool, char letter1, char letter2, SwapLetterAnimator swap_hand = nullptr);
 
     bool hasLetter(char letter) const;
+    int countLetter(char letter) const;
     void useLetter(char letter);
 
     const char* begin() const;

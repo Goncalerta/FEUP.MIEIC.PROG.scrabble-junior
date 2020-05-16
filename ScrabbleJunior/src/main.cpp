@@ -46,7 +46,7 @@ bool openBoardFile(ifstream &board_file, string &file_name) {
     board_file.open(file_name, ios_base::in);
     if(!board_file.is_open() ) {
         setcolor(ERROR_COLOR);
-        cout << "File does not exist or is unavailable." << endl;
+        cout << "File '" << file_name << "' does not exist or is unavailable." << endl;
         return false;
     }
     
@@ -88,21 +88,28 @@ bool promptNumberPlayers(int &num_players, unsigned int board_letters) {
     }
 
     while(true) {
-        string input_line;
+        string input;
 
         setcolor(TEXT_COLOR);
         cout << "This board allows you to play a game with up to " << max_players << " players." << endl;
         cout << "Input the number of players (2-" << max_players << "): ";
-        getline(cin, input_line);
+        getline(cin, input);
         if(cin.fail()) return false; 
 
-        stringstream input_line_stream(input_line);
-        input_line_stream >> num_players;
-        char _ignore;
+        stringstream input_stream(input);
+        input_stream >> num_players;
 
-        if(input_line_stream.fail() || !(input_line_stream >> _ignore).eof()) {
+        if(input_stream.fail()) {
             setcolor(GameDisplayer::ERROR_COLOR);
             cout << endl << "Expected a positive integer." << endl;
+            continue;
+        }
+
+        std::string unexpected;
+        input_stream >> unexpected;
+        if(unexpected.size() != 0) {
+            setcolor(ERROR_COLOR);
+            cout << "Unexpected '" << unexpected << "'." << endl;
             continue;
         }
         
@@ -122,7 +129,7 @@ bool promptNumberPlayers(int &num_players, unsigned int board_letters) {
     }
 }
 
-bool promptPlayAgain() {
+bool askPlayAgain() {
     string input;
     while(true) {
         setcolor(TEXT_COLOR);
@@ -192,10 +199,10 @@ int main() {
         // Everything is ready to start the game
         Game game(board, num_players);
         
-        bool game_ended_without_error = game.play(rng);
-        if(!game_ended_without_error) return 0;
+        bool game_ended_successfuly = game.play(rng);
+        if(!game_ended_successfuly) return 0;
 
-        if(!promptPlayAgain()) break;
+        if(!askPlayAgain()) break;
     }
 
     return 0;
