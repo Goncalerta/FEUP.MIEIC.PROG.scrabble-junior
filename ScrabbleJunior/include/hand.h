@@ -28,9 +28,6 @@ class Hand {
     bool hasLetter(char letter) const;
     int countLetter(char letter) const;
     void useLetter(char letter);
-
-    const char* begin() const;
-    const char* end() const;
 };
 
 std::ostream& operator<<(std::ostream& out, const Hand& hand); 

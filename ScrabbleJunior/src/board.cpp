@@ -129,7 +129,6 @@ bool Board::propagate(Position pos, Orientation orientation) {
     return cell->isEmpty();
 }
 
-// TODO reduce duplication - RELATED TO edge case
 const Cell* Board::getNextUncoveredCell(Position pos, Orientation orientation) const {
     const Cell *cell;
     do {
@@ -155,50 +154,55 @@ bool Board::hasMove(const Hand &hand) const {
     return false;
 }
 
-// TODO edge case
 bool Board::mustPlayTwiceEdgeCase(vector<Position> &positions, const Hand &hand) {
     // This edge case happens when:
     // 1- All possible moves are with the same letter
     // 2- Player has just one such letter in hand
     // 3- At least one of the moves unlocks a cell that the player can cover
+    //
     // When all these conditions are met, only moves that respect '3' are legal
     // because moves that don't respect '3' would block the player from covering
-    // a cell in the next move; however, rules say that players must always move
+    // a cell in the next move: rules say that players must always move
     // twice per turn whenever possible.
-    char letter = 0;
+
+    char letter = 0; // in this context, 0 means 'unknown' 
     for(int j = 0; j < height; j++) {
         for(int i = 0; i < width; i++) {
             Cell &cell = grid[j][i];
+
+            if(!cell.isCoverable() || !hand.hasLetter(cell.getLetter())) {
+                continue;
+            }
+
+            if(!letter) { // If letter was still 'unknown'
+                letter = cell.getLetter();
+                // Check condition '2'
+                if(hand.countLetter(letter) >= 2) return false;
+            } else if(letter != cell.getLetter()) { // Check condition '1'
+                return false; 
+            }
+
+            // Check condition '3'
             Position position(i, j);
 
-            if(cell.isCoverable() && hand.hasLetter(cell.getLetter())) {
-                
-                if(!letter) {
-                    letter = cell.getLetter();
-                    // Check condition '2'
-                    if(count(hand.begin(), hand.end(), letter) == 2) return false;
-                } else if(letter != cell.getLetter()) return false; // Check condition '1'
+            if(cell.propagatesHorizontally()) {
+                const Cell *next_cell = getNextUncoveredCell(position, Horizontal);
+                if(next_cell) {
+                    char next_letter = next_cell->getLetter();
 
-                // Check condition '3'
-                if(cell.propagatesHorizontally()) {
-                    const Cell *next_cell = getNextUncoveredCell(position, Horizontal);
-                    if(next_cell) {
-                        char next_letter = next_cell->getLetter();
-
-                        if(next_letter != letter && any_of(hand.begin(), hand.end(), [next_letter](auto hand) { return next_letter == hand; })) {
-                            positions.push_back(position);
-                        }
+                    if(next_letter != letter && hand.hasLetter(next_letter)) {
+                        positions.push_back(position);
                     }
                 }
+            }
 
-                if(cell.propagatesVertically()) {
-                    const Cell *next_cell = getNextUncoveredCell(position, Vertical);
-                    if(next_cell) {
-                        char next_letter = next_cell->getLetter();
+            if(cell.propagatesVertically()) {
+                const Cell *next_cell = getNextUncoveredCell(position, Vertical);
+                if(next_cell) {
+                    char next_letter = next_cell->getLetter();
 
-                        if(next_letter != letter && any_of(hand.begin(), hand.end(), [next_letter](auto hand) { return next_letter == hand; })) {
-                            positions.push_back(position);
-                        }
+                    if(next_letter != letter && hand.hasLetter(next_letter)) {
+                        positions.push_back(position);
                     }
                 }
             }

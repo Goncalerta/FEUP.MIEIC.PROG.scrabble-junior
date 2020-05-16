@@ -42,7 +42,7 @@ pair<Position, Position> Position::laterals(Orientation orientation) const {
 }
 
 bool Position::inLimits(int width, int height) const {
-    return x < width && y < height;
+    return x >= 0 && y >= 0 && x < width && y < height;
 }
 
 bool Position::operator==(const Position &other) const {

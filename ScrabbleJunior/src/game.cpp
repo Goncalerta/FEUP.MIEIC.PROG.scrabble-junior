@@ -102,25 +102,11 @@ bool Game::playLoop(default_random_engine &rng) {
 
     while(!isOver()) {
         TurnState turn_state = getTurnState();
-        bool must_play_twice = false; // TODO EDGE CASE
-        GameDisplayer::CheckLegalMove is_legal = nullptr; // TODO EDGE CASE
-
-        // TODO edge case
+        GameDisplayer::CheckLegalMove is_legal = nullptr;
+        bool must_play_twice = false;
+        
         if(turn_state == MUST_MOVE) {
-            vector<Position> edge_case_legal_positions;
-            must_play_twice = mustPlayTwiceEdgeCase(edge_case_legal_positions);
-
-            if(must_play_twice) {
-                vector<Position> &legal_positions = edge_case_legal_positions;
-                is_legal = [legal_positions](Position pos, auto _) {
-                    return find(legal_positions.begin(), legal_positions.end(), pos) != legal_positions.end();
-                };
-            } else {
-                const Hand &hand = getCurrentPlayer().getHand();
-                is_legal = [hand](auto _, const Cell &cell) {
-                    return cell.isCoverable() && hand.hasLetter(cell.getLetter());
-                };
-            }
+            getCheckLegalMove(must_play_twice, is_legal);
         }
 
         if(turn_state == MUST_EXCHANGE_TWO) {
@@ -142,6 +128,7 @@ bool Game::playLoop(default_random_engine &rng) {
         displayer.printTurnInfo(getCurrentPlayer(), moves_left);
         displayer.clearErrors();
 
+        setcolor(GameDisplayer::TEXT_COLOR);
         if(turn_state == MUST_END_TURN || turn_state == MUST_SKIP_TURN) {
             cout << "Press ENTER to continue . . . " << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -150,7 +137,6 @@ bool Game::playLoop(default_random_engine &rng) {
             continue;
         }
 
-        setcolor(GameDisplayer::TEXT_COLOR);
         if(turn_state == MUST_MOVE) {
             cout << "Enter a valid position on the board to play (in the form 'Ab'): ";
         } else if(turn_state == MUST_EXCHANGE_TWO) {
@@ -167,15 +153,7 @@ bool Game::playLoop(default_random_engine &rng) {
         if(turn_state == MUST_MOVE) {
             Position position;
             if(!parsePosition(input_stream, position)) continue;
-            if(!validateMove(position)) continue;
-
-            // TODO EDGE CASE
-            if(must_play_twice) {
-                if(!is_legal(position, board.getCell(position))) {
-                    error_messages << "There is at least one move that allows you to play twice this turn. This move would only allow you to play once.\n";
-                    return false;
-                }
-            }
+            if(!validateMove(position, must_play_twice, is_legal)) continue;
             
             move(position);
             if(moves_left == 0) nextTurn();
@@ -206,6 +184,30 @@ bool Game::playLoop(default_random_engine &rng) {
     return true;
 }
 
+void Game::getCheckLegalMove(bool &must_play_twice, GameDisplayer::CheckLegalMove &is_legal) const {
+    vector<Position> legal_positions;
+            
+    if(moves_left == 2) {
+        const Hand &hand = getCurrentPlayer().getHand();
+        must_play_twice = board.mustPlayTwiceEdgeCase(legal_positions, hand);
+    } else {
+        must_play_twice = false;
+    }
+
+    if(must_play_twice) {
+        is_legal = [legal_positions](Position pos, auto _) {
+            auto begin = legal_positions.begin();
+            auto end = legal_positions.end();
+            return find(begin, end, pos) != end;
+        };
+    } else {
+        const Hand &hand = getCurrentPlayer().getHand();
+        is_legal = [hand](auto _, const Cell &cell) {
+            return cell.isCoverable() && hand.hasLetter(cell.getLetter());
+        };
+    }
+}
+
 bool Game::parsePosition(istream &input, Position &position) {
     ostream &error_messages = displayer.getErrorStream();
     string position_str;
@@ -226,7 +228,7 @@ bool Game::parsePosition(istream &input, Position &position) {
 
     if(position_str.size() != 2) {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n" << endl;
+                << "' as a position.\n Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -235,7 +237,7 @@ bool Game::parsePosition(istream &input, Position &position) {
     
     if(x_char < 'a' || x_char > 'z' || y_char < 'A' || y_char > 'Z') {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n" << endl;
+                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -244,7 +246,7 @@ bool Game::parsePosition(istream &input, Position &position) {
     return true;
 }
 
-bool Game::validateMove(Position position) {
+bool Game::validateMove(Position position, bool must_play_twice, GameDisplayer::CheckLegalMove is_legal) {
     ostream &error_messages = displayer.getErrorStream();
 
     if(!position.inLimits(board.getWidth(), board.getHeight())) {
@@ -275,6 +277,13 @@ bool Game::validateMove(Position position) {
         return false;
     }
 
+    if(must_play_twice && !is_legal(position, board.getCell(position))) {
+        error_messages << "There is at least one move that allows you to play twice this turn.\n" 
+                << "Position '" << position << "' would only allow you to play once.\n";
+
+        return false;
+    }
+
     return true;
 }
 
@@ -293,7 +302,6 @@ void Game::move(Position position) {
         gotoxy(0, 0);
         displayer.printBoard(board);
         displayer.printScoreboard(players);
-        displayer.printTurnInfo(current_player, moves_left);
         displayer.animateWordComplete(current_player, completed_words);
     }
     
@@ -446,11 +454,4 @@ void Game::nextTurn() {
     moves_left = 2;
     current_player_index++;
     if(current_player_index == players.size()) current_player_index = 0;
-}
-
-// TODO EDGE CASE
-bool Game::mustPlayTwiceEdgeCase(vector<Position> &positions) {
-    if(moves_left < 2) return false;
-    Player &player = players[current_player_index];
-    return board.mustPlayTwiceEdgeCase(positions, player.getHand());
 }

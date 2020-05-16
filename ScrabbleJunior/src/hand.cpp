@@ -62,16 +62,8 @@ void Hand::useLetter(char letter) {
     if(l != std::end(hand)) *l = EMPTY;
 }
 
-const char* Hand::begin() const {
-    return std::cbegin(hand);
-}
-
-const char* Hand::end() const {
-    return std::cend(hand);
-}
-
 std::ostream& operator<<(std::ostream& out, const Hand& hand) {
-    for(const char &letter: hand) {
+    for(const char &letter: hand.hand) {
         out << letter << " ";
     }
     

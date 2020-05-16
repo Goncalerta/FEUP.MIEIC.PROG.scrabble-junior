@@ -179,7 +179,7 @@ Hand::SwapLetterAnimator GameDisplayer::getSwapLetterCallback() const {
 }
 
 void GameDisplayer::animateWordComplete(const Player &player, const vector<Word> &words_completed) const {
-    gotoxy(0, turn_info_y_offset);
+    clrscr(0, turn_info_y_offset);
     setcolor(SCORE_COLOR);
     cout << "Score!";
 

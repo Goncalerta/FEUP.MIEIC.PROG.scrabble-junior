@@ -35,8 +35,9 @@ class Game {
     TurnState Game::getTurnState() const;
     bool playLoop(std::default_random_engine &rng);
 
+    void getCheckLegalMove(bool &must_play_twice, GameDisplayer::CheckLegalMove &is_legal) const;
     bool parsePosition(std::istream &input, Position &position);
-    bool validateMove(Position position);
+    bool validateMove(Position position, bool must_play_twice, GameDisplayer::CheckLegalMove is_legal);
     void move(Position position);
     
     bool parseLetter(std::istream &input, char &letter);
@@ -46,11 +47,8 @@ class Game {
     bool parseLetters(std::istream &input, char &letter1, char &letter2);
     bool validateExchange(char letter1, char letter2);
     void exchange(char letter1, char letter2, std::default_random_engine &rng);
-    
-    void skipTurn();
-    void nextTurn();
 
-    bool mustPlayTwiceEdgeCase(std::vector<Position> &positions); // TODO edge case
+    void nextTurn();
 
     public:
     Game(Board &board, unsigned int num_players);
