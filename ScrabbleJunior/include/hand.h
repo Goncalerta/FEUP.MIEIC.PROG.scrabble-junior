@@ -9,7 +9,7 @@ class Hand {
     friend std::ostream& operator<<(std::ostream& out, const Hand& hand); 
     
     static const int HAND_SIZE = 7;
-    static const char EMPTY = '_';
+    static const char EMPTY;
 
     char hand[HAND_SIZE];
 
@@ -26,10 +26,8 @@ class Hand {
     void exchange(Pool &pool, char letter1, char letter2, SwapLetterAnimator swap_hand = nullptr);
 
     bool hasLetter(char letter) const;
+    int countLetter(char letter) const;
     void useLetter(char letter);
-
-    const char* begin() const;
-    const char* end() const;
 };
 
 std::ostream& operator<<(std::ostream& out, const Hand& hand); 

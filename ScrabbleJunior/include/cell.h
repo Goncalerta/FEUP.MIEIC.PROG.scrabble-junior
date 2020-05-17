@@ -1,18 +1,21 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include <ostream>
 #include <string>
 #include <vector>
 #include "orientation.h"
 
 class Cell {
+    friend std::ostream& operator<<(std::ostream &out, const Cell &cell);
+
+    static const char EMPTY;
+
     char letter;
     bool covered;
     bool coverable;
     bool propagates_horizontally;
     bool propagates_vertically;
-
-    static const char EMPTY = '\0';
     
     public:
     Cell(char letter = EMPTY);
@@ -20,7 +23,7 @@ class Cell {
     void cover();
     
     char getLetter() const;
-    void setLetter(char l);
+    Cell& setLetter(char l);
 
     bool isCovered() const;
     bool isCoverable() const;
@@ -28,5 +31,7 @@ class Cell {
     bool propagatesHorizontally() const;
     bool propagatesVertically() const;
 };
+
+std::ostream& operator<<(std::ostream &out, const Cell &cell);
 
 #endif

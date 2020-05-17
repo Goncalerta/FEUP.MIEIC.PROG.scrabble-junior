@@ -2,6 +2,8 @@
 
 using namespace std;
 
+const char Cell::EMPTY = ' ';
+
 Cell::Cell(char letter): 
     letter(letter), 
     covered(false),
@@ -28,8 +30,9 @@ char Cell::getLetter() const {
     return letter;
 }
 
-void Cell::setLetter(char l) {
+Cell& Cell::setLetter(char l) {
     letter = l;
+    return *this;
 }
 
 bool Cell::isCovered() const {
@@ -50,4 +53,8 @@ bool Cell::propagatesHorizontally() const {
 
 bool Cell::propagatesVertically() const {
     return propagates_vertically;
+}
+
+ostream& operator<<(ostream &out, const Cell &cell) {
+    return out << cell.letter;
 }

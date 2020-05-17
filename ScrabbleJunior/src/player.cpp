@@ -21,6 +21,6 @@ unsigned int Player::getScore() const {
     return score;
 }
 
-void Player::addScore(unsigned int score) {
-    this->score += score;
+void Player::addScore(unsigned int points) {
+    this->score += points;
 }

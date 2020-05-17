@@ -9,12 +9,31 @@ Board::Board(unsigned int width, unsigned int height):
   total_letters(0)
 {}
 
+void Board::loadWords(istream &save) {
+    char x, y, orientation_char;
+    string word_str;
+
+    while(save >> y >> x >> orientation_char >> word_str) {
+        if(x < 'a' || x > 'z' || y < 'A' || y > 'Z') break;
+        Position position(x, y);
+        
+        Orientation orientation;
+        if(orientation_char == 'H') orientation = Horizontal;
+        else if(orientation_char == 'V') orientation = Vertical;
+        else break;
+
+        Word word(position, orientation, word_str);
+
+        addWord(word);
+    }
+}
+
 unsigned int Board::countLetters() const {
     return total_letters;
 }
 
 unsigned int Board::countWords() const {
-    return words.size();
+    return (unsigned int) words.size();
 }
 
 unsigned int Board::getHeight() const {
@@ -29,16 +48,12 @@ const Cell& Board::getCell(Position position) const {
     return grid[position.getY()][position.getX()];
 }
 
-Cell& Board::getCell(Position position) {
-    return grid[position.getY()][position.getX()];
-}
-
 void Board::addWord(Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
     for(char letter: word) {
-        Cell &cell = getCell(position);
+        Cell &cell = grid[position.getY()][position.getX()];
         if(cell.isEmpty()) total_letters += 1;
         cell.setLetter(letter);
         position.stepForward(orientation);
@@ -47,9 +62,14 @@ void Board::addWord(Word &word) {
     words.push_back(move(word));
 }
 
-bool Board::isWordValid(const Word &word, ostream &error_messages) {
+bool Board::isWordValid(const Word &word, ostream &error_messages) const {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
+
+    if(!position.inLimits(width, height)) {
+        error_messages << "Position '" << position << "' is outside the board.\n";
+        return false;
+    }
 
     position.stepBackwards(orientation);
     if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
@@ -68,7 +88,7 @@ bool Board::isWordValid(const Word &word, ostream &error_messages) {
             error_messages << "Word goes outside the board after position '" << position << "'.\n";
             return false;
         }
-        Cell &current_cell = getCell(position);
+        const Cell &current_cell = getCell(position);
 
         if(current_cell.isEmpty()) {
             word_already_exists = false;
@@ -102,51 +122,6 @@ bool Board::isWordValid(const Word &word, ostream &error_messages) {
     return true;
 }
 
-bool Board::isWordValid(const Word &word) {
-    Position position = word.getStart();
-    Orientation orientation = word.getOrientation();
-
-    position.stepBackwards(orientation);
-    if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
-        return false;
-    }
-
-    // Assume word already exists, if at least on of the cells is empty turns into false.
-    bool word_already_exists = true;
-
-    for(char current_letter: word) {
-        position.stepForward(orientation);
-        if(!position.inLimits(width, height)) {
-            return false;
-        }
-        Cell &current_cell = getCell(position);
-
-        if(current_cell.isEmpty()) {
-            word_already_exists = false;
-            std::pair<Position, Position> laterals = position.laterals(orientation);
-
-            if(laterals.first.inLimits(width, height) && !getCell(laterals.first).isEmpty()) {
-                return false;
-            }
-            if(laterals.second.inLimits(width, height) && !getCell(laterals.second).isEmpty()) {
-                return false;
-            }
-        } else if(current_cell.getLetter() != current_letter) {
-            return false;
-        }
-    }
-    position.stepForward(orientation);
-    if(position.inLimits(width, height) && !getCell(position).isEmpty()) {
-        return false;
-    }
-
-    if(word_already_exists) {
-        return false;
-    }
-
-    return true;
-}
-
 void Board::writeData(ostream &out) const {
     out << height << " x " << width << endl;
 
@@ -154,18 +129,23 @@ void Board::writeData(ostream &out) const {
         out << word << endl;
     }
 
+    // Print board at the end of the file.
+    // This is similar to BoardBuilder::printBoard. However, this
+    // function doesn't call setcolor and prints an extra space between
+    // cells and the row identifiers on the left of the board.
     out << endl << "  ";
-    for(char letter = 'a'; letter < width + 'a'; letter++) {
+    for(unsigned int i = 0; i < width; i++) {
+        char letter = (char) i + 'a';
         out << letter << ' ';
     }
     out << endl;
 
-    for(int j = 0; j < height; j++) {
-        char letter = j + 'A';
+    for(unsigned int j = 0; j < height; j++) {
+        char letter = (char) j + 'A';
         out << letter << ' ';
 
-        for(int i = 0; i < width; i++) {
-            out << getCell(Position(i, j));
+        for(unsigned int i = 0; i < width; i++) {
+            out << grid[j][i];
             
             if(i+1 != width) {
                 out << ' ';

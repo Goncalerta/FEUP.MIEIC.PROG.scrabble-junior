@@ -6,8 +6,8 @@ using namespace std;
 
 void clrscr(int x, int y) {
     COORD coordScreen;
-    coordScreen.X = x;
-    coordScreen.Y = y;
+    coordScreen.X = (SHORT) x;
+    coordScreen.Y = (SHORT) y;
     DWORD cCharsWritten;
     DWORD dwConSize;
     HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -24,16 +24,16 @@ void clrscr(int x, int y) {
 
 void gotoxy(int x, int y) {
     COORD coord;
-    coord.X = x;
-    coord.Y = y;
+    coord.X = (SHORT) x;
+    coord.Y = (SHORT) y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
 void setcolor(Color color, Color background_color) {
     HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
     if (background_color == BLACK) {
-        SetConsoleTextAttribute(hCon, color);
+        SetConsoleTextAttribute(hCon, (WORD) color);
     } else {
-        SetConsoleTextAttribute(hCon, color | (background_color << 4));
+        SetConsoleTextAttribute(hCon, (WORD) (color | (background_color << 4)));
     }
 }

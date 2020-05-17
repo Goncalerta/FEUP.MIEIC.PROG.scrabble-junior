@@ -9,15 +9,14 @@
 class Word {
     friend std::ostream& operator<<(std::ostream &out, const Word &word);
 
-    Position start;
-    Orientation orientation;
-    std::string word;
+    const Position start;
+    const Orientation orientation;
+    const std::string word;
 
     public:
     typedef std::string::const_iterator const_iterator;
     Word(Position start, Orientation orientation, std::string &word);
 
-    void printToStream(std::ostream &out) const;
     Position getStart() const;
     Orientation getOrientation() const;
 

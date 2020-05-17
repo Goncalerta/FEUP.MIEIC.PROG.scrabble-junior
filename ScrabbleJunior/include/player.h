@@ -4,8 +4,8 @@
 #include "hand.h"
 
 class Player {
-    unsigned int score;
     unsigned int id;
+    unsigned int score;
     Hand hand;
 
     public:    
@@ -17,7 +17,7 @@ class Player {
     unsigned int getId() const;
 
     unsigned int getScore() const;
-    void addScore(unsigned int score);
+    void addScore(unsigned int points);
 };
 
 #endif

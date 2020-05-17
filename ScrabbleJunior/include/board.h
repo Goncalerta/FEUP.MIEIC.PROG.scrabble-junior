@@ -1,7 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <string>
+#include <iostream>
 #include <vector>
 #include "cell.h"
 #include "position.h"
@@ -13,36 +13,30 @@ class Board {
     unsigned int width;
     unsigned int height;
 
-    unsigned int total_letters;
-    unsigned int total_covered;
     std::vector<std::vector<Cell>> grid;
 
-    Cell& getCell(Position position);
+    unsigned int total_letters;
+    unsigned int total_covered;
     
     bool propagate(Position pos, Orientation orientation);
     const Cell* getNextUncoveredCell(Position pos, Orientation orientation) const;
 
     public:
-    Board();
     Board(unsigned int width, unsigned int height);
-    Board& setSize(unsigned int width, unsigned int height);
-    Board& setWidth(unsigned int width);
-    Board& setHeight(unsigned int height);
-
+    void loadWords(std::istream &save);
+    
+    std::vector<char> getLettersInBoard() const;
     unsigned int countLetters() const;
-
-    void Board::addWord(Word &word);
-    Word findWord(Position position, Orientation orientation);
     bool isFullyCovered() const;
-
     unsigned int getHeight() const;
     unsigned int getWidth() const;
+    const Cell& getCell(Position position) const;
+
+    void addWord(Word &word);
+    Word findWord(Position position, Orientation orientation);
     
     void cover(Position position, std::vector<Word> &completed_words);
-    bool hasMove(const Hand &hand) const;
-
-    const Cell& getCell(Position position) const;
-    std::vector<char> getLettersInBoard() const;
+    bool hasMove(const Hand &hand) const;    
 
     bool mustPlayTwiceEdgeCase(std::vector<Position> &positions, const Hand &hand);
 };

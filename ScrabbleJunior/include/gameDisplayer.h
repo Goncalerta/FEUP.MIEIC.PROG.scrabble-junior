@@ -16,7 +16,27 @@
 class GameDisplayer {
     static const Color PLAYERS_COLOR[];
     static const char* WINNER_LABELS[];
+     
+    static const int WORD_COMPLETED_ANIMATION_DELAY;
+    static const int SCORE_INCREASE_DELAY;
+    static const int SWAP_LETTER_DELAY;
+    static const int NOTICE_DELAY;
+    static const int LONG_NOTICE_DELAY;
+    static const int AFTER_REFILL_DELAY;
 
+    static const unsigned int current_player_hand_x_offset;
+
+    std::ostringstream error_messages;
+    const unsigned int scoreboard_x_offset;
+    const unsigned int turn_info_y_offset;
+
+    static void printColoredId(int id, const char *prefix = "");
+
+    static void printWord(const Word &word, bool delay_each_letter);
+
+    public:
+    static const Color TEXT_COLOR;
+    static const Color ERROR_COLOR;
     static const Color WARNING_COLOR;
     static const Color SWAP_LETTER_COLOR;
     static const Color LETTER_UNCOVERED_COLOR;
@@ -24,28 +44,6 @@ class GameDisplayer {
     static const Color SCORE_COLOR;
     static const Color BOARD_BACKGROUND;
     static const Color BOARD_HIGHLIGHTED_BACKGROUND;
-     
-    static const int WORD_COMPLETED_ANIMATION_DELAY;
-    static const int SCORE_INCREASE_DELAY;
-    static const int SWAP_LETTER_DELAY;
-    static const int NOTICE_DELAY;
-    static const int NOTICE_BEFORE_SWAP_DELAY;
-    static const int AFTER_REFILL_DELAY;
-
-    static const unsigned int current_player_hand_x_offset;
-
-    std::ostringstream error_messages;
-    unsigned int scoreboard_x_offset;
-    unsigned int turn_info_y_offset;
-
-    static void printWord(const Word &word, bool delay_each_letter);
-
-    static std::vector<int> getWinnersId(const std::vector<const Player*> &leaderboard); // TODO does this belong here?
-    static void printColoredId(int id);
-
-    public:
-    static const Color TEXT_COLOR;
-    static const Color ERROR_COLOR;
     
     typedef std::function<bool (Position, Cell)> CheckLegalMove;
 
@@ -54,33 +52,17 @@ class GameDisplayer {
     std::ostream& getErrorStream();
     void clearErrors();
 
-    static void printBoard(const Board &board, CheckLegalMove check_legal_move = nullptr); // Can I make it so that it doesn't have to be static?
-
-    // TODO Those two don't seem to belong in this class
-    void draw(const Board &board, const std::vector<Player> &players, const Player &current_player, int moves_left, CheckLegalMove check_legal_move = nullptr) const;
-    void drawGameOver(const Board &board, const std::vector<const Player*> &leaderboard) const;
-
+    static void printBoard(const Board &board, CheckLegalMove check_legal_move = nullptr);
     void printScoreboard(const std::vector<Player> &players) const;
-    void printLeaderboard(const std::vector<const Player*> &players) const;
-
-    // TODO maybe those could be just one function
-    void noticeDepletedPool() const;
-    void noticeEmptyPool() const;
-
-
     void printTurnInfo(const Player &current_player, unsigned int moves_left) const;
-    void animateWordComplete(const Player &player, const std::vector<Word> &words_completed) const;
-    void declareWinners(const std::vector<const Player*> &leaderboard) const;
+    void printLeaderboard(const std::vector<Player> &players) const;
+    void declareWinners(const std::vector<int> &winners_id, int num_players) const;
 
     Hand::SwapLetterAnimator getSwapLetterCallback() const;
-    // TODO all of those could be joined with notice functions
-    void animateRefillHand();
-    void animateExchange(char letter);
-    void animateExchange(char letter1, char letter2);
+    void animateWordComplete(const Player &player, const std::vector<Word> &words_completed) const;
 
-    void clearTurnInfo() const;
-
-    void delayAfterRefill() const;
+    void notice(const std::string &information, bool long_delay = false) const;
+    void afterRefill(bool depleted_pool) const;
 };
 
 #endif

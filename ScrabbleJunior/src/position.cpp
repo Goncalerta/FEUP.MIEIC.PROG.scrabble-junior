@@ -11,10 +11,6 @@ Position::Position(char x, char y) {
     this->y = y - 'A';
 }
 
-bool Position::isValid(char x, char y) {
-    return x >= 'a' && x <='z' && y >= 'A' && y <= 'Z';
-}
-
 int Position::getX() const {
     return x;
 }
@@ -23,15 +19,18 @@ int Position::getY() const {
     return y;
 }
 
-
-void Position::stepForward(Orientation orientation) {
+Position& Position::stepForward(Orientation orientation) {
     if(orientation == Horizontal) x += 1;
     else y += 1;
+    
+    return *this;
 }
 
-void Position::stepBackwards(Orientation orientation) {
+Position& Position::stepBackwards(Orientation orientation) {
     if(orientation == Horizontal) x -= 1;
     else y -= 1;
+
+    return *this;
 }
 
 pair<Position, Position> Position::laterals(Orientation orientation) const {
@@ -43,9 +42,14 @@ pair<Position, Position> Position::laterals(Orientation orientation) const {
 }
 
 bool Position::inLimits(int width, int height) const {
-    return x < width && y < height;
+    return x >= 0 && y >= 0 && x < width && y < height;
 }
 
 bool Position::operator==(const Position &other) const {
     return x == other.x && y == other.y;
+}
+
+ostream& operator<<(ostream &out, const Position &pos) {
+    out << (char)('A' + pos.y) << (char)('a' + pos.x);
+    return out;
 }

@@ -2,12 +2,14 @@
 #include <algorithm>
 #include "hand.h"
 
+const char Hand::EMPTY = '_';
+
 Hand::Hand() {
     std::fill(std::begin(hand), std::end(hand), EMPTY);
 }
 
 int Hand::indexOf(char *element) const {
-    return element - std::begin(hand);
+    return (int) (element - std::begin(hand));
 }
 
 bool Hand::isFull() const {
@@ -44,8 +46,8 @@ void Hand::exchange(Pool &pool, char letter1, char letter2, SwapLetterAnimator s
 
     pool.exchange(element1, element2);
     if(swap_hand) {
-        swap_hand(element1 - std::begin(hand), *element1);
-        swap_hand(element2 - std::begin(hand), *element2);
+        swap_hand((int) (element1 - std::begin(hand)), *element1);
+        swap_hand((int) (element2 - std::begin(hand)), *element2);
     }
 }
 
@@ -53,21 +55,17 @@ bool Hand::hasLetter(char letter) const {
     return std::find(std::begin(hand), std::end(hand), letter) != std::end(hand);
 }
 
+int Hand::countLetter(char letter) const {
+    return (int) std::count(std::begin(hand), std::end(hand), letter);
+}
+
 void Hand::useLetter(char letter) {
     char *l = std::find(std::begin(hand), std::end(hand), letter);
     if(l != std::end(hand)) *l = EMPTY;
 }
 
-const char* Hand::begin() const {
-    return std::cbegin(hand);
-}
-
-const char* Hand::end() const {
-    return std::cend(hand);
-}
-
 std::ostream& operator<<(std::ostream& out, const Hand& hand) {
-    for(const char &letter: hand) {
+    for(char letter: hand.hand) {
         out << letter << " ";
     }
     

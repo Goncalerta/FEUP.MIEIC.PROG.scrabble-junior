@@ -1,7 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <ostream>
+#include <iostream>
 #include <vector>
 #include "word.h"
 #include "position.h"
@@ -11,12 +11,11 @@ class Board {
     unsigned int width;
     unsigned int height;
 
-    unsigned int total_letters;
+    std::vector<std::vector<Cell>> grid;
     std::vector<Word> words;
 
-    // Auxiliary matrix to track character positions
-    std::vector<std::vector<Cell>> grid;
-
+    unsigned int total_letters;
+    
     public:
     Board(unsigned int width, unsigned int height);
 
@@ -25,11 +24,11 @@ class Board {
     unsigned int getHeight() const;
     unsigned int getWidth() const;
     const Cell& getCell(Position position) const;
-    Cell& getCell(Position position);
 
+    bool isWordValid(const Word &word, std::ostream &error_messages) const;
     void addWord(Word &word);
-    bool isWordValid(const Word &word, ostream &error_messages);
-    bool isWordValid(const Word &word);
+
+    void loadWords(std::istream &save);
     void writeData(std::ostream &out) const;
 };
 
