@@ -1,11 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include <algorithm>
 #include <sstream>
-#include <chrono>
-#include <thread>
-#include "cmd.h"
+#include <cctype>
+#include <algorithm>
 #include "boardBuilder.h"
+#include "cmd.h"
 
 using namespace std;
 
@@ -67,7 +66,6 @@ bool BoardBuilder::parseOrientation(istream &input, Orientation &orientation) {
     }
 
     char orientation_char = (char) toupper(orientation_str[0]);
-
     if(orientation_char == 'H') orientation = Horizontal;
     else if(orientation_char == 'V') orientation = Vertical;
     else {
@@ -88,6 +86,7 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
+    // Check if string can really be a word (may only have ASCII alphabetic characters).
     auto is_alpha_lambda = [](char c) { return (char) isalpha(c); };
     auto invalid_char = find_if_not(word_str.begin(), word_str.end(), is_alpha_lambda);
     if(invalid_char != word_str.end()) {            
@@ -104,6 +103,8 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
+    // Words are internally saved as fully uppercase, independently of in which
+    // case the user input them.
     auto to_upper_lambda = [](char c) { return (char) toupper(c); }; 
     transform(word_str.begin(), word_str.end(), word_str.begin(), to_upper_lambda);
     return true;
@@ -111,10 +112,12 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
 
 void BoardBuilder::run() {
     clrscr();
+    // Board is only fully printed once, at the start, because afterwards
+    // it can be reused, only updating 'Cell's that change.
     displayer.printBoard(board);
 
     while(true) {
-        // Update state and screen
+        // Update state and screen.
         max_players = min(4u, board.countLetters()/7);
 
         displayer.printBoardInfo(board_name, board, max_players);
@@ -123,7 +126,7 @@ void BoardBuilder::run() {
 
         ostream &error_messages = displayer.getErrorStream();
 
-        // Read a whole line as input
+        // Read a whole line as input.
         string input;
         getline(cin, input);
         if(cin.fail()) {
@@ -133,7 +136,7 @@ void BoardBuilder::run() {
         }
         stringstream input_stream(input);
 
-        // Parse input
+        // Parse input.
         Position position;
         Orientation orientation;
         string word_str;
@@ -142,7 +145,7 @@ void BoardBuilder::run() {
         if(!parseOrientation(input_stream, orientation)) continue;
         if(!parseWordStr(input_stream, word_str)) continue;
 
-        // Player shouldn't input anything else
+        // Player shouldn't input anything else.
         std::string unexpected;
         input_stream >> unexpected;
         if(unexpected.size() != 0) {
@@ -150,7 +153,7 @@ void BoardBuilder::run() {
             continue;
         }
 
-        // Check if word is in dictionary
+        // Check if word is in dictionary.
         ifstream dict(DICTIONARY);
         if(!dict.is_open()) {
             error_messages << "Dictionary file '" << DICTIONARY << "' was not found in the current folder or could not be oppened.\n"
@@ -163,11 +166,11 @@ void BoardBuilder::run() {
             continue;
         }
 
-        // Create Word and check if it can be placed in the board
+        // Create Word and check if it can be placed in the board.
         Word word(position, orientation, word_str);
         if(!board.isWordValid(word, error_messages)) continue;
 
-        // Everything is OK; add to board
+        // Everything is OK; add to board.
         displayer.printNewWord(word, board);
         board.addWord(word);
     }
@@ -183,6 +186,7 @@ void BoardBuilder::saveToFile() const {
     string filename = board_name + ".txt";
     ofstream outfile(filename);
 
+    // Be sure that the file may be written to before continuing.
     while(!outfile.is_open()) {
         if(cin.fail()) return;
         
@@ -208,6 +212,7 @@ bool BoardBuilder::inDict(istream &dict, string word) {
     while(dict >> dict_word) {
         auto to_upper_lambda = [](char c) { return (char) toupper(c); }; 
         transform(dict_word.begin(), dict_word.end(), dict_word.begin(), to_upper_lambda);
+        
         if(word == dict_word) return true;
     } 
     

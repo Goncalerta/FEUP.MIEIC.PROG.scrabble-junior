@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include "gameDisplayer.h"
@@ -23,14 +24,15 @@ const int GameDisplayer::WORD_COMPLETED_ANIMATION_DELAY = 200;
 const int GameDisplayer::SCORE_INCREASE_DELAY = 500;
 const int GameDisplayer::SWAP_LETTER_DELAY = 400;
 const int GameDisplayer::NOTICE_DELAY = 1500;
-const int GameDisplayer::LONG_NOTICE_DELAY = 800;
+const int GameDisplayer::SHORT_NOTICE_DELAY = 800;
 const int GameDisplayer::AFTER_REFILL_DELAY = 750;
 
 const unsigned int GameDisplayer::current_player_hand_x_offset = 12;
 
 GameDisplayer::GameDisplayer(unsigned int board_width, unsigned int board_height):
+    // Offsets are calculated based on the size of the board on screen.
     scoreboard_x_offset(board_width*2 + 2),
-    turn_info_y_offset(max(8u, board_height + 2))
+    turn_info_y_offset(max(8u, board_height + 2)) // Must not be smaller than 8 because of height of scoreboard.
 {}
 
 void GameDisplayer::printColoredId(int id, const char *prefix) {
@@ -106,6 +108,31 @@ void GameDisplayer::printScoreboard(const std::vector<Player> &players) const {
     }
 }
 
+void GameDisplayer::printTurnInfo(const Player &current_player, unsigned int moves_left) const {
+    clrscr(0, turn_info_y_offset);
+    unsigned int id = current_player.getId();
+
+    // Who is playing.
+    printColoredId(id, "Player ");
+    cout << " is playing this turn." << endl;
+
+    // How many moves left.
+    if(moves_left == 0) {
+        cout << "No moves left this turn." << endl;
+    } else if(moves_left == 1) {
+        cout << "You have 1 move left this turn." << endl;
+    } else {
+        cout << "You have " << moves_left << " moves left this turn." << endl;
+    }
+    
+    // Player's hand.
+    cout << "Your hand:  " << current_player.getHand() << endl << endl;
+
+    // Error messages.
+    setcolor(ERROR_COLOR);
+    cout << error_messages.str();
+}
+
 void GameDisplayer::printLeaderboard(const std::vector<Player> &players) const {
     gotoxy(scoreboard_x_offset + 9, 1);
     setcolor(TEXT_COLOR);
@@ -119,6 +146,8 @@ void GameDisplayer::printLeaderboard(const std::vector<Player> &players) const {
         unsigned int id = players[i].getId();
         unsigned int score = players[i].getScore();
         
+        // Only makes sense to print a label if player is not tied with
+        // previous one.
         if((int) score != previous_score) cout << WINNER_LABELS[i] << "  ";
         else cout << "     ";
         
@@ -127,80 +156,6 @@ void GameDisplayer::printLeaderboard(const std::vector<Player> &players) const {
         
         previous_score = score;
     }
-}
-
-void GameDisplayer::printTurnInfo(const Player &current_player, unsigned int moves_left) const {
-    clrscr(0, turn_info_y_offset);
-    unsigned int id = current_player.getId();
-
-    printColoredId(id, "Player ");
-    cout << " is playing this turn." << endl;
-
-    if(moves_left == 0) {
-        cout << "No moves left this turn." << endl;
-    } else if(moves_left == 1) {
-        cout << "You have 1 move left this turn." << endl;
-    } else {
-        cout << "You have " << moves_left << " moves left this turn." << endl;
-    }
-    
-    cout << "Your hand:  " << current_player.getHand() << endl << endl;
-
-    setcolor(ERROR_COLOR);
-    cout << error_messages.str();
-}
-
-void GameDisplayer::printWord(const Word &word, bool delay_each_letter) {
-    int x = word.getStart().getX()*2 + 1;
-    int y = word.getStart().getY() + 1;
-
-    for(char c: word) {
-        gotoxy(x, y);
-        cout << c;
-
-        if(delay_each_letter) { 
-            this_thread::sleep_for(chrono::milliseconds(WORD_COMPLETED_ANIMATION_DELAY));
-        }
-
-        if(word.getOrientation() == Horizontal) x += 2;
-        else y += 1;
-    }
-}
-
-Hand::SwapLetterAnimator GameDisplayer::getSwapLetterCallback() const {
-    return [this](int index, char letter) {
-        setcolor(SWAP_LETTER_COLOR);
-        gotoxy(current_player_hand_x_offset + 2*index, turn_info_y_offset+2);
-        cout << letter;
-        setcolor(TEXT_COLOR);
-
-        this_thread::sleep_for(chrono::milliseconds(SWAP_LETTER_DELAY));
-    };
-}
-
-void GameDisplayer::animateWordComplete(const Player &player, const vector<Word> &words_completed) const {
-    clrscr(0, turn_info_y_offset);
-    setcolor(SCORE_COLOR);
-    cout << "Score!";
-
-    int score = player.getScore();
-    int id = player.getId();
-
-    for(const Word &word: words_completed) {
-        setcolor(SCORE_COLOR, BOARD_BACKGROUND);
-        printWord(word, true);
-        setcolor(LETTER_COVERED_COLOR, BOARD_BACKGROUND);
-        printWord(word, false);
-
-        score+=1; 
-        gotoxy(scoreboard_x_offset+3, id+1);
-        setcolor(SCORE_COLOR);
-        cout << setw(4) << score;
-        
-        this_thread::sleep_for(chrono::milliseconds(SCORE_INCREASE_DELAY));
-    }
-
-    setcolor(TEXT_COLOR);
 }
 
 void GameDisplayer::declareWinners(const vector<int> &winners_id, int num_players) const {
@@ -236,11 +191,69 @@ void GameDisplayer::declareWinners(const vector<int> &winners_id, int num_player
     cout << endl;
 }
 
-void GameDisplayer::notice(const string &information, bool long_delay) const {
+void GameDisplayer::printWord(const Word &word, bool delay_each_letter) {
+    // Find the position in screen given position in board.
+    int x = word.getStart().getX()*2 + 1;
+    int y = word.getStart().getY() + 1;
+
+    for(char c: word) {
+        gotoxy(x, y);
+        cout << c;
+
+        if(delay_each_letter) { 
+            this_thread::sleep_for(chrono::milliseconds(WORD_COMPLETED_ANIMATION_DELAY));
+        }
+
+        // Advance position in screen
+        if(word.getOrientation() == Horizontal) x += 2;
+        else y += 1;
+    }
+}
+
+Hand::SwapLetterAnimator GameDisplayer::getSwapLetterCallback() const {
+    return [this](int index, char letter) {
+        setcolor(SWAP_LETTER_COLOR);
+        gotoxy(current_player_hand_x_offset + 2*index, turn_info_y_offset+2);
+        cout << letter;
+        setcolor(TEXT_COLOR);
+
+        this_thread::sleep_for(chrono::milliseconds(SWAP_LETTER_DELAY));
+    };
+}
+
+void GameDisplayer::animateWordComplete(const Player &player, const vector<Word> &words_completed) const {
+    clrscr(0, turn_info_y_offset);
+    setcolor(SCORE_COLOR);
+    cout << "Score!";
+
+    int score = player.getScore();
+    int id = player.getId();
+
+    for(const Word &word: words_completed) {
+        // Highlight animation and then back to normal.
+        setcolor(SCORE_COLOR, BOARD_BACKGROUND);
+        printWord(word, true);
+        setcolor(LETTER_COVERED_COLOR, BOARD_BACKGROUND);
+        printWord(word, false);
+
+        // Update score.
+        score+=1; 
+        gotoxy(scoreboard_x_offset+3, id+1);
+        setcolor(SCORE_COLOR);
+        cout << setw(4) << score;
+        
+        // Delay.
+        this_thread::sleep_for(chrono::milliseconds(SCORE_INCREASE_DELAY));
+    }
+
+    setcolor(TEXT_COLOR);
+}
+
+void GameDisplayer::notice(const string &information, bool short_delay) const {
     setcolor(WARNING_COLOR);
     cout << information;
 
-    int delay = long_delay? LONG_NOTICE_DELAY : NOTICE_DELAY;
+    int delay = short_delay? SHORT_NOTICE_DELAY : NOTICE_DELAY;
 
     this_thread::sleep_for(chrono::milliseconds(delay));
 }
