@@ -35,7 +35,7 @@ void clrscr(int x = 0, int y = 0);
 // Position the cursor at column 'x', line 'y'.
 void gotoxy(int x, int y);
 
-// Set text color & background.
+// Set text color and background.
 void setcolor(Color color, Color background_color = BLACK);
 
 #endif

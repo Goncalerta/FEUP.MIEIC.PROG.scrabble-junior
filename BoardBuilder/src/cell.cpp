@@ -2,6 +2,11 @@
 
 using namespace std;
 
+// As an implementation detail, an empty cell is
+// represented by an empty space (' '). This is
+// convenient to overload 'operator<<'.
+const char Cell::EMPTY = ' ';
+
 Cell::Cell(char letter): 
     letter(letter)
 {}

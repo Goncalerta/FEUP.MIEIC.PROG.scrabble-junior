@@ -1,4 +1,3 @@
-#include <cctype>
 #include "orientation.h"
 
 using namespace std;

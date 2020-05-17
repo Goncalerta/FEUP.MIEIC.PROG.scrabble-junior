@@ -14,7 +14,8 @@ const char* BoardBuilder::DICTIONARY = "WORDS.txt";
 BoardBuilder::BoardBuilder(std::string &board_name, Board &board):
     board_name(move(board_name)),
     board(board),
-    displayer(board.getWidth(), board.getHeight())
+    displayer(board.getWidth(), board.getHeight()),
+    max_players(0)
 {}
 
 bool BoardBuilder::parsePosition(istream &input, Position &position) {

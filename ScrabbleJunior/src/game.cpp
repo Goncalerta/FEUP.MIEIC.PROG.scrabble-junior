@@ -190,16 +190,16 @@ void Game::getCheckLegalMove(bool &must_play_twice, GameDisplayer::CheckLegalMov
             
     if(moves_left == 2) {
         const Hand &hand = getCurrentPlayer().getHand();
-        must_play_twice = board.mustPlayTwiceEdgeCase(legal_positions, hand);
+    must_play_twice = board.mustPlayTwiceEdgeCase(hand, legal_positions);
     } else {
         must_play_twice = false;
     }
 
     if(must_play_twice) {
-        is_legal = [legal_positions](Position pos, auto) {
+        is_legal = [legal_positions](Position position, auto) {
             auto begin = legal_positions.begin();
             auto end = legal_positions.end();
-            return find(begin, end, pos) != end;
+            return find(begin, end, position) != end;
         };
     } else {
         const Hand &hand = getCurrentPlayer().getHand();
