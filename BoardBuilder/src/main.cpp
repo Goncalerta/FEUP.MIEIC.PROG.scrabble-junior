@@ -20,12 +20,12 @@ void promptWidth(Board &board) {
             // if(cin.eof()) TODO
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
+            cout << "The given width input is invalid." << endl;
             continue;
         } 
         
         if(board.setWidth(width)) break;
-        else cout << "The given input is invalid." << endl;
+        else cout << "The given width input is invalid." << endl;
     }
 }
 
@@ -41,12 +41,12 @@ void promptHeight(Board &board) {
             // if(cin.eof()) TODO
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "The given input is invalid." << endl;
+            cout << "The given height input is invalid." << endl;
             continue;
         } 
         
         if(board.setHeight(height)) break;
-        else cout << "The given input is invalid." << endl;
+        else cout << "The given height input is invalid." << endl;
     }
 }
 
