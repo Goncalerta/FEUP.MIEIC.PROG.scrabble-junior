@@ -9,7 +9,7 @@ class Hand {
     friend std::ostream& operator<<(std::ostream& out, const Hand& hand); 
     
     static const int HAND_SIZE = 7;
-    static const char EMPTY = '_';
+    static const char EMPTY;
 
     char hand[HAND_SIZE];
 

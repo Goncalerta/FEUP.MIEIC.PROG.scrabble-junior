@@ -60,7 +60,7 @@ void GameDisplayer::printBoard(const Board &board, CheckLegalMove check_legal_mo
         char letter = (char) j + 'A';
         cout << letter;
         
-        for(int i = 0; i < board.getWidth(); i++) {
+        for(unsigned int i = 0; i < board.getWidth(); i++) {
             Position position((int) i, (int) j);
             const Cell cell = board.getCell(position);
             Color letter_color, letter_background;
@@ -95,8 +95,8 @@ void GameDisplayer::printScoreboard(const std::vector<Player> &players) const {
     setcolor(TEXT_COLOR);
     cout << "SCORE       LETTERS";
 
-    for(int i = 0; i < players.size(); i++) {
-        gotoxy(scoreboard_x_offset, i+2);
+    for(size_t i = 0; i < players.size(); i++) {
+        gotoxy(scoreboard_x_offset, (int) i+2);
         unsigned int id = players[i].getId();
         unsigned int score = players[i].getScore();
         const Hand &hand = players[i].getHand();
@@ -114,12 +114,12 @@ void GameDisplayer::printLeaderboard(const std::vector<Player> &players) const {
     // Needed so first player will always show a 'WINNER_LABEL'.
     int previous_score = -1; 
 
-    for(int i = 0; i < players.size(); i++) {
-        gotoxy(scoreboard_x_offset, i+2);
+    for(size_t i = 0; i < players.size(); i++) {
+        gotoxy(scoreboard_x_offset, (int) i+2);
         unsigned int id = players[i].getId();
         unsigned int score = players[i].getScore();
         
-        if(score != previous_score) cout << WINNER_LABELS[i] << "  ";
+        if((int) score != previous_score) cout << WINNER_LABELS[i] << "  ";
         else cout << "     ";
         
         printColoredId(id, "P");
@@ -154,7 +154,7 @@ void GameDisplayer::printWord(const Word &word, bool delay_each_letter) {
     int x = word.getStart().getX()*2 + 1;
     int y = word.getStart().getY() + 1;
 
-    for(const char &c: word) {
+    for(char c: word) {
         gotoxy(x, y);
         cout << c;
 
@@ -211,7 +211,7 @@ void GameDisplayer::declareWinners(const vector<int> &winners_id, int num_player
         int id = winners_id[0];
         setcolor(PLAYERS_COLOR[id-1]);
         cout << "Player " << id << " wins.";
-    } else if(winners_id.size() == num_players) {
+    } else if((int) winners_id.size() == num_players) {
         if(winners_id.size() == 2) cout << "Both ";
         else cout << "All ";
 

@@ -64,10 +64,10 @@ void Board::addWord(Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
-    Cell &cell = grid[position.getY()][position.getX()];
-    cell.allowMove(orientation);
+    Cell &start_cell = grid[position.getY()][position.getX()];
+    start_cell.allowMove(orientation);
 
-    for(const char &letter: word) {
+    for(char letter: word) {
         Cell &cell = grid[position.getY()][position.getX()];
         if(cell.isEmpty()) total_letters += 1;
         cell.setLetter(letter);
@@ -118,7 +118,7 @@ bool Board::propagate(Position pos, Orientation orientation) {
     Cell *cell;
     do {
         pos.stepForward(orientation);
-        if(pos.getX() >= width || pos.getY() >= height) return true; 
+        if(pos.getX() >= (int) width || pos.getY() >= (int) height) return true; 
         cell = &grid[pos.getY()][pos.getX()];
     } while(cell->isCovered());
 
@@ -133,7 +133,7 @@ const Cell* Board::getNextUncoveredCell(Position pos, Orientation orientation) c
     const Cell *cell;
     do {
         pos.stepForward(orientation);
-        if(pos.getX() >= width || pos.getY() >= height) return nullptr; 
+        if(pos.getX() >= (int) width || pos.getY() >= (int) height) return nullptr; 
         cell = &getCell(pos);
     } while(cell->isCovered());
 
@@ -166,8 +166,8 @@ bool Board::mustPlayTwiceEdgeCase(vector<Position> &positions, const Hand &hand)
     // twice per turn whenever possible.
 
     char letter = 0; // in this context, 0 means 'unknown' 
-    for(int j = 0; j < height; j++) {
-        for(int i = 0; i < width; i++) {
+    for(unsigned int j = 0; j < height; j++) {
+        for(unsigned int i = 0; i < width; i++) {
             Cell &cell = grid[j][i];
 
             if(!cell.isCoverable() || !hand.hasLetter(cell.getLetter())) {
@@ -183,7 +183,7 @@ bool Board::mustPlayTwiceEdgeCase(vector<Position> &positions, const Hand &hand)
             }
 
             // Check condition '3'
-            Position position(i, j);
+            Position position((int) i, (int) j);
 
             if(cell.propagatesHorizontally()) {
                 const Cell *next_cell = getNextUncoveredCell(position, Horizontal);

@@ -9,7 +9,7 @@
 class Cell {
     friend std::ostream& operator<<(std::ostream &out, const Cell &cell);
 
-    static const char EMPTY = ' ';
+    static const char EMPTY;
 
     char letter;
     bool covered;

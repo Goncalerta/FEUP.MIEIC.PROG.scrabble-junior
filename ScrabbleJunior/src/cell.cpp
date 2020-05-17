@@ -2,6 +2,8 @@
 
 using namespace std;
 
+const char Cell::EMPTY = ' ';
+
 Cell::Cell(char letter): 
     letter(letter), 
     covered(false),

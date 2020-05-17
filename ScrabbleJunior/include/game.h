@@ -32,7 +32,7 @@ class Game {
     Player& getCurrentPlayer();
     std::vector<int> getWinnersId() const;
 
-    TurnState Game::getTurnState() const;
+    TurnState getTurnState() const;
     bool playLoop(std::default_random_engine &rng);
 
     void getCheckLegalMove(bool &must_play_twice, GameDisplayer::CheckLegalMove &is_legal) const;

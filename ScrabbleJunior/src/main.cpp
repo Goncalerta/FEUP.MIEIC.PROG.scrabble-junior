@@ -75,7 +75,7 @@ bool readBoardSize(unsigned int &width, unsigned int &height, ifstream &board_fi
 }
 
 bool promptNumberPlayers(int &num_players, unsigned int board_letters) {
-    unsigned int max_players = min(4u, board_letters/7);
+    int max_players = min(4, (int) board_letters/7);
 
     if(max_players == 2) {
         setcolor(TEXT_COLOR);
@@ -156,7 +156,7 @@ bool askPlayAgain() {
 }
 
 int main() {
-    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+    unsigned seed = (unsigned int) chrono::system_clock::now().time_since_epoch().count();
     default_random_engine rng(seed);
     
     while(true) {        

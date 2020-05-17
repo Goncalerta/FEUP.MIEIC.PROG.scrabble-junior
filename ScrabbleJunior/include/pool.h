@@ -8,7 +8,7 @@ class Pool {
     std::vector<char> letters;
 
     public:
-    Pool(std::vector<char> &letters);
+    Pool(std::vector<char> &&letters);
 
     char popLetter();
     void exchange(char *letter);

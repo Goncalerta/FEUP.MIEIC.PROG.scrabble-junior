@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Pool::Pool(vector<char> &letters): letters(move(letters)) {}
+Pool::Pool(vector<char> &&letters): letters(move(letters)) {}
 
 char Pool::popLetter() {
     char letter = letters.back();
@@ -29,5 +29,5 @@ bool Pool::isEmpty() const {
 }
 
 int Pool::size() const {
-    return letters.size();
+    return (int) letters.size();
 }

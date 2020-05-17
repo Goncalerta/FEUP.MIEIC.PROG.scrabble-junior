@@ -34,6 +34,6 @@ void setcolor(Color color, Color background_color) {
     if (background_color == BLACK) {
         SetConsoleTextAttribute(hCon, (WORD) color);
     } else {
-        SetConsoleTextAttribute(hCon, (WORD) color | (background_color << 4));
+        SetConsoleTextAttribute(hCon, (WORD) (color | (background_color << 4)));
     }
 }

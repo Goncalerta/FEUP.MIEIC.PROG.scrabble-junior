@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cctype>
 #include <utility>
 #include <string>
 #include <sstream>
@@ -15,7 +16,7 @@ Game::Game(Board &board, unsigned int num_players):
     current_player_index(0),
     moves_left(2)
 {
-    for(int i = 1; i <= num_players; i++) {
+    for(unsigned int i = 1; i <= num_players; i++) {
         Player player(i);
         players.push_back(player);
     }
@@ -92,7 +93,7 @@ bool Game::play(default_random_engine &rng) {
     clrscr();
     displayer.printBoard(board);
     displayer.printLeaderboard(players);
-    displayer.declareWinners(getWinnersId(), players.size());
+    displayer.declareWinners(getWinnersId(), (int) players.size());
 
     return true;
 }
@@ -195,14 +196,14 @@ void Game::getCheckLegalMove(bool &must_play_twice, GameDisplayer::CheckLegalMov
     }
 
     if(must_play_twice) {
-        is_legal = [legal_positions](Position pos, auto _) {
+        is_legal = [legal_positions](Position pos, auto) {
             auto begin = legal_positions.begin();
             auto end = legal_positions.end();
             return find(begin, end, pos) != end;
         };
     } else {
         const Hand &hand = getCurrentPlayer().getHand();
-        is_legal = [hand](auto _, const Cell &cell) {
+        is_legal = [hand](auto, const Cell &cell) {
             return cell.isCoverable() && hand.hasLetter(cell.getLetter());
         };
     }
@@ -305,14 +306,14 @@ void Game::move(Position position) {
         displayer.animateWordComplete(current_player, completed_words);
     }
     
-    current_player.addScore(completed_words.size());
+    current_player.addScore((unsigned int) completed_words.size());
 }
 
 bool Game::parseLetter(istream &input, char &letter) {
     ostream &error_messages = displayer.getErrorStream();
 
     input >> letter;
-    letter = toupper(letter);
+    letter = (char) toupper(letter);
 
     if(input.fail()) {
         error_messages << "Expected one letter.\n";
@@ -360,8 +361,8 @@ bool Game::parseLetters(istream &input, char &letter1, char &letter2) {
     ostream &error_messages = displayer.getErrorStream();
 
     input >> letter1 >> letter2;
-    letter1 = toupper(letter1);
-    letter2 = toupper(letter2);
+    letter1 = (char) toupper(letter1);
+    letter2 = (char) toupper(letter2);
 
     if(input.fail()) {
         error_messages << "Expected two letters.\n";

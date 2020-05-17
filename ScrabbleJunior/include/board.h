@@ -32,7 +32,7 @@ class Board {
     unsigned int getWidth() const;
     const Cell& getCell(Position position) const;
 
-    void Board::addWord(Word &word);
+    void addWord(Word &word);
     Word findWord(Position position, Orientation orientation);
     
     void cover(Position position, std::vector<Word> &completed_words);
