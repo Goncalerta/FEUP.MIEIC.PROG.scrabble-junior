@@ -17,12 +17,12 @@ class Pool {
 
     // Removes and returns a letter from the 'Pool'.
     char popLetter();
-    // Exchanges a letter in the 'Pool' with the given letter.
+    // Swaps a letter in the 'Pool' with the given letter.
     //
     // This exchange is not randomized. 'Pool' should be shuffled
     // afterwards.
     void exchange(char *letter);
-    // Exchanges two different letters in the 'Pool' with given letters. 
+    // Swaps two different letters in the 'Pool' with given letters. 
     //
     // This exchange is not randomized. 'Pool' should be shuffled
     // afterwards.

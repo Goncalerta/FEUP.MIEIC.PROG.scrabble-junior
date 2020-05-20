@@ -111,14 +111,14 @@ bool Game::playLoop(default_random_engine &rng) {
         TurnState turn_state = getTurnState();
         // Which moves are legal, to highlight in the board.
         // Only set if player must move. Otherwise, kept as
-        // nullptr and no 'Cell's are highlighted.
+        // nullptr so no 'Cell's are highlighted.
         GameDisplayer::CheckLegalMove is_legal = nullptr;
         // Whether the edge case for forcing to play twice (see 'Board::mustPlayTwiceEdgeCase')
         // is happening in this turn.
         bool must_play_twice = false;
         
         if(turn_state == MUST_MOVE) {
-            // If player must move, get the 'CheckLegalMove', having
+            // If player must move, get the appropriate 'CheckLegalMove', having
             // in mind the possible edge case for forcing to play twice.
             // (see 'Board::mustPlayTwiceEdgeCase')
             is_legal = getCheckLegalMove(must_play_twice);
@@ -169,6 +169,9 @@ bool Game::playLoop(default_random_engine &rng) {
         if(turn_state == MUST_MOVE) {
             Position position;
             if(!parsePosition(input_stream, position)) continue;
+            // Validation takes 'must_play_twice' and 'is_legal' just
+            // to check for the edge case (see 'Board::mustPlayTwiceEdgeCase')
+            // when it may apply.
             if(!validateMove(position, must_play_twice, is_legal)) continue;
             
             move(position);
@@ -214,6 +217,7 @@ GameDisplayer::CheckLegalMove Game::getCheckLegalMove(bool &must_play_twice) con
 
     if(must_play_twice) {
         // Because of edge case, only certain positions are truly legal.
+        // Those are stored in 'legal_positions'
         return [legal_positions](Position position, auto) {
             auto begin = legal_positions.begin();
             auto end = legal_positions.end();
@@ -221,6 +225,7 @@ GameDisplayer::CheckLegalMove Game::getCheckLegalMove(bool &must_play_twice) con
         };
     } else {
         // Normally this is what needs to be checked for a position to be legal.
+        // The cell must be coverable and player must have the letter to cover it.
         const Hand &hand = getCurrentPlayer().getHand();
         return [hand](auto, const Cell &cell) {
             return cell.isCoverable() && hand.hasLetter(cell.getLetter());
@@ -288,7 +293,7 @@ bool Game::validateMove(Position position, bool must_play_twice, GameDisplayer::
     }
 
     if(!cell.isCoverable()) {
-        error_messages << "Can't move to position '" << position << "'.\n";
+        error_messages << "Can't cover position '" << position << "'.\n";
         return false;
     }
 

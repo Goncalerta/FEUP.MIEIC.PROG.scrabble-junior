@@ -249,7 +249,7 @@ void GameDisplayer::animateWordComplete(const Player &player, const vector<Word>
     setcolor(TEXT_COLOR);
 }
 
-void GameDisplayer::notice(const string &information, bool short_delay) const {
+void GameDisplayer::notice(const string &information, bool short_delay) {
     setcolor(WARNING_COLOR);
     cout << information;
 

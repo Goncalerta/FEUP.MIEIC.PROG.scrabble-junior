@@ -26,6 +26,7 @@ enum TurnState {
     MUST_SKIP_TURN,
 };
 
+// Manages the game itself.
 class Game {
     // The board of the game.
     Board &board;

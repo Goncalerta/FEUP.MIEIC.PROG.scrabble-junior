@@ -85,7 +85,7 @@ class Board {
     //
     // Must only be called if such 'Position' is known to belong
     // to a 'Word' with that 'Orientation'.
-    Word findWord(Position position, Orientation orientation);
+    Word findWord(Position position, Orientation orientation) const;
     
     // Covers 'Cell' at given position. Should only be called after
     // checking if it 'isCoverable'.

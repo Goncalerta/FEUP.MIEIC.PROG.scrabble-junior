@@ -84,7 +84,7 @@ void Board::addWord(Word &word) {
     }
 }
 
-Word Board::findWord(Position position, Orientation orientation) {
+Word Board::findWord(Position position, Orientation orientation) const {
     // Find the start of the word by stepping backwards
     // until a letter is not found.
     while(position.inLimits(width, height) && !getCell(position).isEmpty()) {

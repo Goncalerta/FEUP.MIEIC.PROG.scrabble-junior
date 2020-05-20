@@ -29,7 +29,7 @@ class BoardBuilder {
     // Returns whether the parsing was successful.
     bool parseWordStr(std::istream &input, std::string &word_str);
     // Returns whether 'word' is found in dictionary stream 'dict'.
-    static bool inDict(std::istream &dict, std::string word);
+    static bool inDict(std::istream &dict, const std::string &word);
 
     public:
     // Name of the words dictionary.

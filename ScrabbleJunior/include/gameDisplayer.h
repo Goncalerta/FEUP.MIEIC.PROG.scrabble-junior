@@ -12,6 +12,7 @@
 #include "word.h"
 #include "cmd.h"
 
+// Helps to display and animate the state of the game to the user.
 class GameDisplayer {
     // Color of each player, in the order of id's.
     static const Color PLAYERS_COLOR[];
@@ -120,7 +121,7 @@ class GameDisplayer {
 
     // Prints a notice to the screen, in warning colors delaying for some time.
     // The duration of the delay is shorter if 'short_delay' is true.
-    void notice(const std::string &information, bool short_delay = false) const;
+    static void notice(const std::string &information, bool short_delay = false);
     // Prints the necessary notices and delays after a refill has been finished.
     // This depend on whether the pool has been depleted (passed with 'depleted_pool').
     void afterRefill(bool depleted_pool) const;

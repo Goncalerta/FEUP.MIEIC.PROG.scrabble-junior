@@ -25,7 +25,7 @@ class Position {
     // Constructs a 'Position' with given board coordinates.
     // (For example, 'Ab' is ('b', 'A'))
     //
-    // Must be constructed with valid board coordinates ('x' must
+    // Should be constructed with valid board coordinates ('x' must
     // be a letter in range 'a-z', and 'y' must be a letter in range
     // 'A-Z').
     Position(char x, char y); 

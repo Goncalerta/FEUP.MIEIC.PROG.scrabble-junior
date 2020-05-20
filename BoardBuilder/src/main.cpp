@@ -66,7 +66,7 @@ bool promptBoardName(string &board_name) {
         if(invalid_char != end) {
             setcolor(ERROR_COLOR);
             
-            cout << "Only ASCII alfanumeric letters and underscores are allowed in board name." << endl;
+            cout << "Only ASCII alphanumeric letters and underscores are allowed in board name." << endl;
             if(isspace(*invalid_char)) cout << "Whitespace is not allowed." << endl;
             else cout << "'" << *invalid_char << "' is not allowed." << endl;
 

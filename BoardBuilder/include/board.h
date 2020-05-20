@@ -51,7 +51,7 @@ class Board {
     //
     // Should only be done after making sure this 'Word' may be
     // added to 'Board' (see 'isWordValid').
-    void addWord(Word &word);
+    void addWord(const Word &word);
 
     // Loads 'Words' from a stream until either the stream ends or
     // a line can't be parsed.

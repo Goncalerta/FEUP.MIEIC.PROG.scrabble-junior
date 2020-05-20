@@ -30,7 +30,7 @@ bool BoardBuilder::parsePosition(istream &input, Position &position) {
 
     if(position_str.size() != 2) {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n" << endl;
+                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -39,7 +39,7 @@ bool BoardBuilder::parsePosition(istream &input, Position &position) {
     
     if(x_char < 'a' || x_char > 'z' || y_char < 'A' || y_char > 'Z') {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n" << endl;
+                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -61,7 +61,7 @@ bool BoardBuilder::parseOrientation(istream &input, Orientation &orientation) {
 
     if(orientation_str.size() != 1) {
         error_messages << "Couldn't parse '" << orientation_str
-                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n" << endl;
+                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n";
         return false;
     }
 
@@ -70,7 +70,7 @@ bool BoardBuilder::parseOrientation(istream &input, Orientation &orientation) {
     else if(orientation_char == 'V') orientation = Vertical;
     else {
         error_messages << "Couldn't parse '" << orientation_str
-                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n" << endl;
+                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n";
         return false;
     }
 
@@ -91,15 +91,15 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
     auto invalid_char = find_if_not(word_str.begin(), word_str.end(), is_alpha_lambda);
     if(invalid_char != word_str.end()) {            
         error_messages << "Only allowed words with ASCII alphabetic letters.\n";
-        if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed." << endl;
-        else error_messages << "'" << *invalid_char << "' is not allowed." << endl;
+        if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed.\n";
+        else error_messages << "'" << *invalid_char << "' is not allowed.\n";
 
         return false;
     }
 
     if(word_str.size() < 2) {
         error_messages << "Only allowed words with at least two letters. Found '" 
-                << word_str << "'\n";
+                << word_str << "'.\n";
         return false;
     }
 
@@ -206,7 +206,7 @@ void BoardBuilder::saveToFile() const {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-bool BoardBuilder::inDict(istream &dict, string word) {
+bool BoardBuilder::inDict(istream &dict, const string &word) {
     string dict_word;
 
     while(dict >> dict_word) {

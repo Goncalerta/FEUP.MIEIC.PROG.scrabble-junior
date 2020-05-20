@@ -52,7 +52,7 @@ const Cell& Board::getCell(Position position) const {
     return grid[position.getY()][position.getX()];
 }
 
-void Board::addWord(Word &word) {
+void Board::addWord(const Word &word) {
     Position position = word.getStart();
     Orientation orientation = word.getOrientation();
 
