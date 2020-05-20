@@ -2,6 +2,9 @@
 #include <algorithm>
 #include "hand.h"
 
+// As an implementation detail, an empty slot is
+// represented by an underscore ('_'). This is
+// convenient to overload 'operator<<'.
 const char Hand::EMPTY = '_';
 
 Hand::Hand() {
@@ -13,11 +16,13 @@ int Hand::indexOf(char *element) const {
 }
 
 bool Hand::isFull() const {
+    // 'Hand' is full if it is not possible to find an empty slot.
     return std::find(std::begin(hand), std::end(hand), EMPTY) == std::end(hand);
 }
 
 void Hand::refill(Pool &pool, SwapLetterAnimator swap_hand) {
     for(auto &letter: hand) {
+        // Refill must stop as soon as the 'Pool' is empty
         if(pool.isEmpty()) break;
         
         if(letter == EMPTY) {
@@ -38,9 +43,13 @@ void Hand::exchange(Pool &pool, char letter1, char letter2, SwapLetterAnimator s
     element1 = std::find(std::begin(hand), std::end(hand), letter1);
 
     if(letter1 == letter2) {
-        // Avoids choosing the same letter twice.
+        // When given letters are the same, we must be careful
+        // not to choose the same letter twice. To avoid that,
+        // search only after the first element.
         element2 = std::find(element1+1, std::end(hand), letter2);
     } else {
+        // When given letters are different, finding the second
+        // element is very similar to finding the first one.
         element2 = std::find(std::begin(hand), std::end(hand), letter2);
     }
 

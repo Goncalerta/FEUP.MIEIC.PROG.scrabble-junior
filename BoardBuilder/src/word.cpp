@@ -1,5 +1,3 @@
-#include <fstream>
-#include <algorithm>
 #include "word.h"
 
 using namespace std;

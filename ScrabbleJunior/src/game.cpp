@@ -1,8 +1,6 @@
 #include <iostream>
-#include <cctype>
-#include <utility>
-#include <string>
 #include <sstream>
+#include <cctype>
 #include <algorithm>
 #include "game.h"
 #include "cmd.h"
@@ -16,6 +14,7 @@ Game::Game(Board &board, unsigned int num_players):
     current_player_index(0),
     moves_left(2)
 {
+    // Initialize players
     for(unsigned int i = 1; i <= num_players; i++) {
         Player player(i);
         players.push_back(player);
@@ -23,6 +22,7 @@ Game::Game(Board &board, unsigned int num_players):
 }
 
 bool Game::isOver() const {
+    // Game ends after covering all letters.
     return board.isFullyCovered();
 }
 
@@ -35,6 +35,8 @@ Player& Game::getCurrentPlayer() {
 }
 
 std::vector<int> Game::getWinnersId() const {
+    // Assumes 'players' are sorted, the winners are the first element
+    // and all elements with the same score.
     int winner_score = players[0].getScore();
     vector<int> winners_id;
 
@@ -43,7 +45,7 @@ std::vector<int> Game::getWinnersId() const {
         int id = player.getId();
         
         if(score == winner_score) winners_id.push_back(id);
-        else break;
+        else break; // Different score, there are no more winners because 'players' is sorted.
     }
 
     return winners_id;
@@ -76,12 +78,15 @@ TurnState Game::getTurnState() const {
 }
 
 bool Game::play(default_random_engine &rng) {
+    // Shuffle the pool
     pool.shuffle(rng);
     
+    // Give each player a starting 'Hand'.
     for(Player &player: players) {
         player.getHand().refill(pool);
     }
 
+    // Play the game, exiting if stdin fails.
     clrscr();
     if(!playLoop(rng)) return false;
 
@@ -102,12 +107,21 @@ bool Game::playLoop(default_random_engine &rng) {
     ostream &error_messages = displayer.getErrorStream();
 
     while(!isOver()) {
+        // Check what must be done in this turn.
         TurnState turn_state = getTurnState();
+        // Which moves are legal, to highlight in the board.
+        // Only set if player must move. Otherwise, kept as
+        // nullptr so no 'Cell's are highlighted.
         GameDisplayer::CheckLegalMove is_legal = nullptr;
+        // Whether the edge case for forcing to play twice (see 'Board::mustPlayTwiceEdgeCase')
+        // is happening in this turn.
         bool must_play_twice = false;
         
         if(turn_state == MUST_MOVE) {
-            getCheckLegalMove(must_play_twice, is_legal);
+            // If player must move, get the appropriate 'CheckLegalMove', having
+            // in mind the possible edge case for forcing to play twice.
+            // (see 'Board::mustPlayTwiceEdgeCase')
+            is_legal = getCheckLegalMove(must_play_twice);
         }
 
         if(turn_state == MUST_EXCHANGE_TWO) {
@@ -123,6 +137,7 @@ bool Game::playLoop(default_random_engine &rng) {
                     << "Turn has been skipped.\n";            
         }
 
+        // Draw current state of the game.
         gotoxy(0, 0);
         displayer.printBoard(board, is_legal);
         displayer.printScoreboard(players);
@@ -154,6 +169,9 @@ bool Game::playLoop(default_random_engine &rng) {
         if(turn_state == MUST_MOVE) {
             Position position;
             if(!parsePosition(input_stream, position)) continue;
+            // Validation takes 'must_play_twice' and 'is_legal' just
+            // to check for the edge case (see 'Board::mustPlayTwiceEdgeCase')
+            // when it may apply.
             if(!validateMove(position, must_play_twice, is_legal)) continue;
             
             move(position);
@@ -185,25 +203,31 @@ bool Game::playLoop(default_random_engine &rng) {
     return true;
 }
 
-void Game::getCheckLegalMove(bool &must_play_twice, GameDisplayer::CheckLegalMove &is_legal) const {
+GameDisplayer::CheckLegalMove Game::getCheckLegalMove(bool &must_play_twice) const {
     vector<Position> legal_positions;
-            
+
     if(moves_left == 2) {
+        // Edge case only needs to be checked if player is playing their
+        // first move this turn.
         const Hand &hand = getCurrentPlayer().getHand();
-        must_play_twice = board.mustPlayTwiceEdgeCase(legal_positions, hand);
+        must_play_twice = board.mustPlayTwiceEdgeCase(hand, legal_positions);
     } else {
         must_play_twice = false;
     }
 
     if(must_play_twice) {
-        is_legal = [legal_positions](Position pos, auto) {
+        // Because of edge case, only certain positions are truly legal.
+        // Those are stored in 'legal_positions'
+        return [legal_positions](Position position, auto) {
             auto begin = legal_positions.begin();
             auto end = legal_positions.end();
-            return find(begin, end, pos) != end;
+            return find(begin, end, position) != end;
         };
     } else {
+        // Normally this is what needs to be checked for a position to be legal.
+        // The cell must be coverable and player must have the letter to cover it.
         const Hand &hand = getCurrentPlayer().getHand();
-        is_legal = [hand](auto, const Cell &cell) {
+        return [hand](auto, const Cell &cell) {
             return cell.isCoverable() && hand.hasLetter(cell.getLetter());
         };
     }
@@ -220,6 +244,7 @@ bool Game::parsePosition(istream &input, Position &position) {
         return false;
     }
 
+    // Player shouldn't input anything else.
     std::string unexpected;
     input >> unexpected;
     if(unexpected.size() != 0) {
@@ -229,7 +254,7 @@ bool Game::parsePosition(istream &input, Position &position) {
 
     if(position_str.size() != 2) {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position.\n Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
+                << "' as a position.\nUse an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -238,7 +263,7 @@ bool Game::parsePosition(istream &input, Position &position) {
     
     if(x_char < 'a' || x_char > 'z' || y_char < 'A' || y_char > 'Z') {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
+                << "' as a position.\nUse an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -268,7 +293,7 @@ bool Game::validateMove(Position position, bool must_play_twice, GameDisplayer::
     }
 
     if(!cell.isCoverable()) {
-        error_messages << "Can't move to position '" << position << "'.\n";
+        error_messages << "Can't cover position '" << position << "'.\n";
         return false;
     }
 
@@ -278,6 +303,7 @@ bool Game::validateMove(Position position, bool must_play_twice, GameDisplayer::
         return false;
     }
 
+    // When the edge case is relevant, 'is_legal' must also be checked.
     if(must_play_twice && !is_legal(position, board.getCell(position))) {
         error_messages << "There is at least one move that allows you to play twice this turn.\n" 
                 << "Position '" << position << "' would only allow you to play once.\n";
@@ -299,7 +325,7 @@ void Game::move(Position position) {
     board.cover(position, completed_words);
 
     if(completed_words.size() != 0) {
-        // Update screen and animate word
+        // Animate word being completed
         gotoxy(0, 0);
         displayer.printBoard(board);
         displayer.printScoreboard(players);
@@ -320,6 +346,7 @@ bool Game::parseLetter(istream &input, char &letter) {
         return false;
     }
 
+    // Player shouldn't input anything else.
     std::string unexpected;
     input >> unexpected;
     if(unexpected.size() != 0) {
@@ -354,7 +381,7 @@ void Game::exchange(char letter, default_random_engine &rng) {
     Hand &current_player_hand = getCurrentPlayer().getHand();
     current_player_hand.exchange(pool, letter, displayer.getSwapLetterCallback());
 
-    pool.shuffle(rng);
+    pool.shuffle(rng); // Must shuffle again after exchanging.
 }
 
 bool Game::parseLetters(istream &input, char &letter1, char &letter2) {
@@ -369,6 +396,7 @@ bool Game::parseLetters(istream &input, char &letter1, char &letter2) {
         return false;
     }
 
+    // Player shouldn't input anything else.
     std::string unexpected;
     input >> unexpected;
     if(unexpected.size() != 0) {
@@ -393,7 +421,7 @@ bool Game::validateExchange(char letter1, char letter2) {
     }
 
     if(letter1 == letter2) {
-        // Same letter: player must have at least two 
+        // Same letter: player must have at least two of it.
         int hand_count = getCurrentPlayer().getHand().countLetter(letter1);
         if(hand_count == 0) {
             error_messages << "You don't have letter '" << letter1 << "' in your hand.\n";
@@ -405,7 +433,7 @@ bool Game::validateExchange(char letter1, char letter2) {
 
         return true;
     } else {
-        // Different letters: player must have both
+        // Different letters: player must have both.
         bool has_letters = true;
 
         if(!getCurrentPlayer().getHand().hasLetter(letter1)) {
@@ -430,13 +458,15 @@ void Game::exchange(char letter1, char letter2, default_random_engine &rng) {
     Hand &current_player_hand = getCurrentPlayer().getHand();
     current_player_hand.exchange(pool, letter1, letter2, displayer.getSwapLetterCallback());
 
-    pool.shuffle(rng);
+    pool.shuffle(rng); // Must shuffle again after exchanging.
 }
 
 void Game::nextTurn() {
     Player &current_player = getCurrentPlayer();
 
-    if(!current_player.getHand().isFull()) {
+    if(!current_player.getHand().isFull() && !isOver()) {
+        // Player hand must be refilled.
+        // Update screen to prepare for that.
         gotoxy(0, 0);
         displayer.printBoard(board);
         displayer.printScoreboard(players);

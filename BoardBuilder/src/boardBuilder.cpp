@@ -1,11 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include <algorithm>
 #include <sstream>
-#include <chrono>
-#include <thread>
-#include "cmd.h"
+#include <cctype>
+#include <algorithm>
 #include "boardBuilder.h"
+#include "cmd.h"
 
 using namespace std;
 
@@ -14,7 +13,8 @@ const char* BoardBuilder::DICTIONARY = "WORDS.txt";
 BoardBuilder::BoardBuilder(std::string &board_name, Board &board):
     board_name(move(board_name)),
     board(board),
-    displayer(board.getWidth(), board.getHeight())
+    displayer(board.getWidth(), board.getHeight()),
+    max_players(0)
 {}
 
 bool BoardBuilder::parsePosition(istream &input, Position &position) {
@@ -30,7 +30,7 @@ bool BoardBuilder::parsePosition(istream &input, Position &position) {
 
     if(position_str.size() != 2) {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n" << endl;
+                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -39,7 +39,7 @@ bool BoardBuilder::parsePosition(istream &input, Position &position) {
     
     if(x_char < 'a' || x_char > 'z' || y_char < 'A' || y_char > 'Z') {
         error_messages << "Couldn't parse '" << position_str
-                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n" << endl;
+                << "' as a position. Use an uppercase letter followed by a lowercase one, like 'Aa'.\n";
         return false;
     }
 
@@ -61,17 +61,16 @@ bool BoardBuilder::parseOrientation(istream &input, Orientation &orientation) {
 
     if(orientation_str.size() != 1) {
         error_messages << "Couldn't parse '" << orientation_str
-                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n" << endl;
+                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n";
         return false;
     }
 
     char orientation_char = (char) toupper(orientation_str[0]);
-
     if(orientation_char == 'H') orientation = Horizontal;
     else if(orientation_char == 'V') orientation = Vertical;
     else {
         error_messages << "Couldn't parse '" << orientation_str
-                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n" << endl;
+                << "' as an orientation. Use 'H' for horizontal or 'V' for vertical.\n";
         return false;
     }
 
@@ -87,22 +86,25 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
         return false;
     }
 
+    // Check if string can really be a word (may only have ASCII alphabetic characters).
     auto is_alpha_lambda = [](char c) { return (char) isalpha(c); };
     auto invalid_char = find_if_not(word_str.begin(), word_str.end(), is_alpha_lambda);
     if(invalid_char != word_str.end()) {            
         error_messages << "Only allowed words with ASCII alphabetic letters.\n";
-        if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed." << endl;
-        else error_messages << "'" << *invalid_char << "' is not allowed." << endl;
+        if(isspace(*invalid_char)) error_messages << "Whitespace is not allowed.\n";
+        else error_messages << "'" << *invalid_char << "' is not allowed.\n";
 
         return false;
     }
 
     if(word_str.size() < 2) {
         error_messages << "Only allowed words with at least two letters. Found '" 
-                << word_str << "'\n";
+                << word_str << "'.\n";
         return false;
     }
 
+    // Words are internally saved as fully uppercase, independently of in which
+    // case the user input them.
     auto to_upper_lambda = [](char c) { return (char) toupper(c); }; 
     transform(word_str.begin(), word_str.end(), word_str.begin(), to_upper_lambda);
     return true;
@@ -110,10 +112,12 @@ bool BoardBuilder::parseWordStr(istream &input, string &word_str) {
 
 void BoardBuilder::run() {
     clrscr();
+    // Board is only fully printed once, at the start, because afterwards
+    // it can be reused, only updating 'Cell's that change.
     displayer.printBoard(board);
 
     while(true) {
-        // Update state and screen
+        // Update state and screen.
         max_players = min(4u, board.countLetters()/7);
 
         displayer.printBoardInfo(board_name, board, max_players);
@@ -122,7 +126,7 @@ void BoardBuilder::run() {
 
         ostream &error_messages = displayer.getErrorStream();
 
-        // Read a whole line as input
+        // Read a whole line as input.
         string input;
         getline(cin, input);
         if(cin.fail()) {
@@ -132,7 +136,7 @@ void BoardBuilder::run() {
         }
         stringstream input_stream(input);
 
-        // Parse input
+        // Parse input.
         Position position;
         Orientation orientation;
         string word_str;
@@ -141,7 +145,7 @@ void BoardBuilder::run() {
         if(!parseOrientation(input_stream, orientation)) continue;
         if(!parseWordStr(input_stream, word_str)) continue;
 
-        // Player shouldn't input anything else
+        // Player shouldn't input anything else.
         std::string unexpected;
         input_stream >> unexpected;
         if(unexpected.size() != 0) {
@@ -149,7 +153,7 @@ void BoardBuilder::run() {
             continue;
         }
 
-        // Check if word is in dictionary
+        // Check if word is in dictionary.
         ifstream dict(DICTIONARY);
         if(!dict.is_open()) {
             error_messages << "Dictionary file '" << DICTIONARY << "' was not found in the current folder or could not be oppened.\n"
@@ -162,11 +166,11 @@ void BoardBuilder::run() {
             continue;
         }
 
-        // Create Word and check if it can be placed in the board
+        // Create Word and check if it can be placed in the board.
         Word word(position, orientation, word_str);
         if(!board.isWordValid(word, error_messages)) continue;
 
-        // Everything is OK; add to board
+        // Everything is OK; add to board.
         displayer.printNewWord(word, board);
         board.addWord(word);
     }
@@ -182,6 +186,7 @@ void BoardBuilder::saveToFile() const {
     string filename = board_name + ".txt";
     ofstream outfile(filename);
 
+    // Be sure that the file may be written to before continuing.
     while(!outfile.is_open()) {
         if(cin.fail()) return;
         
@@ -201,12 +206,13 @@ void BoardBuilder::saveToFile() const {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-bool BoardBuilder::inDict(istream &dict, string word) {
+bool BoardBuilder::inDict(istream &dict, const string &word) {
     string dict_word;
 
     while(dict >> dict_word) {
         auto to_upper_lambda = [](char c) { return (char) toupper(c); }; 
         transform(dict_word.begin(), dict_word.end(), dict_word.begin(), to_upper_lambda);
+        
         if(word == dict_word) return true;
     } 
     
